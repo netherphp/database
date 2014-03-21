@@ -1,0 +1,22 @@
+{
+	"name":"netherphp/database",
+	"description":"A database connection and query tool.",
+	"keywords":["php","database"],
+	"license":"BSD-2-Clause",
+	"authors":[
+		{	"name":"Bob Majdak Jr",
+			"email":"bob@majdak.net",
+			"homepage":"http://majdak.net",
+			"role":"developer" }
+	],
+	"require":{
+		"php": ">=5.4.0",
+		"netherphp/object":"dev-master"
+	},
+	"require-dev":{ },
+	"autoload":{
+		"psr-0": {
+			"Nether\\": "src/"
+		}
+	}
+}
