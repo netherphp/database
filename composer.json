@@ -11,7 +11,8 @@
 	],
 	"require":{
 		"php": ">=5.4.0",
-		"netherphp/object":"dev-master"
+		"netherphp/object":"dev-master",
+		"netherphp/option":"dev-master"
 	},
 	"require-dev":{ },
 	"autoload":{
