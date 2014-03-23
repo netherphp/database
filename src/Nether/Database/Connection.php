@@ -1,7 +1,7 @@
 <?php
 
 namespace Nether\Database;
-use \Nether
+use \Nether;
 
 ////////////////
 ////////////////

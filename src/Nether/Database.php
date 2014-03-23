@@ -162,7 +162,7 @@ class Database {
 		// if given a Database\Query object and an object for the parameters then
 		// fetch the named args in the query and find their matching properties
 		// in the parm object.
-		if(is_a($fmt,'Nether\Database\Query') && (is_object($parm)||is_array($parm)) {
+		if(is_a($fmt,'Nether\Database\Query') && (is_object($parm)||is_array($parm))) {
 			$qarg = [];
 
 			foreach($fmt->GetNamedArgs() as $arg)
