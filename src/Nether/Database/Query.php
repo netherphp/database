@@ -225,6 +225,19 @@ class Query {
 		return $this;
 	}
 
+	public function InnerJoin() {
+	/*//
+	@argv string Table, ...
+	@return object
+	mark down tables to INNER JOIN against.
+	//*/
+
+		foreach(func_get_args() as $arg)
+		$this->Joins[] = "INNER JOIN {$arg}";
+
+		return $this;
+	}
+
 	public function RightJoin() {
 	/*//
 	@argv string Table,
