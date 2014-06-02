@@ -164,9 +164,12 @@ class Database {
 		// in the parm object.
 		if(is_a($fmt,'Nether\Database\Query') && (is_object($parm)||is_array($parm))) {
 			$qarg = [];
+			$parm = (object)$parm;
 
-			foreach($fmt->GetNamedArgs() as $arg)
-			$qarg[":{$arg}"] = $parm->{$arg};
+			foreach($fmt->GetNamedArgs() as $arg) {
+				if(property_exists($parm,$arg)) $qarg[":{$arg}"] = $parm->{$arg};
+				else if(property_exists($parm,":{$arg}")) $qarg["{$arg}"] = $parm->{":{$arg}"};
+			}
 
 			$parm = $qarg;
 		}

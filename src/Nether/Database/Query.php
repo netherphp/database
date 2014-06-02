@@ -449,7 +449,7 @@ class Query {
 		foreach($this->Conditions as $key => $val) {
 			if($first) { $first = false; continue; }
 
-			if(!preg_match('/ ?(?:AND|OR) /i',$val))
+			if(!preg_match('/^ ?(?:AND|OR) /i',$val))
 			$this->Conditions[$key] = "AND {$val}";
 		}
 
