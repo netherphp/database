@@ -489,11 +489,45 @@ class Query {
 			else $this->SQL .= sprintf('LIMIT %d ',$this->Count);
 		}
 
-		$this->SQL = trim($this->SQL).';';
+		$this->SQL = trim($this->SQL).'';
 		return;
 	}
 
 	protected function GenerateUpdateSQL() {
+
+		// determine if we need to merge the field array. this means we can use
+		// set() two different ways
+		//
+		// - set('something=:alias')
+		// - set(['something'=>':alias'])
+		//
+		// and they cannot be mixed. if you start using set(string) then commit
+		// to calling them all for this query. if you start using set(assoc)
+		// then commit to that. you'll get fucked queries if you do not, which
+		// is fine. don't be a tool.
+
+		$assocfields = true;
+		foreach($this->Fields as $key => $val) {
+			if(is_numeric($key)) {
+				$assocfields = false;
+				break;
+			}
+		}
+
+		if($assocfields) {
+			$fields = [];
+
+			foreach($this->Fields as $field => $alias)
+			$fields[] = "{$field}={$alias}";
+
+			$this->Fields = $fields;
+			unset($fields,$field,$alias);
+		}
+
+		unset($assocfields,$key,$val);
+
+		////////
+		////////
 
 		$this->SQL = sprintf('UPDATE %s ',join(',',$this->Tables));
 		$this->SQL .= sprintf('SET %s ',join(',',$this->Fields));
@@ -506,7 +540,7 @@ class Query {
 			else $this->SQL .= sprintf('LIMIT %d ',$this->Count);
 		}
 
-		$this->SQL = trim($this->SQL).';';
+		$this->SQL = trim($this->SQL).'';
 		return;
 	}
 
@@ -516,7 +550,7 @@ class Query {
 		$arglist = array_values($this->Fields);
 
 		$this->SQL = sprintf(
-			'INSERT INTO %s (%s) VALUES (%s);',
+			'INSERT INTO %s (%s) VALUES (%s)',
 			join(',',$this->Tables),
 			join(',',$keylist),
 			join(',',$arglist)
@@ -537,7 +571,7 @@ class Query {
 			else $this->SQL .= sprintf('LIMIT %d ',$this->Count);
 		}
 
-		$this->SQL = trim($this->SQL).';';
+		$this->SQL = trim($this->SQL).'';
 		return;
 	}
 
