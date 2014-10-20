@@ -291,17 +291,21 @@ class Query {
 		return $this;
 	}
 
-	public function Where() {
+	public function Where($cond) {
 	/*//
 	@argv string Condition, ...
 	@return object
 	mark down a condition for the WHERE clause.
 	//*/
 
-		$this->Conditions = array_merge(
-			$this->Conditions,
-			func_get_args()
-		);
+		if(!is_array($cond)) {
+			$this->Conditions[] = $cond;
+		} else {
+			$this->Conditions = array_merge(
+				$this->Conditions,
+				$cond
+			);
+		}
 
 		return $this;
 	}
