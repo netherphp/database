@@ -137,7 +137,7 @@ class MySQL extends Compiler {
 		if($conds = $this->Verse->GetConditions())
 		$this->QueryString .= $this->GetConditionString($conds);
 
-		if(($limit = $this->Verse->GetLimit()) !== false)
+		if(($limit = $this->Verse->GetLimit()) !== 0)
 		$this->QueryString .= $this->GetLimitString($limit);
 
 		return $this->QueryString;
@@ -209,7 +209,7 @@ class MySQL extends Compiler {
 		if($conds = $this->Verse->GetConditions())
 		$this->QueryString .= $this->GetConditionString($conds);
 
-		if(($limit = $this->Verse->GetLimit()) !== false)
+		if(($limit = $this->Verse->GetLimit()) !== 0)
 		$this->QueryString .= $this->GetLimitString($limit);
 
 		return $this->QueryString;

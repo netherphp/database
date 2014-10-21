@@ -152,14 +152,8 @@ class Verse {
 
 		if($this->Pretty) {
 			$string = preg_replace(
-				'/ (FROM|INTO|WHERE|AND|OR|LIMIT|OFFSET|ORDER|GROUP|LEFT|RIGHT|NATURAL|INNER)/',
+				'/ (FROM|INTO|WHERE|AND|OR|LIMIT|OFFSET|ORDER|GROUP|LEFT|RIGHT|NATURAL|INNER|VALUES)/',
 				"\n\\1",
-				$string
-			);
-
-			$string = preg_replace(
-				'/^(AND|OR )/ms',
-				"\t\\1",
 				$string
 			);
 		}
@@ -408,7 +402,7 @@ class Verse {
 	list.
 	//*/
 
-		$this->Fields = array_merge($argv);
+		$this->Fields = array_merge($this->Fields,$argv);
 		return $this;
 	}
 
