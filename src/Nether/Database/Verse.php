@@ -347,7 +347,7 @@ class Verse {
 		return $this;
 	}
 
-	public function Sort($arg,$flags=self::OrderAsc) {
+	public function Sort($arg,$flags=self::SortAsc) {
 	/*//
 	@argv string Sort, int SortFlags default self::OrderAsc
 	@argv array SortList, int SortFlags default self::OrderAnd
