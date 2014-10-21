@@ -26,8 +26,8 @@ class Verse {
 	const WhereOr = 2;
 	const WhereNot = 4;
 
-	const OrderAsc = 1;
-	const OrderDesc = 2;
+	const SortAsc = 1;
+	const SortDesc = 2;
 
 	protected $Compiler;
 	/*//
@@ -55,6 +55,12 @@ class Verse {
 
 	////////////////
 	////////////////
+
+	protected $Pretty = false;
+	/*//
+	@type bool
+	make the query a little more readable for human eyes.
+	//*/
 
 	protected $Mode;
 	/*//
@@ -127,6 +133,11 @@ class Verse {
 	public function GetLimit() { return (int)$this->Limit; }
 	public function GetOffset() { return (int)$this->Offset; }
 
+	public function SetPretty($bool) {
+		$this->Pretty = (bool)$bool;
+		return $this;
+	}
+
 	////////////////
 	////////////////
 
@@ -137,7 +148,23 @@ class Verse {
 	//*/
 
 		$sql = new $this->Compiler($this);
-		return $sql->Get();
+		$string = $sql->Get();
+
+		if($this->Pretty) {
+			$string = preg_replace(
+				'/ (FROM|INTO|WHERE|AND|OR|LIMIT|OFFSET|ORDER|GROUP|LEFT|RIGHT|NATURAL|INNER)/',
+				"\n\\1",
+				$string
+			);
+
+			$string = preg_replace(
+				'/^(AND|OR )/ms',
+				"\t\\1",
+				$string
+			);
+		}
+
+		return $string;
 	}
 
 	protected function ResetQueryProperties() {
@@ -288,7 +315,7 @@ class Verse {
 
 		if(is_array($arg)) {
 			foreach($arg as $jkey => $jquery) {
-				if(is_numeric($jkey)) $this->Join($flags,$jquery);
+				if(is_numeric($jkey)) $this->Join($jquery,$flags);
 				else $this->Join[$jkey] = (object)[ 'Flags'=>$flags, 'Query'=>$jquery ];
 			}
 		} else {
@@ -310,7 +337,7 @@ class Verse {
 
 		if(is_array($arg)) {
 			foreach($arg as $wkey => $wquery) {
-				if(is_numeric($wkey)) $this->Where($flags,$wquery);
+				if(is_numeric($wkey)) $this->Where($wquery,$flags);
 				else $this->Conditions[$wkey] = (object)[ 'Flags'=>$flags, 'Query'=>$wquery ];
 			}
 		} else {
@@ -332,7 +359,7 @@ class Verse {
 
 		if(is_array($arg)) {
 			foreach($arg as $skey => $squery) {
-				if(is_numeric($skey)) $this->Sort($flags,$squery);
+				if(is_numeric($skey)) $this->Sort($squery,$flags);
 				else $this->Sorts[$skey] = (object)[ 'Flags'=>$flags, 'Query'=>$squery ];
 			}
 		} else {

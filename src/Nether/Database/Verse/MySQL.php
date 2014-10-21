@@ -33,8 +33,8 @@ class MySQL extends Compiler {
 	protected function GetSortType($flags) {
 		$type = '';
 
-		if($flags & Verse::OrderAsc) $type = 'ASC';
-		if($flags & Verse::OrderDesc) $type = 'DESC';
+		if($flags & Verse::SortAsc) $type = 'ASC';
+		if($flags & Verse::SortDesc) $type = 'DESC';
 
 		return $type;
 	}
@@ -184,10 +184,10 @@ class MySQL extends Compiler {
 		if($sorts = $this->Verse->GetSorts())
 		$this->QueryString .= $this->GetSortString($sorts);
 
-		if(($limit = $this->Verse->GetLimit()) !== false)
+		if(($limit = $this->Verse->GetLimit()) !== 0)
 		$this->QueryString .= $this->GetLimitString($limit);
 
-		if(($offset = $this->Verse->GetOffset()) !== false)
+		if(($offset = $this->Verse->GetOffset()) !== 0)
 		$this->QueryString .= $this->GetOffsetString($offset);
 
 		return trim($this->QueryString);
