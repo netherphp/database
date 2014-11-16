@@ -161,6 +161,13 @@ class Verse {
 		return $string;
 	}
 
+	public function GetNamedArgs() {
+		$sql = $this->GetSQL();
+
+		preg_match_all('/:([a-z0-9]+)/i',$sql,$match);
+		return $match[1];
+	}
+
 	protected function ResetQueryProperties() {
 	/*//
 	reset all the properties of this verse incase this instance is reused to
@@ -370,6 +377,31 @@ class Verse {
 	//*/
 
 		return $this->Sort($arg,$flags);
+	}
+
+	public function Group($arg) {
+	/*//
+	//*/
+
+		if(is_array($arg)) {
+			foreach($arg as $gkey => $gquery) {
+				if(is_numeric($gkey)) $this->Group($gquery);
+				else $this->Groups[$gkey] = $gquery;
+			}
+		} else {
+			$this->Groups[] = $arg;
+		}
+
+		return $this;
+	}
+
+	public function GroupBy($arg) {
+	/*//
+	@alias self::Group
+	provide bc and context for grouping.
+	//*/
+
+		return $this->Group($arg);
 	}
 
 	public function Limit($count) {

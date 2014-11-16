@@ -120,6 +120,15 @@ class MySQL extends Compiler {
 		return "{$string} ";
 	}
 
+	protected function GetGroupString($groups) {
+		$string = sprintf(
+			'GROUP BY %s ',
+			implode(', ',$groups)
+		);
+
+		return $string;
+	}
+
 	////////////////
 	////////////////
 
@@ -183,6 +192,9 @@ class MySQL extends Compiler {
 
 		if($sorts = $this->Verse->GetSorts())
 		$this->QueryString .= $this->GetSortString($sorts);
+
+		if($groups = $this->Verse->GetGroups())
+		$this->QueryString .= $this->GetGroupString($groups);
 
 		if(($limit = $this->Verse->GetLimit()) !== 0)
 		$this->QueryString .= $this->GetLimitString($limit);
