@@ -38,6 +38,8 @@ class Database {
 	//*/
 
 	static $ConnectTime = 0;
+	static $ConnectCount = 0;
+	static $ConnectReuse = 0;
 	static $QueryTime = 0;
 	static $QueryCount = 0;
 
@@ -50,6 +52,7 @@ class Database {
 		if(array_key_exists($alias,static::$DBX)) {
 			$this->Driver = static::$DBX[$alias];
 			$this->Reused = true;
+			++static::$ConnectReuse;
 			return;
 		}
 
@@ -69,7 +72,11 @@ class Database {
 			PDO::ERRMODE_SILENT
 		);
 
+		// keep this connection around.
+		static::$DBX[$alias] = $this->Driver;
+
 		static::$ConnectTime += microtime(true) - $ctime;
+		++static::$ConnectCount;
 
 		return;
 	}
