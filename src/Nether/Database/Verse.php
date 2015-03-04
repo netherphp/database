@@ -204,8 +204,8 @@ class Verse {
 
 		if(is_array($addl)) {
 			foreach($addl as $key => $query) {
-				if(is_numeric($key)) $this->MergeValues($pool,$query);
-				else $pool[$key] = $addl;
+				if(is_numeric($key)) $pool[] = $query;
+				else $pool[$key] = $query;
 			}
 		} else {
 			$pool[] = $addl;
@@ -221,7 +221,7 @@ class Verse {
 
 		if(is_array($addl)) {
 			foreach($addl as $key => $query) {
-				if(is_numeric($key)) $this->MergeFlaggedValues($pool,$query,$flag);
+				if(is_numeric($key)) $pool[] = (object)[ 'Flags'=>$flag, 'Query'=>$addl ];
 				else $pool[$key] = (object)[ 'Flags'=>$flag, 'Query'=>$query ];
 			}
 		} else {
@@ -427,7 +427,7 @@ class Verse {
 		return $this;
 	}
 
-	public function Fields(array $argv) {
+	public function Fields($arg) {
 	/*//
 	@argv array FieldList
 	define what fields this verse should operate against. some queries (select)
@@ -435,11 +435,11 @@ class Verse {
 	list.
 	//*/
 
-		$this->Fields = array_merge($this->Fields,$argv);
+		$this->MergeValues($this->Fields,$arg);
 		return $this;
 	}
 
-	public function Values(array $argv) {
+	public function Values($argv) {
 	/*//
 	@alias self::Fields
 	provide bc and context for insert queries.
@@ -448,7 +448,7 @@ class Verse {
 		return $this->Fields($argv);
 	}
 
-	public function Set(array $argv) {
+	public function Set($argv) {
 	/*//
 	@alias self::Fields
 	provide bc and context for update queries.
