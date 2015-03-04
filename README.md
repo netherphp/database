@@ -4,14 +4,19 @@ Nether Database
 
 A database connection and query tool.
 
-Requires (autofilled by composer):
+Requires (autofilled by composer)
+-------------------------------------
 * Nether\Object
 * Nether\Option
+
+Install
+-------------------------------------
+Composer yourself a dev-master of netherphp/database.
+* https://packagist.org/packages/netherphp/database
 
 
 Dirty How-To, before I forget.
 =====================================
-
 Define Connections.
 -------------------------------------
 
@@ -26,7 +31,6 @@ Define Connections.
 	]);
 
 The Type field is any valid PDO driver you have installed. For example, "mysql".
-
 
 Connect And Query
 --------------------------------
@@ -54,7 +58,6 @@ Connect And Query
 
 	// when the result object hits the end of the results, it will automatically
 	// free the resources unless it is told not to prior to iteration.
-
 
 Verses (Query Builder)
 --------------------------------
