@@ -42,7 +42,7 @@ Connect And Query
 
 	$result = $db->Query(
 		'SELECT stuff FROM table WHERE something=:something;',
-		[':something' => 'awesome']
+		[':something' => $_GET['something']]
 	);
 
 	// queries are automatically sql injection protected via the PDO bound
