@@ -200,15 +200,32 @@ class Verse {
 	you want to add. if the additional item is an array it will do an array
 	merge so that you can overwrite named (associative array) values. if it is
 	not then it is just appended to the array pool.
-
-	this method alone is going to bring the codeclimate score from an f to
-	probably a b, removing all my copy paste. well. this method and when i
-	determine how to craft one or two more for the other cases.
 	//*/
 
-		if($addl) {
-			if(is_array($addl)) $pool = array_merge($pool,$addl);
-			else $pool[] = $addl;
+		if(is_array($addl)) {
+			foreach($addl as $key => $query) {
+				if(is_numeric($key)) $this->MergeValues($pool,$query);
+				else $pool[$key] = $addl;
+			}
+		} else {
+			$pool[] = $addl;
+		}
+
+		return;
+	}
+
+	protected function MergeFlaggedValues(array &$pool,$addl,$flag) {
+	/*//
+	@argv array Pool, mixed Additions, Int Flags
+	//*/
+
+		if(is_array($addl)) {
+			foreach($addl as $key => $query) {
+				if(is_numeric($key)) $this->MergeFlaggedValues($pool,$query,$flag);
+				else $pool[$key] = (object)[ 'Flags'=>$flag, 'Query'=>$query ];
+			}
+		} else {
+			$pool[] = (object)[ 'Flags'=>$flag, 'Query'=>$addl ];
 		}
 
 		return;
@@ -328,15 +345,7 @@ class Verse {
 	joined to the main query.
 	//*/
 
-		if(is_array($arg)) {
-			foreach($arg as $jkey => $jquery) {
-				if(is_numeric($jkey)) $this->Join($jquery,$flags);
-				else $this->Join[$jkey] = (object)[ 'Flags'=>$flags, 'Query'=>$jquery ];
-			}
-		} else {
-			$this->Joins[] = (object)[ 'Flags'=>$flags, 'Query'=>$arg ];
-		}
-
+		$this->MergeFlaggedValues($this->Joins,$arg,$flags);
 		return $this;
 	}
 
@@ -350,15 +359,7 @@ class Verse {
 	sql compiler yet.
 	//*/
 
-		if(is_array($arg)) {
-			foreach($arg as $wkey => $wquery) {
-				if(is_numeric($wkey)) $this->Where($wquery,$flags);
-				else $this->Conditions[$wkey] = (object)[ 'Flags'=>$flags, 'Query'=>$wquery ];
-			}
-		} else {
-			$this->Conditions[] = (object)[ 'Flags'=>$flags, 'Query'=>$arg ];
-		}
-
+		$this->MergeFlaggedValues($this->Conditions,$arg,$flags);
 		return $this;
 	}
 
@@ -372,15 +373,7 @@ class Verse {
 	sql compiler yet.
 	//*/
 
-		if(is_array($arg)) {
-			foreach($arg as $skey => $squery) {
-				if(is_numeric($skey)) $this->Sort($squery,$flags);
-				else $this->Sorts[$skey] = (object)[ 'Flags'=>$flags, 'Query'=>$squery ];
-			}
-		} else {
-			$this->Sorts[] = (object)[ 'Flags'=>$flags, 'Query'=>$arg ];
-		}
-
+		$this->MergeFlaggedValues($this->Sorts,$arg,$flags);
 		return $this;
 	}
 
@@ -395,17 +388,11 @@ class Verse {
 
 	public function Group($arg) {
 	/*//
+	@argv string GroupCondition
+	@argv string GroupConditionList
 	//*/
 
-		if(is_array($arg)) {
-			foreach($arg as $gkey => $gquery) {
-				if(is_numeric($gkey)) $this->Group($gquery);
-				else $this->Groups[$gkey] = $gquery;
-			}
-		} else {
-			$this->Groups[] = $arg;
-		}
-
+		$this->MergeValues($this->Groups,$arg);
 		return $this;
 	}
 
