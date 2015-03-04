@@ -19,7 +19,9 @@ setting up a new connection
 		]
 	]);
 
-connecting to a defined database
+The Type field is any valid PDO driver you have installed. For example, "mysql".
+
+Connect And Query
 --------------------------------
 
 	$db = new Nether\Database(<string Alias>);
@@ -36,6 +38,9 @@ connecting to a defined database
 		[':something' => 'awesome']
 	);
 
+	// queries are automatically sql injection protected via the PDO bound
+	// arugment system.
+
 	while($row = $result->Next()) {
 		echo $row->stuff, PHP_EOL;
 	}
@@ -43,27 +48,50 @@ connecting to a defined database
 	// when the result object hits the end of the results, it will automatically
 	// free the resources unless it is told not to prior to iteration.
 
-simple query builder
---------------------
+Verses (Query Builder)
+--------------------------------
 
-	$sql = new Nether\Database\Query;
+	$sql = new Nether\Database\Verse;
 	$arg = [':something' => $_GET['something']];
 
-	// queries are automatically sql injection protected via the PDO bound
-	// arugment system.
+	// or, if you have the database object hand you can craft a new verse from
+	// that instead.
 
-	$sql
-	->Select('stuff')
-	->From('table')
-	->Where('something=:something');
+	$db = new Nether\Database;
+	$sql = $db->NewVerse();
+	$arg = [':something' => $_GET['something']];
 
 	// the sql builder is still in an early state, it currently only really
 	// builds mysql (yes, there are differences) and mainly for simple queries.
 	// but it is still easier to format than a giant string in code.
 
+	$sql = $db
+	->NewVerse()
+	->Select('from_table_name')
+	->Values('field1, field2, field 3,')
+	->Where('something=:something');
+
+	// most of the methods accept either a single string or an array of them.
+
+	$sql = $db
+	->NewVerse()
+	->Select('from_table_name')
+	->Values(['field1','field2','field3'])
+	->Where([
+		'SearchMain' => 'something=:something'
+	]);
+
+	// if you even use an associative array like did in the WHERE above, you
+	// can overwrite a specific condition or fieldset later on in the future
+	// without starting the query over.
+
+	$sql->Where([
+		'SearchMain' =>'something != :something'
+	]);
+
+	// and then you just hand the entire thing over to the database object.
+
 	$result = $db->Query($sql,$arg);
 	while($row = $result->Next()) {
 		echo $row->stuff, PHP_EOL;
 	}
-
-
