@@ -1,13 +1,19 @@
-database
-========
+Nether Database
+=====================================
+[![Code Climate](https://codeclimate.com/github/netherphp/database/badges/gpa.svg)](https://codeclimate.com/github/netherphp/database)
 
 A database connection and query tool.
 
-dirty how to (before i forget myself)
+Requires (autofilled by composer):
+* Nether\Object
+* Nether\Option
+
+
+Dirty How-To, before I forget.
 =====================================
 
-setting up a new connection
----------------------------
+Define Connections.
+-------------------------------------
 
 	Nether\Option::Set('database-connections',[
 		'Default' => [
@@ -20,6 +26,7 @@ setting up a new connection
 	]);
 
 The Type field is any valid PDO driver you have installed. For example, "mysql".
+
 
 Connect And Query
 --------------------------------
@@ -47,6 +54,7 @@ Connect And Query
 
 	// when the result object hits the end of the results, it will automatically
 	// free the resources unless it is told not to prior to iteration.
+
 
 Verses (Query Builder)
 --------------------------------
