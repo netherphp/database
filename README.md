@@ -25,13 +25,13 @@ Define Connections.
 -------------------------------------
 
 	Nether\Option::Set('database-connections',[
-		'Default' => [
+		'Default' => new Nether\Database\Connection([
 			'Type'     => '%TYPE',
 			'Hostname' => '%HOSTNAME',
 			'Username' => '%USERNAME',
 			'Password' => '%PASSWORD',
 			'Database' => '%DATABASE'
-		]
+		])
 	]);
 
 The Type field is any valid PDO driver you have installed. For example, "mysql".
