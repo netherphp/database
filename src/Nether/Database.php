@@ -30,6 +30,12 @@ class Database {
 	the pdo object driving this instance.
 	//*/
 
+	public $Verse;
+	/*//
+	@type Nether\Database\Verse
+	the last verse object we used.
+	//*/
+
 	public $Reused = false;
 	/*//
 	@type boolean
@@ -204,6 +210,14 @@ class Database {
 		static::$QueryCount++;
 
 		return $result;
+	}
+
+	////////////////
+	////////////////
+
+	public function NewVerse() {
+		$this->Verse = new Nether\Database\Verse;
+		return $this->Verse;
 	}
 
 }
