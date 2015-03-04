@@ -190,11 +190,11 @@ class MySQL extends Compiler {
 		if($conds = $this->Verse->GetConditions())
 		$this->QueryString .= $this->GetConditionString($conds);
 
-		if($sorts = $this->Verse->GetSorts())
-		$this->QueryString .= $this->GetSortString($sorts);
-
 		if($groups = $this->Verse->GetGroups())
 		$this->QueryString .= $this->GetGroupString($groups);
+
+		if($sorts = $this->Verse->GetSorts())
+		$this->QueryString .= $this->GetSortString($sorts);
 
 		if(($limit = $this->Verse->GetLimit()) !== 0)
 		$this->QueryString .= $this->GetLimitString($limit);

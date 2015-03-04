@@ -72,6 +72,8 @@ class Database {
 			PDO::ERRMODE_SILENT
 		);
 
+		//$this->Query('SET NAMES utf8');
+
 		// keep this connection around.
 		static::$DBX[$alias] = $this->Driver;
 
