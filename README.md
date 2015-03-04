@@ -11,9 +11,13 @@ Requires (autofilled by composer)
 
 Install
 -------------------------------------
-Composer yourself a dev-master of netherphp/database.
-* https://packagist.org/packages/netherphp/database
+Composer yourself a netherphp/database of version 1.*
 
+	{
+		"require": {
+			"netherphp/database": "1.*"
+		}
+	}
 
 Dirty How-To, before I forget.
 =====================================
