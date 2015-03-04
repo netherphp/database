@@ -94,7 +94,7 @@ Verses (Query Builder)
 	// without starting the query over.
 
 	$sql->Where([
-		'SearchMain' =>'something != :something'
+		'SearchMain' => 'something!=:something'
 	]);
 
 	// and then you just hand the entire thing over to the database object.
