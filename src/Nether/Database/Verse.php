@@ -162,6 +162,11 @@ class Verse {
 	}
 
 	public function GetNamedArgs() {
+	/*//
+	@return array[string, ...]
+	find out all the named arguments that were in the final query.
+	//*/
+
 		$sql = $this->GetSQL();
 
 		preg_match_all('/:([a-z0-9]+)/i',$sql,$match);
@@ -186,6 +191,29 @@ class Verse {
 		return;
 	}
 
+	protected function MergeValues(array &$pool,$addl) {
+	/*//
+	@argv array Pool, mixed Additions
+	merge values into the pool. such description, wow.
+	so you give this a pool, the pool is the array of values you want to end
+	up with. this thing must be an array. then you give it an additional item
+	you want to add. if the additional item is an array it will do an array
+	merge so that you can overwrite named (associative array) values. if it is
+	not then it is just appended to the array pool.
+
+	this method alone is going to bring the codeclimate score from an f to
+	probably a b, removing all my copy paste. well. this method and when i
+	determine how to craft one or two more for the other cases.
+	//*/
+
+		if($addl) {
+			if(is_array($addl)) $pool = array_merge($pool,$addl);
+			else $pool[] = $addl;
+		}
+
+		return;
+	}
+
 	////////////////
 	////////////////
 
@@ -200,11 +228,7 @@ class Verse {
 
 		$this->Mode = static::ModeSelect;
 		$this->ResetQueryProperties();
-
-		if($arg) {
-			if(is_array($arg)) $this->Tables = array_merge($this->Tables,$arg);
-			else $this->Tables[] = $arg;
-		}
+		$this->MergeValues($this->Tables,$arg);
 
 		return $this;
 	}
@@ -220,11 +244,7 @@ class Verse {
 
 		$this->Mode = static::ModeUpdate;
 		$this->ResetQueryProperties();
-
-		if($arg) {
-			if(is_array($arg)) $this->Tables = array_merge($this->Tables,$arg);
-			else $this->Tables[] = $arg;
-		}
+		$this->MergeValues($this->Tables,$arg);
 
 		return $this;
 	}
@@ -261,11 +281,7 @@ class Verse {
 
 		$this->Mode = static::ModeDelete;
 		$this->ResetQueryProperties();
-
-		if($arg) {
-			if(is_array($arg)) $this->Tables = array_merge($this->Tables,$arg);
-			else $this->Tables[] = $arg;
-		}
+		$this->MergeValues($this->Tables,$arg);
 
 		return $this;
 	}
@@ -281,9 +297,7 @@ class Verse {
 	define what tables this verse should muck around with.
 	//*/
 
-		if(is_array($arg)) $this->Tables = array_merge($this->Tables,$arg);
-		else $this->Tables[] = $arg;
-
+		$this->MergeValues($this->Tables,$arg);
 		return $this;
 	}
 
