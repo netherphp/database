@@ -76,7 +76,7 @@ Verses (Query Builder)
 	$sql = $db
 	->NewVerse()
 	->Select('from_table_name')
-	->Values('field1, field2, field 3,')
+	->Values('field1, field2, field3')
 	->Where('something=:something');
 
 	// most of the methods accept either a single string or an array of them.
