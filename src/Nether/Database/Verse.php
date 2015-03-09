@@ -221,7 +221,7 @@ class Verse {
 
 		if(is_array($addl)) {
 			foreach($addl as $key => $query) {
-				if(is_numeric($key)) $pool[] = (object)[ 'Flags'=>$flag, 'Query'=>$addl ];
+				if(is_numeric($key)) $pool[] = (object)[ 'Flags'=>$flag, 'Query'=>$query ];
 				else $pool[$key] = (object)[ 'Flags'=>$flag, 'Query'=>$query ];
 			}
 		} else {
