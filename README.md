@@ -1,8 +1,8 @@
 Nether Database
 =====================================
-[![Code Climate](https://codeclimate.com/github/netherphp/database/badges/gpa.svg)](https://codeclimate.com/github/netherphp/database)
+[![nether.io](https://img.shields.io/badge/nether-database-C661D2.svg)](http://nether.io/database/) [![Code Climate](https://codeclimate.com/github/netherphp/database/badges/gpa.svg)](https://codeclimate.com/github/netherphp/database) [![Packagist](https://img.shields.io/packagist/v/netherphp/database.svg)](https://packagist.org/packages/netherphp/database) [![Packagist](https://img.shields.io/packagist/dt/netherphp/database.svg)](https://packagist.org/packages/netherphp/database)
 
-A database connection and query tool.
+A database connection and query library.
 
 Requires (autofilled by composer)
 -------------------------------------
@@ -25,13 +25,13 @@ Define Connections.
 -------------------------------------
 
 	Nether\Option::Set('database-connections',[
-		'Default' => [
+		'Default' => new Nether\Database\Connection([
 			'Type'     => '%TYPE',
 			'Hostname' => '%HOSTNAME',
 			'Username' => '%USERNAME',
 			'Password' => '%PASSWORD',
 			'Database' => '%DATABASE'
-		]
+		])
 	]);
 
 The Type field is any valid PDO driver you have installed. For example, "mysql".
