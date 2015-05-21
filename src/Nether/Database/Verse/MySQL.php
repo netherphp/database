@@ -213,10 +213,15 @@ class MySQL extends Compiler {
 	//*/
 
 		$this->QueryString = sprintf(
-			'UPDATE %s %s',
-			join(', ',$this->Verse->GetTables()),
-			$this->GetSetString($this->Verse->GetFields())
+			'UPDATE %s ',
+			join(', ',$this->Verse->GetTables())
 		);
+
+		if($joins = $this->Verse->GetJoins())
+		$this->QueryString .= $this->GetJoinString($joins);
+
+		if($fields = $this->Verse->GetFields())
+		$this->QueryString .= $this->GetSetString($fields);
 
 		if($conds = $this->Verse->GetConditions())
 		$this->QueryString .= $this->GetConditionString($conds);
