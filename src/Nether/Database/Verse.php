@@ -35,10 +35,31 @@ class Verse {
 	the name of the class that should compile the query into an SQL string.
 	//*/
 
+	protected $Database;
+	/*//
+	@type string
+	the type that defines the type of database we are going to compile to.
+	this is the type from the database instance that created the verse.
+	//*/
+
+	public function
+	GetDatabase() {
+		return $this->Database;
+	}
+
+	public function
+	SetDatabase(Nether\Database $DB) {
+		$this->Database = $DB;
+		return $this;
+	}
+
 	////////////////
 	////////////////
 
-	public function __construct() {
+	public function __construct($DB=null) {
+
+		if($DB) $this->Database = $DB;
+
 		$this->Compiler = Nether\Option::Get('nether-database-verse-compiler');
 		$this->ResetQueryProperties();
 		return;

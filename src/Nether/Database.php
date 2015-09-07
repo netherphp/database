@@ -24,6 +24,24 @@ class Database {
 	////////////////
 	////////////////
 
+	protected $Type;
+	/*//
+	@type string
+	the type that defined what driver PDO picked.
+	//*/
+
+	public function
+	GetType() {
+	/*//
+	@return string
+	//*/
+
+		return $this->Type;
+	}
+
+	////////////////
+	////////////////
+
 	public $Driver;
 	/*//
 	@type PDO
@@ -66,6 +84,7 @@ class Database {
 		$ctime = microtime(true);
 
 		$config = $this->GetConnectionConfig($alias);
+		$this->Type = $config->Type;
 		$this->Driver = new \PDO(
 			$config->GetDSN(),
 			$config->Username,
@@ -216,7 +235,12 @@ class Database {
 	////////////////
 
 	public function NewVerse() {
-		$this->Verse = new Nether\Database\Verse;
+	/*//
+	@return Nether\Database\Verse;
+	begin a new query verse.
+	//*/
+
+		$this->Verse = new Nether\Database\Verse($this);
 		return $this->Verse;
 	}
 

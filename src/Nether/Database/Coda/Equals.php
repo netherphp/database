@@ -8,11 +8,25 @@ extends Nether\Database\Coda {
 
 	public function
 	Render() {
-		return sprintf(
-			'%s="%s"',
-			$this->Field,
-			$this->Value
-		);
+
+		if(is_array($this->Value)) {
+			foreach($this->Value as &$Value)
+			$Value = $this->Database->Escape($Value);
+
+			return sprintf(
+				'%s IN("%s")',
+				$this->Field,
+				implode('","',$this->Value)
+			);
+		}
+
+		else {
+			return sprintf(
+				'%s="%s"',
+				$this->Field,
+				$this->Database->Escape($this->Value)
+			);
+		}
 	}
 
 }

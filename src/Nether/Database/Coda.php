@@ -5,16 +5,16 @@ use \Nether;
 
 abstract class Coda {
 
-	protected $Type = 'mysql';
-
 	public function
 	__construct($opt=null) {
 
 		$opt = new Nether\Object($opt,[
-			'Field' => null,
-			'Value' => null
+			'Database' => null,
+			'Field'    => null,
+			'Value'    => null
 		]);
 
+		$this->Database = $opt->Database;
 		$this->Field = $opt->Field;
 		$this->Value = $opt->Value;
 
@@ -28,6 +28,14 @@ abstract class Coda {
 
 	////////////////
 	////////////////
+
+	protected $Database;
+
+	public function
+	GetDatabase() { return $this->Database; }
+
+	public function
+	SetDatabase($DB) { $this->Database = $DB; return $this; }
 
 	protected $Field;
 
@@ -50,6 +58,11 @@ abstract class Coda {
 
 	public function
 	Render() {
+
+		if($this->Database)
+		$this->Type = $this->Database->GetType();
+
+		////////
 
 		$MethodName = "Render_{$this->Type}";
 
