@@ -43,14 +43,18 @@ class Verse {
 	//*/
 
 	public function
-	GetDatabase() {
-		return $this->Database;
-	}
+	GetDatabase() { return $this->Database; }
 
 	public function
-	SetDatabase(Nether\Database $DB) {
-		$this->Database = $DB;
-		return $this;
+	SetDatabase(Nether\Database $DB) { $this->Database = $DB; return $this; }
+
+	public function
+	NewCoda($ClassName) {
+
+		if(!$this->Database instanceof Nether\Database)
+		throw new \Exception('unable to create coda without a database assigned to the verse.');
+
+		return $this->Database->NewCoda($ClassName);
 	}
 
 	////////////////

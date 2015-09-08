@@ -24,29 +24,26 @@ class Database {
 	////////////////
 	////////////////
 
-	protected $Type;
-	/*//
-	@type string
-	the type that defined what driver PDO picked.
-	//*/
-
 	public function
 	GetType() {
 	/*//
 	@return string
 	//*/
 
-		return $this->Type;
+		return $this->Driver->GetAttribute(\PDO::ATTR_DRIVER_NAME);
 	}
 
 	////////////////
 	////////////////
 
-	public $Driver;
+	protected $Driver;
 	/*//
 	@type PDO
 	the pdo object driving this instance.
 	//*/
+
+	public function
+	GetDriver() { return $this->Driver; }
 
 	public $Verse;
 	/*//
@@ -84,7 +81,6 @@ class Database {
 		$ctime = microtime(true);
 
 		$config = $this->GetConnectionConfig($alias);
-		$this->Type = $config->Type;
 		$this->Driver = new \PDO(
 			$config->GetDSN(),
 			$config->Username,
@@ -236,12 +232,30 @@ class Database {
 
 	public function NewVerse() {
 	/*//
-	@return Nether\Database\Verse;
-	begin a new query verse.
+	@return Nether\Database\Verse
+	begin a new query verse. remembers the last one used because that seemed
+	like a feature that could be useful later.
 	//*/
 
 		$this->Verse = new Nether\Database\Verse($this);
 		return $this->Verse;
+	}
+
+	public function NewCoda($ClassName) {
+	/*//
+	@return Nether\Database\Coda
+	begin a new query coda.
+	//*/
+
+		$FQCN = "Nether\\Database\\Coda\\{$ClassName}";
+		
+		if(!class_exists($FQCN))
+		throw new \Exception("requested coda {$FQCN} not found.");
+
+		$Coda = new $FQCN;
+		$Coda->SetDatabase($this);
+
+		return $Coda;		
 	}
 
 }

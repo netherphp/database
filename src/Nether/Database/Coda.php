@@ -35,7 +35,7 @@ abstract class Coda {
 	GetDatabase() { return $this->Database; }
 
 	public function
-	SetDatabase($DB) { $this->Database = $DB; return $this; }
+	SetDatabase(Nether\Database $DB) { $this->Database = $DB; return $this; }
 
 	protected $Field;
 
@@ -56,24 +56,37 @@ abstract class Coda {
 	////////////////
 	////////////////
 
+	protected final function
+	RequireDatabase() {
+	/*//
+	demand a database to have been set for things like rendering.
+	//*/
+
+		if(!$this->Database)
+		throw new \Exception("No database has been defined for this Coda to use for sanitisation yet.");
+
+		return;		
+	}
+
 	public function
 	Render() {
+	/*//
+	compile this coda down into sql
+	//*/
 
-		if($this->Database)
-		$this->Type = $this->Database->GetType();
+		$this->RequireDatabase();
 
-		////////
-
-		$MethodName = "Render_{$this->Type}";
+		$MethodName = "Render_{$this->Database->GetType()}";
 
 		if(method_exists($this,$MethodName))
 		return $this->{$MethodName}();
 
 		else
 		return sprintf(
-			'-- Coda %s does not currently support %s',
+			'-- Coda %s does not currently support %s (%s)',
 			static::class,
-			$this->Type
+			$this->Type,
+			$MethodName
 		);
 	}
 

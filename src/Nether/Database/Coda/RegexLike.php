@@ -34,6 +34,8 @@ extends Nether\Database\Coda {
 	public function
 	Render() {
 
+		$this->RequireDatabase();
+
 		$Value = sprintf(
 			'%s%s%s',
 			(($this->MountStart)?('^'):('')),
