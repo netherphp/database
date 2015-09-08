@@ -181,7 +181,7 @@ class Database {
 	////////////////
 	////////////////
 
-	public function Query($fmt,$parm=null) {
+	public function QueryOld($fmt,$parm=null) {
 	/*//
 	@return Nether\Database\Query;
 	builds a query using pdo's bound parameter stuff.
@@ -227,6 +227,74 @@ class Database {
 		return $result;
 	}
 
+	public function
+	Query($Format,$Argv=false) {
+	/*//
+	@return Nether\Database\Result
+	//*/
+
+		if($Argv && !is_array($Argv) && !is_object($Argv))
+		throw new \Exception('query arguments not object or array.');
+
+		////////////////
+		////////////////
+
+		// build a dataset that directly maps to the bound parameters in the
+		// query with no unused values.
+
+		$Dataset = [];
+		$SQL = (is_object($Format))?($Format->GetSQL()):($Format);
+		$Bound = static::GetNamedArgs($SQL);
+		$Argv = (array)$Argv;
+		
+		foreach($Bound as $Binding) {
+			if(array_key_exists($Binding,$Argv))
+			$Dataset[":{$Binding}"] = $Argv[$Binding];
+
+			elseif(array_key_exists(":{$Binding}",$Argv))
+			$Dataset[$Binding] = $Argv[":{$Binding}"];
+		} unset($Binding);
+
+		////////////////
+		////////////////
+
+		// convert any arrays into bound argument listings. this is mainly to
+		// make things like IN clauses stuper stafe too.
+
+		foreach($Dataset as $Key => $Value) {
+			if(!is_array($Value)) continue;
+
+			$NewBindings = [];
+			foreach($Value as $K => $V) {
+				$NewBindings[] = $Binding = "{$Key}__{$K}";
+				$Dataset[$Binding] = $V;
+			}
+
+			$SQL = str_replace($Key,implode(',',$NewBindings),$SQL);
+			unset($Dataset[$Key]);
+
+		} unset($Key,$Value,$K,$V,$NewBindings,$Binding);
+
+		////////////////
+		////////////////
+
+		$QueryTime = microtime(true);
+
+		if(!($Statement = $this->Driver->Prepare($SQL)))
+		throw new \Exception('SQL statement was unable to prepare.');
+
+		$Result = new Database\Result(
+			$this->Driver,
+			$Statement,
+			$Dataset
+		);
+
+		static::$QueryTime = microtime(true) - $QueryTime;
+		static::$QueryCount++;
+
+		return $Result;
+	}
+
 	////////////////
 	////////////////
 
@@ -256,6 +324,18 @@ class Database {
 		$Coda->SetDatabase($this);
 
 		return $Coda;		
+	}
+
+	static public function
+	GetNamedArgs($Input) {
+	/*//
+	@argv string Input
+	@return array[string, ...]
+	find out all the named arguments that were in the final query.
+	//*/
+
+		preg_match_all('/:([a-z0-9]+)/i',$Input,$Match);
+		return $Match[1];
 	}
 
 }

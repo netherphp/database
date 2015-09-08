@@ -42,7 +42,7 @@ class Result {
 	////////////////
 	////////////////
 
-	public function __construct($driver,$statement,$parm) {
+	public function __construct($driver,$statement,$args) {
 		list(
 			$this->Driver,
 			$this->Statement,

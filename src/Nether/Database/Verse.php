@@ -188,6 +188,7 @@ class Verse {
 
 	public function GetNamedArgs() {
 	/*//
+	@deprecated moved
 	@return array[string, ...]
 	find out all the named arguments that were in the final query.
 	//*/
