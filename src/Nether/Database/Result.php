@@ -2,98 +2,179 @@
 
 namespace Nether\Database;
 use \Nether;
+
 use \PDO;
 
-////////////////
-////////////////
-
 class Result {
+/*//
+this class will wrap around a group of behaviours that defines a result set
+returned by a database query. it will provide some basic set interaction like
+fetching the next row or even more simple things like letting you know if the
+query was even a success.
+//*/
 
-	protected $Driver;
+	protected
+	$Database = null;
 	/*//
-	@type PDO
-	the pdo object driving this query.
+	@type Nether\Database
+	the database connection we are interacting with.
 	//*/
 
-	protected $Statement;
+	protected
+	$Statement = null;
 	/*//
 	@type PDOStatement
 	the pdo statement object for this query.
 	//*/
 
-	protected $Args;
+	protected
+	$Args = null;
 	/*//
 	@type array
 	the list of arguments to use in the statement.
 	//*/
 
-	public $Error;
+	////////////////////////////////
+	////////////////////////////////
+
+	public
+	$Error = null;
 	/*//
 	@type string
+	@todo make this protected.
 	the error message if any.
 	//*/
 
-	public $OK;
+	public function
+	GetError() {
+	/*//
+	get the error message if there was one.
+	//*/
+
+		return $this->Error;
+	}
+
+	////////////////////////////////
+	////////////////////////////////
+
+	public
+	$OK = null;
 	/*//
 	@type boolean
+	@todo make this protected.
 	a flag if the query was a success or not.
 	//*/
 
-	////////////////
-	////////////////
+	public function
+	IsOK() {
+	/*//
+	get if this query was a success or not.
+	//*/
 
-	public function __construct($driver,$statement,$args) {
+		return $this->OK;
+	}
+
+	////////////////////////////////
+	////////////////////////////////
+
+	protected
+	$Count = 0;
+	/*//
+	@type int
+	how many rows were found on success.
+	//*/
+
+	public function
+	GetCount() {
+	/*//
+	@return int
+	get how many rows were found on success.
+	//*/
+
+		return $this->Count;
+	}
+
+	////////////////////////////////
+	////////////////////////////////
+
+	public function
+	__construct($Database,$Statement,$Args) {
+	/*//
+	given a database, a statement, and a dateset, wrap a database result set
+	into this little pseudoiterable object.
+	//*/
+
 		list(
-			$this->Driver,
+			$this->Database,
 			$this->Statement,
 			$this->Args
 		) = func_get_args();
 
 		// try to execute the statement.
-		if(!$statement->execute($this->Args)) {
-			$this->Error = $statement->errorInfo()[2];
+		if(!$this->Statement->Execute($this->Args)) {
+			$this->Error = $this->Statement->ErrorInfo()[2];
 			$this->OK = false;
 			return;
 		}
 
 		$this->OK = true;
-		$this->Rows = $this->Statement->rowCount();
+		$this->Count = $this->Statement->RowCount();
+		$this->Rows = $this->Count; // deprecated.
 		return;
 	}
 
-	////////////////
-	////////////////
+	////////////////////////////////
+	////////////////////////////////
 
-	public function ID() {
+	public function
+	GetInsertID() {
 	/*//
 	@return string
+	if the last statement was an insert statement, then this will ask the
+	database for the id it last inserted on this connection.
 	//*/
 
-		return $this->Driver->lastInsertId();
+		return $this->Database->GetDriver()->LastInsertId();
 	}
 
-	public function Next($class='stdClass') {
+	public function
+	ID() {
+	/*//
+	@alias Nether\Database\Result::GetID
+	@deprecated
+	//*/
+
+		return $this->GetID();
+	}
+
+	////////////////////////////////
+	////////////////////////////////
+
+	public function
+	Next($Class='stdClass') {
 	/*//
 	@argv string ClassName default stdClass
 	fetch the next row of the result set.
 	//*/
 
-		return $this->Statement->fetchObject($class);
+		return $this->Statement->FetchObject($Class);
 	}
 
-	public function Glomp($class='stdClass') {
+	public function
+	Glomp($Class='stdClass') {
 	/*//
 	@argv string ClassName default stdClass
 	@return array
 	get all the rows from the query.
 	//*/
 
-		$list = array();
+		$List = [];
+		$Row = null;
 
-		while($row = $this->Next($class))
-		$list[] = $row;
+		while($Row = $this->Next($Class))
+		$List[] = $Row;
 
-		return $list;
+		return $List;
 	}
 
 }

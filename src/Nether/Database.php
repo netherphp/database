@@ -402,16 +402,9 @@ with database things.
 		if(!($Statement = $this->Driver->Prepare($SQL)))
 		throw new Nether\Database\Error\QueryPrepareFailure;
 
-		$Result = new Database\Result(
-			$this->Driver,
-			$Statement,
-			$Dataset
-		);
-
+		$Result = new Database\Result($this,$Statement,$Dataset);
 		static::$QueryTime = microtime(true) - $QueryTime;
 		static::$QueryCount++;
-
-		////////
 
 		return $Result;
 	}
