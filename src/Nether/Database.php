@@ -4,185 +4,436 @@ namespace Nether;
 use \Nether;
 use \PDO;
 
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+
 Nether\Option::Define([
-	'database-connections' => [],
-	'database-query-path'  => null
+	'nether-database-connections' => []
 ]);
 
-////////////////
-////////////////
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 
 class Database {
+/*//
+this class provides all the functionality and primary interface for interacting
+with database things.
+//*/
 
-	static $DBX = [];
+	static
+	$DBX = [];
 	/*//
 	@type array
 	a singleton array for holding all the connections opened by the application
 	for reuse.
 	//*/
 
-	////////////////
-	////////////////
-
-	public function
-	GetType() {
+	static
+	$ConnectTime = 0.0;
 	/*//
-	@return string
+	@type float
+	this is the amount of time in seconds that your application (mainly this
+	library) spent connecting to servers. high values here mean your servers
+	are taking too long to establish a connection to database servers.
 	//*/
 
-		return $this->Driver->GetAttribute(\PDO::ATTR_DRIVER_NAME);
-	}
-
-	////////////////
-	////////////////
-
-	protected $Driver;
+	static
+	$ConnectCount = 0;
 	/*//
-	@type PDO
+	@type int
+	the number of times you have connected to a database server throughout the
+	course of your application. a high number (for most apps, greater than 1)
+	in this stat means you are connecting to way too many damn servers, or that
+	your persistant connections are not persistanting.
+	//*/
+
+	static
+	$ConnectReuse = 0;
+	/*//
+	@type int
+	the number of times this connection has been reused. you can pretty much
+	consider this a count of how many times you `new Nether\Database`d. a high
+	value in this stat means the persistant connection is working well.
+	//*/
+
+	static
+	$QueryTime = 0.0;
+	/*//
+	@type float
+	this is the amount of time in seconds your application has spent querying
+	databases it has connected to. a high value in this field means that you
+	may be running some very slow queries.
+	//*/
+
+	static
+	$QueryCount = 0;
+	/*//
+	@type int
+	this is the number of queries your application has made to databases it has
+	connected to. a high value in this field probably means your cache layer
+	has most likely literally exploded. should have protected that exhaust port
+	better.
+	//*/
+
+	////////////////////////////////
+	////////////////////////////////
+
+	protected
+	$Driver = null;
+	/*//
+	@type \PDO
 	the pdo object driving this instance.
 	//*/
 
 	public function
-	GetDriver() { return $this->Driver; }
+	GetDriver() {
+	/*//
+	@return \PDO
+	give you access to the pdo driver object in case you need to go all lower
+	level in this shit.
+	//*/
 
-	public $Verse;
+		return $this->Driver;
+	}
+
+	////////////////////////////////
+	////////////////////////////////
+
+	protected
+	$Verse = null;
 	/*//
 	@type Nether\Database\Verse
 	the last verse object we used.
 	//*/
 
-	public $Reused = false;
+	public function
+	GetVerse() {
+	/*//
+	@return Nether\Database\Verse
+	the last verse object used. if no versen hath been used then one shall be
+	created and remembered for you.
+	//*/
+
+		if(!$this->Verse)
+		$this->Verse = $this->NewVerse();
+
+		return $this->Verse;
+	}
+
+	public function
+	NewVerse() {
+	/*//
+	@return Nether\Database\Verse
+	begin a new query verse. remembers the last one used because that seemed
+	like a feature that could be useful later.
+	//*/
+
+		$this->Verse = new Nether\Database\Verse($this);
+		return $this->Verse;
+	}
+
+	////////////////////////////////
+	////////////////////////////////
+
+	public function
+	GetCoda($Class) {
+	/*//
+	@alias Nether\Database::NewCoda
+	provide consistancy between Verse and Coda API.
+	//*/
+
+		return $this->NewCoda($Class);
+	}
+
+	public function
+	NewCoda($Class) {
+	/*//
+	@return Nether\Database\Coda
+	begin a new query coda.
+	//*/
+
+		if(strpos($Class,'\\') !== 0)
+		$Class = "Nether\\Database\\Coda\\{$Class}";
+
+		if(!class_exists($Class))
+		throw new \Exception("requested coda {$Class} not found.");
+
+		$Coda = new $Class;
+		$Coda->SetDatabase($this);
+		return $Coda;
+	}
+
+	////////////////////////////////
+	////////////////////////////////
+
+	protected
+	$Reused = false;
 	/*//
 	@type boolean
 	marks if the driver being used was opened by a previous object. only really
 	useful for seeing if the connection recycler is working right.
 	//*/
 
-	static $ConnectTime = 0;
-	static $ConnectCount = 0;
-	static $ConnectReuse = 0;
-	static $QueryTime = 0;
-	static $QueryCount = 0;
+	public function
+	IsReused() {
+	/*//
+	@return boolean
+	return if this connection has been reused (true) or is a fresh
+	connection (false).
+	//*/
 
-	////////////////
-	////////////////
+		return $this->Reused;
+	}
 
-	public function __construct($alias='Default') {
+	////////////////////////////////
+	////////////////////////////////
 
-		// check if this connection is already open.
-		if(array_key_exists($alias,static::$DBX)) {
-			$this->Driver = static::$DBX[$alias];
+	public function
+	__construct($Alias='Default') {
+	/*//
+	upon object construction we will check if the connection you requested
+	has already been made, and if so, reuse that driver object automatically.
+	else it will establish a new connection and shove it off so that the
+	above is true the next time you create an instance of this.
+	//*/
+
+		if(array_key_exists($Alias,static::$DBX)) {
+			// reuse the existing driver if available and
+			// then we are done here.
+			$this->Driver = static::$DBX[$Alias];
 			$this->Reused = true;
-			++static::$ConnectReuse;
+			static::$ConnectReuse++;
 			return;
 		}
 
-		// get the requested configuration for this connection and connect.
-		$ctime = microtime(true);
+		////////
+		////////
 
-		$config = $this->GetConnectionConfig($alias);
-		$this->Driver = new \PDO(
-			$config->GetDSN(),
-			$config->Username,
-			$config->Password
+		$ConnectTime = microtime(true);
+		$Config = $this->GetConnectionConfig($Alias);
+
+		$this->Driver = new PDO(
+			$Config->GetDSN(),
+			$Config->Username,
+			$Config->Password
 		);
 
-		// tell pdo to stfu, the library will do error checking.
-		$this->Driver->setAttribute(
+		$this->Driver->SetAttribute(
+			// tell pdo to stfu about errors so that we can
+			// check for them and present them better.
 			PDO::ATTR_ERRMODE,
 			PDO::ERRMODE_SILENT
 		);
 
-		//$this->Query('SET NAMES utf8');
+		////////
+		////////
 
-		// keep this connection around.
-		static::$DBX[$alias] = $this->Driver;
-
-		static::$ConnectTime += microtime(true) - $ctime;
-		++static::$ConnectCount;
-
+		static::$DBX[$Alias] = $this->Driver;
+		static::$ConnectTime += microtime(true) - $ConnectTime;
+		static::$ConnectCount++;
 		return;
 	}
 
-	////////////////
-	////////////////
+	////////////////////////////////
+	////////////////////////////////
 
-	protected function GetConnectionConfig($alias) {
+	protected function
+	GetConnectionConfig($Alias) {
 	/*//
 	@return Nether\Database\Connection
-	return the database configuration that matches the specified alias. if it is
-	not found then an exception is thrown.
+	fetch the specified configuration. if none is found then it will throw an
+	exception instead.
 	//*/
 
-		$config = Nether\Option::Get('database-connections');
+		$Config = Nether\Option::Get('nether-database-connections');
 
-		if(!array_key_exists($alias,$config))
-		throw new \Exception("no db connection found for {$alias}");
+		if(!array_key_exists($Alias,$Config))
+		throw new Nether\Database\Error\InvalidConfig($Alias);
 
-		return new Nether\Database\Connection($config[$alias]);
+		if($Config[$Alias] instanceof Nether\Database\Connection)
+		return $Config[$Alias];
+
+		return new Nether\Database\Connection($Config[$Alias]);
 	}
 
-	////////////////
-	////////////////
+	////////////////////////////////
+	////////////////////////////////
 
-	public function Begin() {
+	public function
+	Begin() {
 	/*//
 	@return bool
 	begin a query transaction.
 	//*/
 
-		return $this->Driver->beginTransaction();
+		return $this->Driver->BeginTransaction();
 	}
 
-	public function Commit() {
+	public function
+	Commit() {
 	/*//
 	@return bool
 	commit a query transaction.
 	//*/
 
-		return $this->Driver->commit();
+		return $this->Driver->Commit();
 	}
 
-	public function Rollback() {
+	public function
+	Rollback() {
 	/*//
 	@return bool
 	rollback a query transaction.
 	//*/
 
-		return $this->Driver->rollBack();
+		return $this->Driver->Rollback();
 	}
 
-	public function Set($opt,$val) {
+	////////////////////////////////
+	////////////////////////////////
+
+	public function
+	GetAttr($Key) {
 	/*//
-	allow an app to set a PDO option/attribute on the database if it wants. note
-	that these do not get undone next time an database object is created so if
-	setting something that you only need to do for one query, be sure to unset it
-	after.
+	@return mixed
+	fetch a PDO option/attribute from the current connection.
 	//*/
 
-		return $this->Driver->setAttribute($opt,$val);
+		return $this->Driver->GetAttribute($Key);
 	}
 
-	public function Escape($value) {
+	public function
+	SetAttr($Key,$Value) {
+	/*//
+	@return bool
+	set a PDO option/attribute on the current connection.
+	//*/
+
+		return $this->Driver->SetAttribute($Key,$Value);
+	}
+
+	////////////////////////////////
+	////////////////////////////////
+
+	public function
+	Escape($Value) {
 	/*//
 	@argv string Value
-	use the driver string escaping stuff.
+	use the PDO driver to escape data for the current connection.
 	//*/
-		return $this->Driver->quote($value);
+
+		return $this->Driver->Quote($Value);
 	}
 
-	////////////////
-	////////////////
+	////////////////////////////////
+	////////////////////////////////
 
-	public function BuildSQL() {
-		return new Database\Query;
+	public function
+	Query($Format,$Argv=false) {
+	/*//
+	@return Nether\Database\Result
+	//*/
+
+		if($Argv && !is_array($Argv) && !is_object($Argv))
+		throw new Nether\Database\Error\InvalidQueryInput;
+
+		// convert to an object if not an object. this would theoretically
+		// allow you to supply objects with magic methods.
+
+		if(!is_object($Argv))
+		$Argv = (object)$Argv;
+
+		////////
+		// build a dataset that directly maps to the bound parameters in the
+		// query with no unused values.
+
+		$Dataset = [];
+		$SQL = (is_object($Format))?("{$Format}"):($Format);
+		$Bound = static::GetNamedArgs($SQL);
+
+		// fetch the named data.
+		foreach($Bound as $Binding) {
+			if(property_exists($Argv,$Binding))
+			$Dataset[":{$Binding}"] = $Argv->{$Binding};
+
+			elseif(property_exists($Argv,":{$Binding}"))
+			$Dataset[$Binding] = $Argv->{":{$Binding}"};
+		} unset($Binding);
+
+		// then the anonymous data.
+		foreach($Argv as $Key => $Arg) {
+			if(is_int($Key))
+			$Dataset[] = $Arg;
+		} unset($Key,$Arg);
+
+		////////
+		// convert any arrays into bound argument listings. this is mainly to
+		// make things like IN clauses stuper stafe too.
+
+		foreach($Dataset as $Key => $Value) {
+			if(!is_array($Value)) continue;
+
+			$NewBindings = [];
+			foreach($Value as $K => $V) {
+				$NewBindings[] = $Binding = "{$Key}__{$K}";
+				$Dataset[$Binding] = $V;
+			}
+
+			$SQL = str_replace($Key,implode(',',$NewBindings),$SQL);
+			unset($Dataset[$Key]);
+
+		} unset($Key,$Value,$K,$V,$NewBindings,$Binding);
+
+		////////
+		// and then perform the query.
+
+		$QueryTime = microtime(true);
+
+		if(!($Statement = $this->Driver->Prepare($SQL)))
+		throw new Nether\Database\Error\QueryPrepareFailure;
+
+		$Result = new Database\Result(
+			$this->Driver,
+			$Statement,
+			$Dataset
+		);
+
+		static::$QueryTime = microtime(true) - $QueryTime;
+		static::$QueryCount++;
+
+		////////
+
+		return $Result;
 	}
 
-	////////////////
-	////////////////
+	////////////////////////////////
+	////////////////////////////////
+
+	static public function
+	GetNamedArgs($Input) {
+	/*//
+	@argv string Input
+	@return array[string, ...]
+	find out all the named arguments that were in the final query.
+	//*/
+
+		preg_match_all('/:([a-z0-9]+)/i',$Input,$Match);
+		return $Match[1];
+	}
+
+	////////////////////////////////
+	////////////////////////////////
+	////////////////////////////////
+	////////////////////////////////
+	////////////////////////////////
+	////////////////////////////////
+
+	// things below here need to vanish soon. they have already been replaced
+	// by better things.
 
 	public function QueryOld($fmt,$parm=null) {
 	/*//
+	@depreciated obviously
 	@return Nether\Database\Query;
 	builds a query using pdo's bound parameter stuff.
 	//*/
@@ -225,117 +476,6 @@ class Database {
 		static::$QueryCount++;
 
 		return $result;
-	}
-
-	public function
-	Query($Format,$Argv=false) {
-	/*//
-	@return Nether\Database\Result
-	//*/
-
-		if($Argv && !is_array($Argv) && !is_object($Argv))
-		throw new \Exception('query arguments not object or array.');
-
-		////////////////
-		////////////////
-
-		// build a dataset that directly maps to the bound parameters in the
-		// query with no unused values.
-
-		$Dataset = [];
-		$SQL = (is_object($Format))?($Format->GetSQL()):($Format);
-		$Bound = static::GetNamedArgs($SQL);
-		$Argv = (array)$Argv;
-		
-		foreach($Bound as $Binding) {
-			if(array_key_exists($Binding,$Argv))
-			$Dataset[":{$Binding}"] = $Argv[$Binding];
-
-			elseif(array_key_exists(":{$Binding}",$Argv))
-			$Dataset[$Binding] = $Argv[":{$Binding}"];
-		} unset($Binding);
-
-		////////////////
-		////////////////
-
-		// convert any arrays into bound argument listings. this is mainly to
-		// make things like IN clauses stuper stafe too.
-
-		foreach($Dataset as $Key => $Value) {
-			if(!is_array($Value)) continue;
-
-			$NewBindings = [];
-			foreach($Value as $K => $V) {
-				$NewBindings[] = $Binding = "{$Key}__{$K}";
-				$Dataset[$Binding] = $V;
-			}
-
-			$SQL = str_replace($Key,implode(',',$NewBindings),$SQL);
-			unset($Dataset[$Key]);
-
-		} unset($Key,$Value,$K,$V,$NewBindings,$Binding);
-
-		////////////////
-		////////////////
-
-		$QueryTime = microtime(true);
-
-		if(!($Statement = $this->Driver->Prepare($SQL)))
-		throw new \Exception('SQL statement was unable to prepare.');
-
-		$Result = new Database\Result(
-			$this->Driver,
-			$Statement,
-			$Dataset
-		);
-
-		static::$QueryTime = microtime(true) - $QueryTime;
-		static::$QueryCount++;
-
-		return $Result;
-	}
-
-	////////////////
-	////////////////
-
-	public function NewVerse() {
-	/*//
-	@return Nether\Database\Verse
-	begin a new query verse. remembers the last one used because that seemed
-	like a feature that could be useful later.
-	//*/
-
-		$this->Verse = new Nether\Database\Verse($this);
-		return $this->Verse;
-	}
-
-	public function NewCoda($ClassName) {
-	/*//
-	@return Nether\Database\Coda
-	begin a new query coda.
-	//*/
-
-		$FQCN = "Nether\\Database\\Coda\\{$ClassName}";
-		
-		if(!class_exists($FQCN))
-		throw new \Exception("requested coda {$FQCN} not found.");
-
-		$Coda = new $FQCN;
-		$Coda->SetDatabase($this);
-
-		return $Coda;		
-	}
-
-	static public function
-	GetNamedArgs($Input) {
-	/*//
-	@argv string Input
-	@return array[string, ...]
-	find out all the named arguments that were in the final query.
-	//*/
-
-		preg_match_all('/:([a-z0-9]+)/i',$Input,$Match);
-		return $Match[1];
 	}
 
 }

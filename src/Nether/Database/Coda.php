@@ -62,8 +62,8 @@ abstract class Coda {
 	demand a database to have been set for things like rendering.
 	//*/
 
-		if(!$this->Database)
-		throw new \Exception("No database has been defined for this Coda to use for sanitisation yet.");
+		//if(!$this->Database)
+		//throw new \Exception("No database has been defined for this Coda to use for sanitisation yet.");
 
 		return;		
 	}
