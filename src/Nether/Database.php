@@ -96,6 +96,16 @@ with database things.
 		return $this->Driver;
 	}
 
+	public function
+	GetDriverName() {
+	/*//
+	@type string
+	fetch the name of the pdo driver currently in use.
+	//*/
+
+		return $this->Driver->GetAttribute(PDO::ATTR_DRIVER_NAME);
+	}
+
 	////////////////////////////////
 	////////////////////////////////
 

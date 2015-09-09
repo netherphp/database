@@ -197,7 +197,7 @@ anything can be manually escaped if the coda is building a complex value.
 
 		$this->RequireDatabase();
 
-		$MethodName = "Render_{$this->Database->GetType()}";
+		$MethodName = "Render_{$this->Database->GetDriverName()}";
 
 		if(method_exists($this,$MethodName))
 		return $this->{$MethodName}();
