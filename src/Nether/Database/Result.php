@@ -144,7 +144,7 @@ query was even a success.
 	@deprecated
 	//*/
 
-		return $this->GetID();
+		return $this->GetInsertID();
 	}
 
 	////////////////////////////////
