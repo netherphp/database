@@ -54,7 +54,7 @@ have this class apply them literally if you want, though.
 
 		$this->RequireDatabase();
 
-		if(!$this->Literally)
+		if(!$this->Literally && !is_array($this->Value))
 		return sprintf(
 			'%s %s(%s)',
 			$this->Field,
