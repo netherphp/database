@@ -18,14 +18,33 @@ class Database {
 /*//
 this class provides all the functionality and primary interface for interacting
 with database things.
+
+for simple code you can new Nether\Database($Alias) any time you need access.
+
+for more complex code where you may want to perform dependency injection you
+will want to use Nether\Database::Get($Alias) instead.
 //*/
+
+	static
+	$DBO = [];
+	/*//
+	@type array
+	a singleton array for holding all the Database objects for each unique
+	connection that has been opened. example new Database('Default') will
+	cause DBC['Default'] to contain a reference to that Database instance. you
+	can use this to use a more dependency injection friendly style of coding
+	if you do not want to new Database in each method you need db access. your
+	unit tests can then store a mock in DBC['Default']. see the static Get
+	method for info on how the other half of this works - because you do not
+	want to have to array_key_exists this yourself every time you need db.
+	//*/
 
 	static
 	$DBX = [];
 	/*//
 	@type array
 	a singleton array for holding all the connections opened by the application
-	for reuse.
+	for reuse. everything in this list will be the raw pdo connection.
 	//*/
 
 	static
@@ -74,6 +93,28 @@ with database things.
 	has most likely literally exploded. should have protected that exhaust port
 	better.
 	//*/
+
+	////////////////////////////////
+	////////////////////////////////
+
+	public static function
+	Get($Alias='Default') {
+	/*//
+	@return Nether\Database
+	fetch a database object which has already been created once before. unless
+	there was not, in which case create one, save it, then hand it back. this
+	is the other half of what will make dependency injection work - call this
+	to get your database handle instead of "new Nether\Database" - then in your
+	unit tests you can Nether\Database::$DBO[$Alias] = a mock prior to testing.
+	//*/
+
+		// if we already have an item created here then we shall reuse it.
+		if(array_key_exists($Alias,static::$DBO))
+		return static::$DBO[$Alias];
+
+		// else we will create a new one.
+		return static::$DBO[$Alias] = new static($Alias);
+	}
 
 	////////////////////////////////
 	////////////////////////////////

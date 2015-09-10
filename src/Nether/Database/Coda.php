@@ -169,6 +169,56 @@ anything can be manually escaped if the coda is building a complex value.
 	////////////////////////////////
 	////////////////////////////////
 
+	protected
+	$Data = null;
+	/*//
+	@type mixed
+	the data to use in the coda. this may influence the way the coda
+	builds itself, meaning it may provide a different functionality if you
+	give it an array rather than a string.
+	//*/
+
+	public function
+	GetData() {
+	/*//
+	@return string | null
+	get the data assigned to this coda - but after the coda transforms it
+	for its own purposes.
+	//*/
+
+		return $this->Data;
+	}
+
+	public function
+	SetData($Data) {
+	/*//
+	@argv mixed
+	@return self
+	set data for this coda to look at.
+	//*/
+
+		$this->Data = $Data;
+		return $this;
+	}
+
+	public function
+	ApplyData(&$Output) {
+	/*//
+	@argv reference
+	@return self
+	put the modified data into this specific reference. basically force into
+	the specified reference the updated version of the data that was required
+	to produce this coda. one example is, a coda may have to build a literal
+	clause out of an array like in RegexLike.
+	//*/
+
+		$Output = $this->GetData();
+		return $this;
+	}
+
+	////////////////////////////////
+	////////////////////////////////
+
 	protected final function
 	RequireDatabase() {
 	/*//

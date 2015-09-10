@@ -28,6 +28,16 @@ construct a fragment for like via regular expression.
 	public function
 	SetMountStart($State) {
 	/*//
+	@deprecated
+	@alias FromStart
+	//*/
+
+		return $this->FromStart($State);
+	}
+
+	public function
+	FromStart($State=true) {
+	/*//
 	@argv bool
 	@return self
 	//*/
@@ -58,12 +68,43 @@ construct a fragment for like via regular expression.
 	public function
 	SetMountEnd($State) {
 	/*//
+	@deprecated
+	@alias FromEnd
+	//*/
+
+		return $this->FromEnd($State);
+	}
+
+	public function
+	FromEnd($State=true) {
+	/*//
 	@argv bool
 	@return self
 	//*/
 
-		$this->MountEnd = $State;
+		$this->MountEnd= $State;
 		return $this;
+	}
+
+	////////////////////////////////
+	////////////////////////////////
+
+	public function
+	GetData() {
+	/*//
+	@override Nether\Database\Coda::GetData
+	transform the given data into a regex the query can use.
+	//*/
+
+		return sprintf(
+			'%s%s%s',
+			(($this->MountStart)?('^'):('')),
+			((is_array($this->Data))?
+				('('.implode('|',$this->Data).')'):
+				($this->Data)
+			),
+			(($this->MountEnd)?('$'):(''))
+		);
 	}
 
 	////////////////////////////////
@@ -77,40 +118,11 @@ construct a fragment for like via regular expression.
 
 		$this->RequireDatabase();
 
-		// if the value is a bound parameter we don't need to literally it.
-		if(is_string($this->Value) && strpos($this->Value,':') === 0)
 		return sprintf(
 			'%s %s %s',
 			$this->Field,
 			(($this->Equal)?('RLIKE'):('NOT RLIKE')),
 			$this->Value
-		);
-
-		// but if its another value we do.
-		return $this->RenderLiterally_MySQL();
-	}
-
-	protected function
-	RenderLiterally_MySQL() {
-	/*//
-	@return string
-	//*/
-
-		$Value = sprintf(
-			'%s%s%s',
-			(($this->MountStart)?('^'):('')),
-			((is_array($this->Value))?
-				('('.implode('|',$this->Value).')'):
-				($this->Value)
-			),
-			(($this->MountEnd)?('$'):(''))
-		);
-
-		return sprintf(
-			'%s %s %s',
-			$this->Field,
-			(($this->Equal)?('RLIKE'):('NOT RLIKE')),
-			$this->Database->Escape($Value)
 		);
 	}
 
