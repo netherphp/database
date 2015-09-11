@@ -404,12 +404,22 @@ will want to use Nether\Database::Get($Alias) instead.
 
 		// fetch the named data.
 		foreach($Bound as $Binding) {
-			if(property_exists($Argv,$Binding))
-			$Dataset[":{$Binding}"] = $Argv->{$Binding};
+			if(property_exists($Argv,$Binding)) {
+				$Dataset[":{$Binding}"] = $Argv->{$Binding};
+			}
+			elseif(property_exists($Argv,":{$Binding}")) {
+				$Dataset[":{$Binding}"] = $Argv->{":{$Binding}"};
+			}
+			elseif(substr($Binding,0,2) === '__') {
+				// if this looks like an expanded binding try and find
+				// unexpanded data to go with it.
+				$Key = preg_replace('/__(.+?)__\d+/','\\1',$Binding);
 
-			elseif(property_exists($Argv,":{$Binding}"))
-			$Dataset[":{$Binding}"] = $Argv->{":{$Binding}"};
+				if(!array_key_exists(":{$Key}",$Dataset) && property_exists($Argv,$Key))
+				$Dataset[":{$Key}"] = $Argv->{$Key};
+			}
 		} unset($Binding);
+
 
 		// then the anonymous data.
 		foreach($Argv as $Key => $Arg) {
@@ -423,10 +433,11 @@ will want to use Nether\Database::Get($Alias) instead.
 
 		foreach($Dataset as $Key => $Value) {
 			if(!is_array($Value)) continue;
+			$NewKey = str_replace(':',':__',$Key);
 
 			$NewBindings = [];
 			foreach($Value as $K => $V) {
-				$NewBindings[] = $Binding = "{$Key}__{$K}";
+				$NewBindings[] = $Binding = "{$NewKey}__{$K}";
 				$Dataset[$Binding] = $V;
 			}
 
@@ -461,7 +472,7 @@ will want to use Nether\Database::Get($Alias) instead.
 	find out all the named arguments that were in the final query.
 	//*/
 
-		preg_match_all('/:([a-z0-9]+)/i',$Input,$Match);
+		preg_match_all('/:([a-z0-9_]+)/i',$Input,$Match);
 		return $Match[1];
 	}
 

@@ -37,6 +37,26 @@ query was even a success.
 	////////////////////////////////
 	////////////////////////////////
 
+	protected
+	$Time = null;
+	/*//
+	@type float
+	the time in seconds this query took to execute.
+	//*/
+
+	public function
+	GetTime() {
+	/*//
+	@return int
+	get the time the query took to run.
+	//*/
+
+		return $this->Time;
+	}
+
+	////////////////////////////////
+	////////////////////////////////
+
 	public
 	$Error = null;
 	/*//
@@ -110,12 +130,24 @@ query was even a success.
 			$this->Args
 		) = func_get_args();
 
+		$Time = microtime(true);
+
 		// try to execute the statement.
 		if(!$this->Statement->Execute($this->Args)) {
 			$this->Error = $this->Statement->ErrorInfo()[2];
 			$this->OK = false;
 			return;
 		}
+
+		$this->Time = microtime(true) - $Time;
+
+		/*
+		print_r([
+			'Time' => $this->GetTime(),
+			'Query' => $this->GetQuery(),
+			'Args' => $Args
+		]);
+		*/
 
 		$this->OK = true;
 		$this->Count = $this->Statement->RowCount();
