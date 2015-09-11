@@ -127,6 +127,16 @@ query was even a success.
 	////////////////////////////////
 
 	public function
+	GetQuery() {
+	/*//
+	@return string
+	fetch the query sql that was executed on the server.
+	//*/
+
+		return $this->Statement->queryString;
+	}
+
+	public function
 	GetInsertID() {
 	/*//
 	@return string

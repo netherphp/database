@@ -408,7 +408,7 @@ will want to use Nether\Database::Get($Alias) instead.
 			$Dataset[":{$Binding}"] = $Argv->{$Binding};
 
 			elseif(property_exists($Argv,":{$Binding}"))
-			$Dataset[$Binding] = $Argv->{":{$Binding}"};
+			$Dataset[":{$Binding}"] = $Argv->{":{$Binding}"};
 		} unset($Binding);
 
 		// then the anonymous data.
