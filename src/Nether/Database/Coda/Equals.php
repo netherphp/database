@@ -21,16 +21,29 @@ this one.
 	//*/
 
 	public function
+	GetEqual() {
+	/*//
+	@return bool
+	return if we are currently planning for equality or not.
+	//*/
+
+		return $this->Equal;
+	}
+
+	public function
 	SetEqual($State) {
 	/*//
 	@argv bool
-	@eturn self
+	@return self
 	set if this ia positive or negative comparison.
 	//*/
 
 		$this->Equal = $State;
 		return $this;
 	}
+
+	////////////////////////////////
+	////////////////////////////////
 
 	public function
 	Is() {
@@ -55,7 +68,7 @@ this one.
 	////////////////////////////////
 
 	public function
-	Render_MySQL() {
+	Render_Generic() {
 	/*//
 	provide the rendering for an equality condition.
 	//*/

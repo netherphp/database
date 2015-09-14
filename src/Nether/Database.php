@@ -455,7 +455,7 @@ will want to use Nether\Database::Get($Alias) instead.
 		throw new Nether\Database\Error\QueryPrepareFailure;
 
 		$Result = new Database\Result($this,$Statement,$Dataset);
-		static::$QueryTime = microtime(true) - $QueryTime;
+		static::$QueryTime += microtime(true) - $QueryTime;
 		static::$QueryCount++;
 
 		return $Result;

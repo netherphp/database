@@ -156,6 +156,15 @@ anything can be manually escaped if the coda is building a complex value.
 	}
 
 	public function
+	GetSafeValue() {
+	/*//
+	@returns string | null
+	//*/
+
+		return $this->GetSafeInput($this->Value);
+	}
+
+	public function
 	SetValue($Value) {
 	/*//
 	@argv mixed
@@ -190,6 +199,15 @@ anything can be manually escaped if the coda is building a complex value.
 	}
 
 	public function
+	GetSafeData() {
+	/*//
+	@returns tring | null
+	//*/
+
+		return $this->GetSafeInput($this->Data);
+	}
+
+	public function
 	SetData($Data) {
 	/*//
 	@argv mixed
@@ -212,8 +230,36 @@ anything can be manually escaped if the coda is building a complex value.
 	clause out of an array like in RegexLike.
 	//*/
 
-		$Output = $this->GetData();
+
+		$Output = $this->GetSafeData();
 		return $this;
+	}
+
+	////////////////////////////////
+	////////////////////////////////
+
+	public function
+	IsValueBinding() {
+
+		return (is_string($this->Value) && strpos($this->Value,':') === 0);
+	}
+
+	public function
+	GetSafeInput($Input) {
+	/*//
+	given various types of inputs, transform it to be safe for query
+	injection.
+	//*/
+
+		if(is_array($Input) || is_object($Input)) {
+			foreach($Input as $Key => $Value)
+			$Input[$Key] = $this->Database->Escape($Value);
+
+			return $Input;
+		}
+
+		else
+		return $this->Database->Escape($Input);
 	}
 
 	////////////////////////////////
@@ -247,16 +293,24 @@ anything can be manually escaped if the coda is building a complex value.
 
 		$this->RequireDatabase();
 
+		// first:
+		// try and use a method that is specific to the database server in
+		// case the syntax varied.
 		$MethodName = "Render_{$this->Database->GetDriverName()}";
+		if(method_exists($this,$MethodName)) return $this->{$MethodName}();
 
-		if(method_exists($this,$MethodName))
-		return $this->{$MethodName}();
+		// then:
+		// try and use a method that follows the SQL standards such that it
+		// should work on almost all server types.
+		$MethodName = "Render_Generic";
+		if(method_exists($this,$MethodName)) return $this->{$MethodName}();
 
-		else
+		// else:
+		// fail for having no idea what to do.
 		return sprintf(
 			'-- Coda %s does not currently support %s (%s)',
 			static::class,
-			$this->Type,
+			$this->Database->GetDriverName(),
 			$MethodName
 		);
 	}

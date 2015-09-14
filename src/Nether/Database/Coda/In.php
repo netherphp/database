@@ -13,18 +13,24 @@ have this class apply them literally if you want, though.
 //*/
 
 	public function
-	Render_MySQL() {
+	Render_Generic() {
 	/*//
 	@return string
 	//*/
 
 		$this->RequireDatabase();
 
+		if($this->IsValueBinding()) $Value = $this->Value;
+		else $Value = $this->GetSafeValue();
+
+		if(is_array($Value) || is_object($Value))
+		$Value = implode(',',(array)$Value);
+
 		return sprintf(
 			'%s %s(%s)',
 			$this->Field,
 			(($this->Equal)?('IN'):('NOT IN')),
-			$this->Value
+			$Value
 		);
 	}
 
