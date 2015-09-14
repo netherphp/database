@@ -20,17 +20,18 @@ have this class apply them literally if you want, though.
 
 		$this->RequireDatabase();
 
-		if($this->IsValueBinding()) $Value = $this->Value;
-		else $Value = $this->GetSafeValue();
-
-		if(is_array($Value) || is_object($Value))
-		$Value = implode(',',(array)$Value);
+		$QueryValue = $this->GetDataBindings();
+		if(!$QueryValue) $QueryValue = $this->GetSafeValue();
 
 		return sprintf(
 			'%s %s(%s)',
 			$this->Field,
-			(($this->Equal)?('IN'):('NOT IN')),
-			$Value
+			(($this->Equal)?
+				('IN'):
+				('NOT IN')),
+			((is_array($QueryValue) || is_object($QueryValue))?
+				(implode(',',(array)$QueryValue)):
+				($QueryValue))
 		);
 	}
 

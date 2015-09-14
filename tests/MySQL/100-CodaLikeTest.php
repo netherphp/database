@@ -5,7 +5,7 @@ require_once(sprintf(
 	dirname(__FILE__)
 ));
 
-class CodaInTest
+class CodaLikeTest
 extends PHPUnit_Framework_TestCase {
 
 	use GetDatabaseMock;
@@ -23,14 +23,16 @@ extends PHPUnit_Framework_TestCase {
 	demonstrates the preferred way to use this coda.
 	//*/
 
-		$Coda = (new Nether\Database\Coda\In)
-		->SetDatabase($this->GetDatabaseMock())
-		->SetField('ObjectID');
 
-		$Coda->SetValue(':ObjectID');
+		$Coda = (new Nether\Database\Coda\Like)
+		->SetDatabase($this->GetDatabaseMock())
+		->SetField('ObjectName')
+		->SetValue(':ObjectName');
+
 		$this->AssertEquals(
-			'ObjectID IN(:ObjectID)',
-			$Coda->Render()
+			'(ObjectName LIKE :ObjectName)',
+			$Coda->Render(),
+			'single binding'
 		);
 
 		return;
@@ -44,20 +46,19 @@ extends PHPUnit_Framework_TestCase {
 	that is to be used as a bound parametre.
 	//*/
 
-		$Coda = (new Nether\Database\Coda\In)
+		$Coda = (new Nether\Database\Coda\Like)
 		->SetDatabase($this->GetDatabaseMock())
-		->SetField('ObjectID')
+		->SetField('ObjectName')
 		->Not();
 
-		$Coda->SetValue(':ObjectID');
+		$Coda->SetValue(':ObjectName');
 		$this->AssertEquals(
-			'ObjectID NOT IN(:ObjectID)',
+			'(ObjectName NOT LIKE :ObjectName)',
 			$Coda->Render()
 		);
 
 		return;
 	}
-
 
 	/** @test */
 	public function
@@ -69,13 +70,13 @@ extends PHPUnit_Framework_TestCase {
 	the next test, Complex Equality With Bondage Using Data.
 	//*/
 
-		$Coda = (new Nether\Database\Coda\In)
+		$Coda = (new Nether\Database\Coda\Like)
 		->SetDatabase($this->GetDatabaseMock())
-		->SetField('ObjectID')
-		->SetValue([':__ObjectID__0',':__ObjectID__1',':__ObjectID__2']);
+		->SetField('ObjectName')
+		->SetValue([':__ObjectName__0',':__ObjectName__1',':__ObjectName__2']);
 
 		$this->AssertEquals(
-			'ObjectID IN(:__ObjectID__0,:__ObjectID__1,:__ObjectID__2)',
+			'(ObjectName LIKE :__ObjectName__0 OR ObjectName LIKE :__ObjectName__1 OR ObjectName LIKE :__ObjectName__2)',
 			$Coda->Render()
 		);
 
@@ -92,14 +93,14 @@ extends PHPUnit_Framework_TestCase {
 	this coda.
 	//*/
 
-		$Coda = (new Nether\Database\Coda\In)
+		$Coda = (new Nether\Database\Coda\Like)
 		->SetDatabase($this->GetDatabaseMock())
-		->SetField('ObjectID')
-		->SetValue(':ObjectID')
+		->SetField('ObjectName')
+		->SetValue(':ObjectName')
 		->SetData([42,69,1080]);
 
 		$this->AssertEquals(
-			'ObjectID IN(:__ObjectID__0,:__ObjectID__1,:__ObjectID__2)',
+			'(ObjectName LIKE :__ObjectName__0 OR ObjectName LIKE :__ObjectName__1 OR ObjectName LIKE :__ObjectName__2)',
 			$Coda->Render()
 		);
 
@@ -114,21 +115,21 @@ extends PHPUnit_Framework_TestCase {
 	values that are not bound parameters.
 	//*/
 
-		$Coda = (new Nether\Database\Coda\In)
+		$Coda = (new Nether\Database\Coda\Like)
 		->SetDatabase($this->GetDatabaseMock())
-		->SetField('ObjectID');
+		->SetField('ObjectName');
 
 		// with single values.
 		$Coda->SetValue(42);
 		$this->AssertEquals(
-			'ObjectID IN(\'42\')',
+			'(ObjectName LIKE \'42\')',
 			$Coda->Render()
 		);
 
 		// with lists of values.
 		$Coda->SetValue([42,69,1080]);
 		$this->AssertEquals(
-			'ObjectID IN(\'42\',\'69\',\'1080\')',
+			'(ObjectName LIKE \'42\' OR ObjectName LIKE \'69\' OR ObjectName LIKE \'1080\')',
 			$Coda->Render()
 		);
 	}

@@ -204,7 +204,7 @@ anything can be manually escaped if the coda is building a complex value.
 	@returns tring | null
 	//*/
 
-		return $this->GetSafeInput($this->Data);
+		return $this->GetSafeInput($this->GetData());
 	}
 
 	public function
@@ -231,7 +231,7 @@ anything can be manually escaped if the coda is building a complex value.
 	//*/
 
 
-		$Output = $this->GetSafeData();
+		$Output = $this->GetData();
 		return $this;
 	}
 
@@ -239,9 +239,25 @@ anything can be manually escaped if the coda is building a complex value.
 	////////////////////////////////
 
 	public function
-	IsValueBinding() {
+	IsValueBinding($Input=null) {
 
-		return (is_string($this->Value) && strpos($this->Value,':') === 0);
+		if(!$Input) $Input = $this->Value;
+
+		// is string like :this then yes
+		if(is_string($Input) && strpos($Input,':') === 0)
+		return true;
+
+		// if entire list of :this then yes.
+		if(is_array($Input)) {
+			$All = true;
+			foreach($Input as $Value) {
+				if(!$this->IsValueBinding($Value))
+				$All = false;
+			}
+			return $All;
+		}
+
+		return false;
 	}
 
 	public function
@@ -258,8 +274,34 @@ anything can be manually escaped if the coda is building a complex value.
 			return $Input;
 		}
 
-		else
 		return $this->Database->Escape($Input);
+	}
+
+	public function
+	GetDataBindings() {
+
+		// without a valid binding value skip this.
+		if(!$this->IsValueBinding() && !$this->Data)
+		return false;
+
+		// if a list of bindings, return it without bothering our data.
+		if(is_array($this->Value) || is_object($this->Value))
+		return $this->Value;
+
+		// return the one binding we have that has no data.
+		if(is_string($this->Value) && (!$this->Data || count($this->Data) == 1))
+		return [$this->Value];
+
+		// expand the binding into a list of bindings.
+		$Output = [];
+		foreach(array_values($this->Data) as $Key => $Value)
+		$Output[] = sprintf(
+			':__%s__%d',
+			trim($this->Value,':'),
+			$Key
+		);
+
+		return $Output;
 	}
 
 	////////////////////////////////
