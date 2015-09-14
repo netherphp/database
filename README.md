@@ -1,6 +1,7 @@
 Nether Database
 =============================================================================
 [![nether.io](https://img.shields.io/badge/nether-database-C661D2.svg)](http://nether.io/database/)
+[![Build Status](https://travis-ci.org/netherphp/database.svg)](https://travis-ci.org/netherphp/database)
 [![Packagist](https://img.shields.io/packagist/v/netherphp/database.svg)](https://packagist.org/packages/netherphp/database)
 [![Packagist](https://img.shields.io/packagist/dt/netherphp/database.svg)](https://packagist.org/packages/netherphp/database)
 
