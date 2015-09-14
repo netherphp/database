@@ -351,7 +351,7 @@ anything can be manually escaped if the coda is building a complex value.
 		// fail for having no idea what to do.
 		return sprintf(
 			'-- Coda %s does not currently support %s (%s)',
-			static::class,
+			__CLASS__,
 			$this->Database->GetDriverName(),
 			$MethodName
 		);
