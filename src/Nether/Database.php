@@ -8,7 +8,8 @@ use \PDO;
 ///////////////////////////////////////////////////////////////////////////////
 
 Nether\Option::Define([
-	'nether-database-connections' => []
+	'nether-database-connections' => [],
+	'nether-database-query-log'   => false
 ]);
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -92,6 +93,13 @@ will want to use Nether\Database::Get($Alias) instead.
 	connected to. a high value in this field probably means your cache layer
 	has most likely literally exploded. should have protected that exhaust port
 	better.
+	//*/
+
+	static
+	$QueryLog = [];
+	/*//
+	@type array
+	an array holding all the log entries thusfar if enabled.
 	//*/
 
 	////////////////////////////////
@@ -413,6 +421,16 @@ will want to use Nether\Database::Get($Alias) instead.
 		throw new Nether\Database\Error\QueryPrepareFailure;
 
 		$Result = new Database\Result($this,$Statement,$Dataset);
+		if(Nether\Option::Get('nether-database-query-log')) {
+			static::$QueryLog[] = (object)[
+				'Time' => round($Result->GetTime(),4),
+				'Query' => $Result->GetQuery(),
+				'Input' => $Result->GetArgs(),
+				'Count' => $Result->GetCount(),
+				'Trace' => static::GetDebugTrace()
+			];
+		}
+
 		static::$QueryTime += microtime(true) - $QueryTime;
 		static::$QueryCount++;
 
@@ -511,6 +529,32 @@ will want to use Nether\Database::Get($Alias) instead.
 
 		preg_match_all('/:([a-z0-9_]+)/i',$Input,$Match);
 		return $Match[1];
+	}
+
+	static public function
+	GetDebugTrace() {
+	/*//
+	fetch some info we can use in the query log to descirbe where a query was
+	made from.
+	//*/
+
+		$Result = debug_backtrace();
+		$Output = [];
+
+		array_shift($Result);
+		array_shift($Result);
+		foreach($Result as $Trace) {
+			if(array_key_exists('class',$Trace) && array_key_exists('object',$Trace))
+			$Output[] = "{$Trace['class']}->{$Trace['function']}";
+
+			elseif(array_key_exists('class',$Trace))
+			$Output[] = "{$Trace['class']}::{$Trace['function']}";
+
+			else
+			$Output[] = $Trace['function'];
+		}
+
+		return $Output;
 	}
 
 	////////////////////////////////

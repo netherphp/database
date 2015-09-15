@@ -34,6 +34,16 @@ query was even a success.
 	the list of arguments to use in the statement.
 	//*/
 
+	public function
+	GetArgs() {
+	/*//
+	@return array|null
+	get the data used as query arugments.
+	//*/
+
+		return $this->Args;
+	}
+
 	////////////////////////////////
 	////////////////////////////////
 
