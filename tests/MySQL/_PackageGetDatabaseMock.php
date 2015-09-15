@@ -7,6 +7,10 @@ trait GetDatabaseMock {
 
 		$DB = $this
 		->GetMockBuilder('Nether\Database')
+		->SetMethods([
+			'GetDriverName',
+			'Escape'
+		 ])
 		->DisableOriginalConstructor()
 		->GetMock();
 

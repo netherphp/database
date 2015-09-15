@@ -398,53 +398,11 @@ will want to use Nether\Database::Get($Alias) instead.
 		// build a dataset that directly maps to the bound parameters in the
 		// query with no unused values.
 
-		$Dataset = [];
 		$SQL = (is_object($Format))?("{$Format}"):($Format);
-		$Bound = static::GetNamedArgs($SQL);
+		$Dataset = [];
 
-		// fetch the named data.
-		foreach($Bound as $Binding) {
-			if(property_exists($Argv,$Binding)) {
-				$Dataset[":{$Binding}"] = $Argv->{$Binding};
-			}
-			elseif(property_exists($Argv,":{$Binding}")) {
-				$Dataset[":{$Binding}"] = $Argv->{":{$Binding}"};
-			}
-			elseif(substr($Binding,0,2) === '__') {
-				// if this looks like an expanded binding try and find
-				// unexpanded data to go with it.
-				$Key = preg_replace('/__(.+?)__\d+/','\\1',$Binding);
-
-				if(!array_key_exists(":{$Key}",$Dataset) && property_exists($Argv,$Key))
-				$Dataset[":{$Key}"] = $Argv->{$Key};
-			}
-		} unset($Binding);
-
-
-		// then the anonymous data.
-		foreach($Argv as $Key => $Arg) {
-			if(is_int($Key))
-			$Dataset[] = $Arg;
-		} unset($Key,$Arg);
-
-		////////
-		// convert any arrays into bound argument listings. this is mainly to
-		// make things like IN clauses stuper stafe too.
-
-		foreach($Dataset as $Key => $Value) {
-			if(!is_array($Value)) continue;
-			$NewKey = str_replace(':',':__',$Key);
-
-			$NewBindings = [];
-			foreach($Value as $K => $V) {
-				$NewBindings[] = $Binding = "{$NewKey}__{$K}";
-				$Dataset[$Binding] = $V;
-			}
-
-			$SQL = str_replace($Key,implode(',',$NewBindings),$SQL);
-			unset($Dataset[$Key]);
-
-		} unset($Key,$Value,$K,$V,$NewBindings,$Binding);
+		$this->Query_BuildDataset($SQL,$Argv,$Dataset);
+		$this->Query_ExpandDataset($SQL,$Argv,$Dataset);
 
 		////////
 		// and then perform the query.
@@ -459,6 +417,85 @@ will want to use Nether\Database::Get($Alias) instead.
 		static::$QueryCount++;
 
 		return $Result;
+	}
+
+	public function
+	Query_BuildDataset(&$SQL,&$Argv,&$Dataset) {
+	/*//
+	fetch an array which describes all the bound data in this query and
+	relate it to the arguments which were passed to query. expands arrays
+	that are bound to a single param into multiple params, and detects
+	pre-expanded arguments and binds them to their argument.
+	//*/
+
+		$Bound = static::GetNamedArgs($SQL);
+		$Dataset = [];
+
+		////////////////////////////////
+		// handle named arguments
+
+		foreach($Bound as $Binding) {
+
+			// if a argument without the prefix was passed then auto prefix
+			// it in the dataset to match the binding.
+			if(property_exists($Argv,$Binding)) {
+				$Dataset[":{$Binding}"] = $Argv->{$Binding};
+			}
+
+			// if a 1:1 binding to arugment was found then just use it flat.
+			elseif(property_exists($Argv,":{$Binding}")) {
+				$Dataset[":{$Binding}"] = $Argv->{":{$Binding}"};
+			}
+
+			// if an expanded binding was found, find the common argument
+			// that it should match with for data expansion later.
+			elseif(substr($Binding,0,2) === '__') {
+				$Key = preg_replace('/__(.+?)__\d+/','\\1',$Binding);
+
+				if(!array_key_exists(":{$Key}",$Dataset) && property_exists($Argv,$Key))
+				$Dataset[":{$Key}"] = $Argv->{$Key};
+
+				elseif(!array_key_exists(":{$Key}",$Dataset) && property_exists($Argv,":{$Key}"))
+				$Dataset[":{$Key}"] = $Argv->{":{$Key}"};
+			}
+
+		} unset($Binding);
+
+		////////////////////////////////
+		// handle anonymous arguments.
+
+		foreach($Argv as $Key => $Arg) {
+			if(is_int($Key))
+			$Dataset[] = $Arg;
+		} unset($Key,$Arg);
+
+		return $Dataset;
+	}
+
+	public function
+	Query_ExpandDataset(&$SQL,&$Argv,&$Dataset) {
+	/*//
+	iterate over a dataset to find any arrays that need to be expanded into
+	flat values to match up with any expanded bindings. so if there is a
+	parameter named :ObjectID and it is an array in the dataset, it will be
+	expanded into :__ObjectID__0, :__ObjectID__1, etc.
+	//*/
+
+		foreach($Dataset as $Key => $Value) {
+			if(!is_array($Value)) continue;
+			$NewKey = str_replace(':',':__',$Key);
+
+			$NewBindings = [];
+			foreach($Value as $K => $V) {
+				$NewBindings[] = $Binding = "{$NewKey}__{$K}";
+				$Dataset[$Binding] = $V;
+			}
+
+			$SQL = str_replace($Key,implode(',',$NewBindings),$SQL);
+			unset($Dataset[$Key]);
+		} unset($Key,$Value,$K,$V,$NewBindings,$Binding);
+
+		return $Dataset;
 	}
 
 	////////////////////////////////
