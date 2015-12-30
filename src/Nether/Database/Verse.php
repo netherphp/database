@@ -29,13 +29,21 @@ class Verse {
 	const SortAsc = 1;
 	const SortDesc = 2;
 
-	protected $Compiler;
+	protected
+	$Compiler = null;
 	/*//
 	@type string
 	the name of the class that should compile the query into an SQL string.
 	//*/
 
-	protected $Database;
+	////////////////
+	////////////////
+
+	// database passthru stuffs. these are mainly to simplify how you write
+	// your code that needs to deal with the database.
+
+	protected
+	$Database = null;
 	/*//
 	@type string
 	the type that defines the type of database we are going to compile to.
@@ -43,18 +51,49 @@ class Verse {
 	//*/
 
 	public function
-	GetDatabase() { return $this->Database; }
+	GetDatabase() {
+	/*//
+	@return Nether\Database
+	//*/
+
+		return $this->Database;
+	}
 
 	public function
-	SetDatabase(Nether\Database $DB) { $this->Database = $DB; return $this; }
+	SetDatabase(Nether\Database $DB) {
+	/*//
+	@argv Nether\Database DB
+	@return self
+	//*/
+
+		$this->Database = $DB;
+		return $this;
+	}
 
 	public function
 	NewCoda($ClassName) {
+	/*//
+	@argv String ClassName
+	pass the request for a new coda to the underlying database.
+	//*/
 
 		if(!$this->Database instanceof Nether\Database)
 		throw new \Exception('unable to create coda without a database assigned to the verse.');
 
 		return $this->Database->NewCoda($ClassName);
+	}
+
+	public function
+	Query($Argv=[]) {
+	/*//
+	@argv String ClassName
+	pass the request to query to the underlying database.
+	//*/
+
+		if(!$this->Database instanceof Nether\Database)
+		throw new Exception('unable to query withotu a database assigned to the verse.');
+
+		return $this->Database->Query($this,$Argv);
 	}
 
 	////////////////
