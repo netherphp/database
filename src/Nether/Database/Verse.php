@@ -99,7 +99,8 @@ class Verse {
 	////////////////
 	////////////////
 
-	public function __construct($DB=null) {
+	public function
+	__Construct($DB=null) {
 
 		if($DB) $this->Database = $DB;
 
@@ -108,7 +109,8 @@ class Verse {
 		return;
 	}
 
-	public function __toString() {
+	public function
+	__ToString() {
 	/*//
 	when used in a string context this object should automatically compile the
 	query we have generated.
@@ -120,19 +122,44 @@ class Verse {
 	////////////////
 	////////////////
 
-	protected $Pretty = false;
+	protected
+	$Pretty = false;
 	/*//
 	@type bool
 	make the query a little more readable for human eyes.
 	//*/
 
-	protected $Mode;
+	public function
+	GetPretty() {
+		return $this->Pretty;
+	}
+
+	public function
+	SetPretty($Bool) {
+		$this->Pretty = (bool)$Bool;
+		return $this;
+	}
+
+	////////////////
+	////////////////
+
+	protected
+	$Mode = 0;
 	/*//
 	@type int
 	define the type of query we are going to produce. (select, insert, etc.)
 	//*/
 
-	protected $Fields;
+	public function
+	GetMode() {
+		return $this->Mode;
+	}
+
+	////////////////
+	////////////////
+
+	protected
+	$Fields = null;
 	/*//
 	@type array
 	store field definitions for various query types. select will use it as a
@@ -140,105 +167,160 @@ class Verse {
 	pair for the set/value statements.
 	//*/
 
-	protected $Tables;
+	public function
+	GetFields() {
+		return $this->Fields;
+	}
+
+	////////////////
+	////////////////
+
+	protected
+	$Tables = null;
 	/*//
 	@type array
 	store the table defintions for various query types. all query types will
 	use this as a flat list of tables to hit.
 	//*/
 
-	protected $Joins;
+	public function
+	GetTables() {
+		return $this->Tables;
+	}
+
+	////////////////
+	////////////////
+
+	protected
+	$Joins = null;
 	/*//
 	@type array
 	store the join definitions for various query types. it will contain a list
 	of objects that better define each join.
 	//*/
 
-	protected $Conditions;
+	public function
+	GetJoins() {
+		return $this->Joins;
+	}
+
+	////////////////
+	////////////////
+
+	protected
+	$Conditions = null;
 	/*//
 	@type array
 	store the conditions for various query types. it will contain a list of all
 	the things for where clauses.
 	//*/
 
-	protected $Sorts;
+	public function
+	GetConditions() {
+		return $this->Conditions;
+	}
+
+	////////////////
+	////////////////
+
+	protected
+	$Sorts = null;
 	/*//
 	@type array
 	store the sort parameters for queries. it will contain a list of all the
 	things for order by clauses.
 	//*/
 
-	protected $Groups;
+	public function
+	GetSorts() {
+		return $this->Sorts;
+	}
+
+	////////////////
+	////////////////
+
+	protected
+	$Groups = null;
 	/*//
 	@type array
 	store the grouping conditions for queries. it will contain a list of all the
 	things for group by clauses.
 	//*/
 
-	protected $Limit;
+	public function
+	GetGroups() {
+		return $this->Groups;
+	}
+
+	////////////////
+	////////////////
+
+	protected
+	$Limit = 0;
 	/*//
 	@type int
 	store the count for limit clauses.
 	//*/
 
-	protected $Offset;
+	public function
+	GetLimit() {
+		return (int)$this->Limit;
+	}
+
+	////////////////
+	////////////////
+
+	protected
+	$Offset = 0;
 	/*//
 	@type int
 	store the count for offset clauses.
 	//*/
 
-	public function GetMode() { return $this->Mode; }
-	public function GetFields() { return $this->Fields; }
-	public function GetTables() { return $this->Tables; }
-	public function GetJoins() { return $this->Joins; }
-	public function GetConditions() { return $this->Conditions; }
-	public function GetSorts() { return $this->Sorts; }
-	public function GetGroups() { return $this->Groups; }
-	public function GetLimit() { return (int)$this->Limit; }
-	public function GetOffset() { return (int)$this->Offset; }
-
-	public function SetPretty($bool) {
-		$this->Pretty = (bool)$bool;
-		return $this;
+	public function
+	GetOffset() {
+		return (int)$this->Offset;
 	}
 
 	////////////////
 	////////////////
 
-	public function GetSQL() {
+	public function
+	GetSQL() {
 	/*//
 	@return string
 	fetch the compiled sql query that we have described in this verse.
 	//*/
 
-		$sql = new $this->Compiler($this);
-		$string = $sql->Get();
+		$SQL = new $this->Compiler($this);
+		$String = $SQL->Get();
 
-		if($this->Pretty) {
-			$string = preg_replace(
-				'/ (FROM|INTO|WHERE|AND|OR|LIMIT|OFFSET|ORDER|GROUP|LEFT|RIGHT|NATURAL|INNER|VALUES)/',
-				"\n\\1",
-				$string
-			);
-		}
+		if($this->Pretty)
+		$String = preg_replace(
+			'/ (FROM|INTO|WHERE|AND|OR|LIMIT|OFFSET|ORDER|GROUP|LEFT|RIGHT|NATURAL|INNER|VALUES)/',
+			"\n\\1",
+			$String
+		);
 
-		return $string;
+		return $String;
 	}
 
-	public function GetNamedArgs() {
+	public function
+	GetNamedArgs() {
 	/*//
 	@deprecated moved
 	@return array[string, ...]
 	find out all the named arguments that were in the final query.
 	//*/
 
-		$sql = $this->GetSQL();
+		$SQL = $this->GetSQL();
 
-		preg_match_all('/:([a-z0-9]+)/i',$sql,$match);
-		return $match[1];
+		preg_match_all('/:([a-z0-9]+)/i',$SQL,$Match);
+		return $Match[1];
 	}
 
-	protected function ResetQueryProperties() {
+	protected function
+	ResetQueryProperties() {
 	/*//
 	reset all the properties of this verse incase this instance is reused to
 	generate multiple sql queries.
@@ -256,7 +338,8 @@ class Verse {
 		return;
 	}
 
-	protected function MergeValues(array &$pool,$addl) {
+	protected function
+	MergeValues(array &$Pool, $Addl) {
 	/*//
 	@argv array Pool, mixed Additions
 	merge values into the pool. such description, wow.
@@ -267,30 +350,34 @@ class Verse {
 	not then it is just appended to the array pool.
 	//*/
 
-		if(is_array($addl)) {
-			foreach($addl as $key => $query) {
-				if(is_numeric($key)) $pool[] = $query;
-				else $pool[$key] = $query;
+		if(is_array($Addl)) {
+			foreach($Addl as $Key => $Query) {
+				if(is_numeric($Key)) $Pool[] = $Query;
+				else $Pool[$Key] = $Query;
 			}
 		} else {
-			$pool[] = $addl;
+			$Pool[] = $Addl;
 		}
 
 		return;
 	}
 
-	protected function MergeFlaggedValues(array &$pool,$addl,$flag) {
+	protected function
+	MergeFlaggedValues(Array &$Pool, $Addl, $Flag) {
 	/*//
 	@argv array Pool, mixed Additions, Int Flags
 	//*/
 
-		if(is_array($addl)) {
-			foreach($addl as $key => $query) {
-				if(is_numeric($key)) $pool[] = (object)[ 'Flags'=>$flag, 'Query'=>$query ];
-				else $pool[$key] = (object)[ 'Flags'=>$flag, 'Query'=>$query ];
+		if(is_array($Addl)) {
+			foreach($Addl as $Key => $Query) {
+				if(is_numeric($Key))
+				$Pool[] = (object)[ 'Flags'=>$Flag, 'Query'=>$Query ];
+
+				else
+				$Pool[$Key] = (object)[ 'Flags'=>$Flag, 'Query'=>$Query ];
 			}
 		} else {
-			$pool[] = (object)[ 'Flags'=>$flag, 'Query'=>$addl ];
+			$Pool[] = (object)[ 'Flags'=>$Flag, 'Query'=>$Addl ];
 		}
 
 		return;
@@ -299,7 +386,8 @@ class Verse {
 	////////////////
 	////////////////
 
-	public function Select($arg=null) {
+	public function
+	Select($Arg=null) {
 	/*//
 	@argv string Table
 	@argv array TableList
@@ -310,12 +398,13 @@ class Verse {
 
 		$this->Mode = static::ModeSelect;
 		$this->ResetQueryProperties();
-		$this->MergeValues($this->Tables,$arg);
+		$this->MergeValues($this->Tables,$Arg);
 
 		return $this;
 	}
 
-	public function Update($arg=null) {
+	public function
+	Update($Arg=null) {
 	/*//
 	@argv string Table
 	@argv array TableList
@@ -326,12 +415,13 @@ class Verse {
 
 		$this->Mode = static::ModeUpdate;
 		$this->ResetQueryProperties();
-		$this->MergeValues($this->Tables,$arg);
+		$this->MergeValues($this->Tables,$Arg);
 
 		return $this;
 	}
 
-	public function Insert($arg=null) {
+	public function
+	Insert($Arg=null) {
 	/*//
 	@argv string Table
 	@return self
@@ -342,17 +432,18 @@ class Verse {
 		$this->Mode = static::ModeInsert;
 		$this->ResetQueryProperties();
 
-		if($arg) {
-			if(!is_string($arg))
+		if($Arg) {
+			if(!is_string($Arg))
 			throw new Exception('INSERT only expects one table.');
 
-			$this->Tables = [$arg];
+			$this->Tables = [ $Arg ];
 		}
 
 		return $this;
 	}
 
-	public function Delete($arg=null) {
+	public function
+	Delete($Arg=null) {
 	/*//
 	@argv string Table
 	@argv array TableList
@@ -363,7 +454,7 @@ class Verse {
 
 		$this->Mode = static::ModeDelete;
 		$this->ResetQueryProperties();
-		$this->MergeValues($this->Tables,$arg);
+		$this->MergeValues($this->Tables,$Arg);
 
 		return $this;
 	}
@@ -371,7 +462,8 @@ class Verse {
 	////////////////
 	////////////////
 
-	public function Table($arg) {
+	public function
+	Table($Arg) {
 	/*//
 	@argv string Table
 	@argv string TableList
@@ -379,29 +471,32 @@ class Verse {
 	define what tables this verse should muck around with.
 	//*/
 
-		$this->MergeValues($this->Tables,$arg);
+		$this->MergeValues($this->Tables,$Arg);
 		return $this;
 	}
 
-	public function From($arg) {
+	public function
+	From($Arg) {
 	/*//
 	@alias self::Table
 	provide bc and context for select/delete.
 	//*/
 
-		return $this->Table($arg);
+		return $this->Table($Arg);
 	}
 
-	public function Into($arg) {
+	public function
+	Into($Arg) {
 	/*//
 	@alias self::Table
 	provide bc and context for update/insert.
 	//*/
 
-		return $this->Table($arg);
+		return $this->Table($Arg);
 	}
 
-	public function Join($arg,$flags=self::JoinLeft) {
+	public function
+	Join($Arg, $Flags=self::JoinLeft) {
 	/*//
 	@argv string Table, int JoinFlags default self::JoinLeft
 	@argv array TableList, int JoinFlags default self::JoinLeft
@@ -410,11 +505,12 @@ class Verse {
 	joined to the main query.
 	//*/
 
-		$this->MergeFlaggedValues($this->Joins,$arg,$flags);
+		$this->MergeFlaggedValues($this->Joins,$Arg,$Flags);
 		return $this;
 	}
 
-	public function Where($arg,$flags=self::WhereAnd) {
+	public function
+	Where($Arg, $Flags=self::WhereAnd) {
 	/*//
 	@argv string Condition, int CondFlags default self::WhereAnd
 	@argv array CondList, int CondFlags default self::WhereAnd
@@ -424,11 +520,12 @@ class Verse {
 	sql compiler yet.
 	//*/
 
-		$this->MergeFlaggedValues($this->Conditions,$arg,$flags);
+		$this->MergeFlaggedValues($this->Conditions,$Arg,$Flags);
 		return $this;
 	}
 
-	public function Sort($arg,$flags=self::SortAsc) {
+	public function
+	Sort($Arg, $Flags=self::SortAsc) {
 	/*//
 	@argv string Sort, int SortFlags default self::OrderAsc
 	@argv array SortList, int SortFlags default self::OrderAnd
@@ -438,61 +535,67 @@ class Verse {
 	sql compiler yet.
 	//*/
 
-		$this->MergeFlaggedValues($this->Sorts,$arg,$flags);
+		$this->MergeFlaggedValues($this->Sorts,$Arg,$Flags);
 		return $this;
 	}
 
-	public function OrderBy($arg,$flags=self::OrderAsc) {
+	public function
+	OrderBy($Arg, $Flags=self::OrderAsc) {
 	/*//
 	@alias self::Sort
 	provide bc and context for select queries.
 	//*/
 
-		return $this->Sort($arg,$flags);
+		return $this->Sort($Arg,$Flags);
 	}
 
-	public function Group($arg) {
+	public function
+	Group($Arg) {
 	/*//
 	@argv string GroupCondition
 	@argv string GroupConditionList
 	//*/
 
-		$this->MergeValues($this->Groups,$arg);
+		$this->MergeValues($this->Groups,$Arg);
 		return $this;
 	}
 
-	public function GroupBy($arg) {
+	public function
+	GroupBy($Arg) {
 	/*//
 	@alias self::Group
 	provide bc and context for grouping.
 	//*/
 
-		return $this->Group($arg);
+		return $this->Group($Arg);
 	}
 
-	public function Limit($count) {
+	public function
+	Limit($Count) {
 	/*//
 	@argv int Count
 	@return self
 	how many items to limit the result of this verse by.
 	//*/
 
-		$this->Limit = (int)$count;
+		$this->Limit = (int)$Count;
 		return $this;
 	}
 
-	public function Offset($offset) {
+	public function
+	Offset($Offset) {
 	/*//
 	@argv int Offset
 	@return self
 	how many items to offset the result of this verse by.
 	//*/
 
-		$this->Offset = (int)$offset;
+		$this->Offset = (int)$Offset;
 		return $this;
 	}
 
-	public function Fields($arg) {
+	public function
+	Fields($Arg) {
 	/*//
 	@argv array FieldList
 	define what fields this verse should operate against. some queries (select)
@@ -500,26 +603,28 @@ class Verse {
 	list.
 	//*/
 
-		$this->MergeValues($this->Fields,$arg);
+		$this->MergeValues($this->Fields,$Arg);
 		return $this;
 	}
 
-	public function Values($argv) {
+	public function
+	Values($Argv) {
 	/*//
 	@alias self::Fields
 	provide bc and context for insert queries.
 	//*/
 
-		return $this->Fields($argv);
+		return $this->Fields($Argv);
 	}
 
-	public function Set($argv) {
+	public function
+	Set($Argv) {
 	/*//
 	@alias self::Fields
 	provide bc and context for update queries.
 	//*/
 
-		return $this->Fields($argv);
+		return $this->Fields($Argv);
 	}
 
 }
