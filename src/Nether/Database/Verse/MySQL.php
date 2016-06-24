@@ -158,15 +158,26 @@ class MySQL extends Compiler {
 	generate an INSERT style query.
 	//*/
 
-		$table = current($this->Verse->GetTables());
-		$fields = join(',',array_keys($this->Verse->GetFields()));
-		$values = join(',',array_values($this->Verse->GetFields()));
+		$Table = current($this->Verse->GetTables());
+		$Fields = join(',',array_keys($this->Verse->GetFields()));
+		$Values = join(',',array_values($this->Verse->GetFields()));
+		$Ignore = (($this->Verse->GetFlags() & Verse::InsertIgnore) === Verse::InsertIgnore);
+		$Update = (($this->Verse->GetFlags() & Verse::InsertUpdate) === Verse::InsertUpdate);
 
 		$this->QueryString = sprintf(
-			'INSERT INTO %s (%s) VALUES (%s) ',
-			$table,
-			$fields,
-			$values
+			'%s INTO %s (%s) VALUES (%s) ',
+			((!$Ignore)?('INSERT'):('INSERT IGNORE')),
+			$Table,
+			$Fields,
+			$Values
+		);
+
+		if($Update) $this->QueryString .= sprintf(
+			'ON DUPLICATE KEY UPDATE %s ',
+			preg_replace(
+				'/^SET /', '',
+				$this->GetSetString($this->Verse->GetFields())
+			)
 		);
 
 		return $this->QueryString;

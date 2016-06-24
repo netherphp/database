@@ -16,6 +16,10 @@ class Verse {
 	const ModeUpdate = 3;
 	const ModeDelete = 4;
 
+	const InsertNormal = 0;
+	const InsertIgnore = 1;
+	const InsertUpdate = 2;
+
 	const JoinLeft = 1;
 	const JoinRight = 2;
 	const JoinInner = 4;
@@ -153,6 +157,22 @@ class Verse {
 	public function
 	GetMode() {
 		return $this->Mode;
+	}
+
+	////////////////
+	////////////////
+
+	protected
+	$Flags = 0;
+	/*//
+	@type int
+	define special flags that modify the overall behaviour of a query. these
+	flags are specific to the various modes like SELECT, INSERT, etc.
+	//*/
+
+	public function
+	GetFlags() {
+		return $this->Flags;
 	}
 
 	////////////////
@@ -387,7 +407,7 @@ class Verse {
 	////////////////
 
 	public function
-	Select($Arg=null) {
+	Select($Arg=null, $Flags=0) {
 	/*//
 	@argv string Table
 	@argv array TableList
@@ -397,6 +417,7 @@ class Verse {
 	//*/
 
 		$this->Mode = static::ModeSelect;
+		$this->Flags = $Flags;
 		$this->ResetQueryProperties();
 		$this->MergeValues($this->Tables,$Arg);
 
@@ -404,7 +425,7 @@ class Verse {
 	}
 
 	public function
-	Update($Arg=null) {
+	Update($Arg=null, $Flags=0) {
 	/*//
 	@argv string Table
 	@argv array TableList
@@ -414,6 +435,7 @@ class Verse {
 	//*/
 
 		$this->Mode = static::ModeUpdate;
+		$this->Flags = $Flags;
 		$this->ResetQueryProperties();
 		$this->MergeValues($this->Tables,$Arg);
 
@@ -421,7 +443,7 @@ class Verse {
 	}
 
 	public function
-	Insert($Arg=null) {
+	Insert($Arg=null, $Flags=0) {
 	/*//
 	@argv string Table
 	@return self
@@ -430,6 +452,7 @@ class Verse {
 	//*/
 
 		$this->Mode = static::ModeInsert;
+		$this->Flags = $Flags;
 		$this->ResetQueryProperties();
 
 		if($Arg) {
@@ -443,7 +466,7 @@ class Verse {
 	}
 
 	public function
-	Delete($Arg=null) {
+	Delete($Arg=null, $Flags=0) {
 	/*//
 	@argv string Table
 	@argv array TableList
@@ -453,6 +476,7 @@ class Verse {
 	//*/
 
 		$this->Mode = static::ModeDelete;
+		$this->Flags = $Flags;
 		$this->ResetQueryProperties();
 		$this->MergeValues($this->Tables,$Arg);
 
