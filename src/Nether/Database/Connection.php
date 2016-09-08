@@ -48,6 +48,13 @@ database servers you may setup in your site config.
 	the password required for the database connection.
 	//*/
 
+	public
+	$Charmap = 'utf8';
+	/*//
+	@type string
+	the character encoding for the connection.
+	//*/
+
 	////////////////////////////////
 	////////////////////////////////
 
@@ -62,7 +69,8 @@ database servers you may setup in your site config.
 			'Hostname' => null,
 			'Username' => null,
 			'Password' => null,
-			'Database' => null
+			'Database' => null,
+			'Charset'  => 'utf8'
 		],['DefaultKeysOnly'=>true]);
 
 		foreach($Opt as $Prop => $Val)
@@ -92,10 +100,11 @@ database servers you may setup in your site config.
 
 		switch($this->Type) {
 			case 'mysql': return sprintf(
-				'%s:host=%s;dbname=%s',
+				'%s:host=%s;dbname=%s;charset=%s',
 				$this->Type,
 				$this->Hostname,
-				$this->Database
+				$this->Database,
+				$this->Charset
 			);
 			case 'sqlite': return sprintf(
 				'%s:%s',
@@ -103,12 +112,13 @@ database servers you may setup in your site config.
 				$this->Database
 			);
 			default: return sprintf(
-				'%s:host=%s;dbname=%s, %s, %s',
+				'%s:host=%s;dbname=%s, %s, %s;charset=%s',
 				$this->Type,
 				$this->Hostname,
 				$this->Database,
 				$this->Username,
-				$this->Password
+				$this->Password,
+				$this->Charset
 			);
 		}
 	}
