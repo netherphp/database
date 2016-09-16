@@ -62,6 +62,26 @@ class MySQL extends Compiler {
 		return $string;
 	}
 
+	protected function GetHavingString($conds) {
+		$first = true;
+		$string = 'HAVING ';
+
+		foreach($conds as $cond) {
+			if($first) {
+				$string .= "{$cond->Query} ";
+				$first = false;
+			} else {
+				$string .= sprintf(
+					'%s %s ',
+					$this->GetWhereType($cond->Flags),
+					$cond->Query
+				);
+			}
+		}
+
+		return $string;
+	}
+
 	protected function GetJoinString($joins) {
 		$string = '';
 
@@ -146,6 +166,9 @@ class MySQL extends Compiler {
 		if($conds = $this->Verse->GetConditions())
 		$this->QueryString .= $this->GetConditionString($conds);
 
+		if($havings = $this->Verse->GetHavings())
+		$this->QueryString .= $this->GetHavingString($havings);
+
 		if(($limit = $this->Verse->GetLimit()) !== 0)
 		$this->QueryString .= $this->GetLimitString($limit);
 
@@ -204,6 +227,9 @@ class MySQL extends Compiler {
 		if($groups = $this->Verse->GetGroups())
 		$this->QueryString .= $this->GetGroupString($groups);
 
+		if($havings = $this->Verse->GetHavings())
+		$this->QueryString .= $this->GetHavingString($havings);
+
 		if($sorts = $this->Verse->GetSorts())
 		$this->QueryString .= $this->GetSortString($sorts);
 
@@ -215,7 +241,6 @@ class MySQL extends Compiler {
 
 		return trim($this->QueryString);
 	}
-
 
 	protected function GenerateUpdateQuery() {
 	/*//
@@ -236,6 +261,9 @@ class MySQL extends Compiler {
 
 		if($conds = $this->Verse->GetConditions())
 		$this->QueryString .= $this->GetConditionString($conds);
+
+		if($havings = $this->Verse->GetHavings())
+		$this->QueryString .= $this->GetHavingString($havings);
 
 		if(($limit = $this->Verse->GetLimit()) !== 0)
 		$this->QueryString .= $this->GetLimitString($limit);

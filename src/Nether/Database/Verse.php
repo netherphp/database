@@ -240,6 +240,19 @@ class Verse {
 		return $this->Conditions;
 	}
 
+	protected
+	$Havings = NULL;
+	/*//
+	@type Array
+	store having conditions. it will contain a list of all the things for the
+	having clauses.
+	//*/
+
+	public function
+	GetHavings() {
+		return $this->Havings;
+	}
+
 	////////////////
 	////////////////
 
@@ -350,6 +363,7 @@ class Verse {
 		$this->Tables = [];
 		$this->Joins = [];
 		$this->Conditions = [];
+		$this->Havings = [];
 		$this->Sorts = [];
 		$this->Groups = [];
 		$this->Limit = false;
@@ -545,6 +559,21 @@ class Verse {
 	//*/
 
 		$this->MergeFlaggedValues($this->Conditions,$Arg,$Flags);
+		return $this;
+	}
+
+	public function
+	Having($Arg, $Flags=self::WhereAnd) {
+	/*//
+	@argv string Condition, int CondFlags default self::WhereAnd
+	@argv array CondList, int CondFlags default self::WhereAnd
+	@return self
+	define what conditions should be imposed in this verse and how they should
+	chain into eachother. whereception is not currently well supported by the
+	sql compiler yet.
+	//*/
+
+		$this->MergeFlaggedValues($this->Havings,$Arg,$Flags);
 		return $this;
 	}
 
