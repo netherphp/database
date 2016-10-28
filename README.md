@@ -12,13 +12,13 @@ A database connection and query library.
 Install
 -------------------------------------------------------------------------------
 
-Composer yourself a netherphp/database of version 1.* and any dependencies will
+Composer yourself a netherphp/database of version 2.* and any dependencies will
 be automatically handled.
 
 ```json
 {
 	"require": {
-		"netherphp/database": "1.*"
+		"netherphp/database": "2.*"
 	}
 }
 ```
