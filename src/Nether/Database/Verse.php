@@ -237,6 +237,14 @@ class Verse {
 
 	public function
 	GetConditions() {
+	/*//
+	return the conditions, baking any codas.
+	//*/
+
+		foreach($this->Conditions as $Cond)
+		if($Cond instanceof Coda)
+		$Cond->SetDatabase($this->Database);
+
 		return $this->Conditions;
 	}
 
