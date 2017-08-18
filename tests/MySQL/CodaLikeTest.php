@@ -6,7 +6,7 @@ require_once(sprintf(
 ));
 
 class CodaLikeTest
-extends PHPUnit_Framework_TestCase {
+extends PHPUnit\Framework\TestCase {
 
 	use GetDatabaseMock;
 

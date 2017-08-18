@@ -1,0 +1,104 @@
+{
+    "_readme": [
+        "This file locks the dependencies of your project to a known state",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "This file is @generated automatically"
+    ],
+    "content-hash": "06785af9cb60eabc2f35bdb05f48b466",
+    "packages": [
+        {
+            "name": "netherphp/object",
+            "version": "v3.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/netherphp/object.git",
+                "reference": "a3ab9f24c03ba25a46039b8bbe0282b139baf2d4"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/netherphp/object/zipball/a3ab9f24c03ba25a46039b8bbe0282b139baf2d4",
+                "reference": "a3ab9f24c03ba25a46039b8bbe0282b139baf2d4",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.1.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Nether\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-2-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Bob Majdak Jr",
+                    "email": "bob@nether.io",
+                    "homepage": "http://nether.io",
+                    "role": "developer"
+                }
+            ],
+            "description": "A little object builder.",
+            "keywords": [
+                "object",
+                "php"
+            ],
+            "time": "2017-08-18T00:31:28+00:00"
+        },
+        {
+            "name": "netherphp/option",
+            "version": "v1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/netherphp/option.git",
+                "reference": "ea38f8fdd80e8cb55605f44380de430b9c0d0c95"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/netherphp/option/zipball/ea38f8fdd80e8cb55605f44380de430b9c0d0c95",
+                "reference": "ea38f8fdd80e8cb55605f44380de430b9c0d0c95",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.4.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Nether\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-2-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Bob Majdak Jr",
+                    "email": "bob@majdak.net",
+                    "homepage": "http://majdak.net",
+                    "role": "developer"
+                }
+            ],
+            "description": "A global settings manager",
+            "keywords": [
+                "options",
+                "php"
+            ],
+            "time": "2014-03-22T17:46:59+00:00"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": {
+        "php": ">=7.1.0"
+    },
+    "platform-dev": []
+}
