@@ -11,8 +11,8 @@
 	],
 	"require":{
 		"php": ">=7.1.0",
-		"netherphp/object":"^3.0.0",
-		"netherphp/option":"^1.0.0"
+		"netherphp/object":"~3.0.0",
+		"netherphp/option":"~1.0.0"
 	},
 	"require-dev":{ },
 	"autoload":{
