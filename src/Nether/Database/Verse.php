@@ -429,7 +429,7 @@ class Verse {
 	////////////////
 
 	public function
-	Select($Arg=null, $Flags=0) {
+	Select($Arg=null, $Flags=0, $KeepData=FALSE) {
 	/*//
 	@argv string Table
 	@argv array TableList
@@ -440,14 +440,16 @@ class Verse {
 
 		$this->Mode = static::ModeSelect;
 		$this->Flags = $Flags;
-		$this->ResetQueryProperties();
-		$this->MergeValues($this->Tables,$Arg);
 
+		if(!$KeepData)
+		$this->ResetQueryProperties();
+
+		$this->MergeValues($this->Tables,$Arg);
 		return $this;
 	}
 
 	public function
-	Update($Arg=null, $Flags=0) {
+	Update($Arg=null, $Flags=0, $KeepData=FALSE) {
 	/*//
 	@argv string Table
 	@argv array TableList
@@ -458,14 +460,16 @@ class Verse {
 
 		$this->Mode = static::ModeUpdate;
 		$this->Flags = $Flags;
-		$this->ResetQueryProperties();
-		$this->MergeValues($this->Tables,$Arg);
 
+		if(!$KeepData)
+		$this->ResetQueryProperties();
+
+		$this->MergeValues($this->Tables,$Arg);
 		return $this;
 	}
 
 	public function
-	Insert($Arg=null, $Flags=0) {
+	Insert($Arg=null, $Flags=0, $KeepData=FALSE) {
 	/*//
 	@argv string Table
 	@return self
@@ -475,6 +479,8 @@ class Verse {
 
 		$this->Mode = static::ModeInsert;
 		$this->Flags = $Flags;
+
+		if(!$KeepData)
 		$this->ResetQueryProperties();
 
 		if($Arg) {
@@ -488,7 +494,7 @@ class Verse {
 	}
 
 	public function
-	Delete($Arg=null, $Flags=0) {
+	Delete($Arg=null, $Flags=0, $KeepData=FALSE) {
 	/*//
 	@argv string Table
 	@argv array TableList
@@ -499,9 +505,11 @@ class Verse {
 
 		$this->Mode = static::ModeDelete;
 		$this->Flags = $Flags;
-		$this->ResetQueryProperties();
-		$this->MergeValues($this->Tables,$Arg);
 
+		if(!$KeepData)
+		$this->ResetQueryProperties();
+
+		$this->MergeValues($this->Tables,$Arg);
 		return $this;
 	}
 
