@@ -6,7 +6,7 @@ require_once(sprintf(
 ));
 
 class CodaEqualsTest
-extends PHPUnit_Framework_TestCase {
+extends PHPUnit\Framework\TestCase {
 
 	use GetDatabaseMock;
 
@@ -96,7 +96,7 @@ extends PHPUnit_Framework_TestCase {
 		->SetField('ObjectID')
 		->SetValue([ 'some','dumb','array' ]);
 
-		$this->SetExpectedException('Exception');
+		$this->expectException('Exception');
 		$Coda->Render();
 
 		return;
@@ -114,7 +114,7 @@ extends PHPUnit_Framework_TestCase {
 		->SetField('ObjectID')
 		->SetValue(new stdClass);
 
-		$this->SetExpectedException('Exception');
+		$this->expectException('Exception');
 		$Coda->Render();
 
 		return;

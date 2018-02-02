@@ -1,12 +1,16 @@
 <?php
 
-namespace Nether\Database;
-use \Nether;
+namespace
+Nether\Database;
+
+use
+\Nether as Nether;
 
 ////////////////
 ////////////////
 
-class Connection {
+class
+Connection {
 /*//
 this class defines the configuration values required to connect to the various
 database servers you may setup in your site config.
@@ -64,14 +68,14 @@ database servers you may setup in your site config.
 	@argv object|array
 	//*/
 
-		$Opt = new Nether\Object($Opt,[
-			'Type'     => null,
-			'Hostname' => null,
-			'Username' => null,
-			'Password' => null,
-			'Database' => null,
+		$Opt = new Nether\Object\Mapped($Opt,[
+			'Type'     => NULL,
+			'Hostname' => NULL,
+			'Username' => NULL,
+			'Password' => NULL,
+			'Database' => NULL,
 			'Charset'  => 'utf8'
-		],['DefaultKeysOnly'=>true]);
+		],[ 'DefaultKeysOnly'=>TRUE ]);
 
 		foreach($Opt as $Prop => $Val)
 		$this->{$Prop} = $Val;
@@ -98,7 +102,7 @@ database servers you may setup in your site config.
 	get the connection dsn string for this database connection.
 	//*/
 
-		switch($this->Type) {
+		switch(strtolower($this->Type)) {
 			case 'mysql': return sprintf(
 				'%s:host=%s;dbname=%s;charset=%s',
 				$this->Type,

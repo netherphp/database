@@ -39,7 +39,7 @@ anything can be manually escaped if the coda is building a complex value.
 //*/
 
 	public function
-	__construct($opt=null) {
+	__construct($Opt=null) {
 	/*//
 	@argv object|array
 	nothing special happens during construction. you can pass an array that
@@ -47,16 +47,15 @@ anything can be manually escaped if the coda is building a complex value.
 	can be specified at a later time.
 	//*/
 
-		$opt = new Nether\Object($opt,[
-			'Database' => null,
-			'Field'    => null,
-			'Value'    => null
+		$Opt = new Nether\Object\Mapped($Opt,[
+			'Database' => NULL,
+			'Field'    => NULL,
+			'Value'    => NULL
 		]);
 
-		$this->Database = $opt->Database;
-		$this->Field = $opt->Field;
-		$this->Value = $opt->Value;
-
+		$this->Database = $Opt->Database;
+		$this->Field = $Opt->Field;
+		$this->Value = $Opt->Value;
 		return;
 	}
 
