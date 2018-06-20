@@ -158,6 +158,27 @@ class MySQL extends Compiler {
 	generate a DELETE style query.
 	//*/
 
+		// there are some differences in syntax based on if we need multi
+		// table or join searches in the delete. we consider the need for
+		// alternate syntax to generate the most performant and featured
+		// query possible.
+
+		$MultiTable = FALSE;
+
+		if(count($this->Verse->GetTables()) > 1)
+		$MultiTable = TRUE;
+		elseif(count($this->Verse->GetJoins()) > 0)
+		$MultiTable = TRUE;
+
+		////////
+
+		if(!$MultiTable)
+		$this->QueryString = sprintf(
+			'DELETE FROM %s ',
+			join(', ',$this->Verse->GetTables())
+		);
+
+		else
 		$this->QueryString = sprintf(
 			'DELETE %s FROM %s ',
 			join(', ',array_map(
@@ -172,6 +193,9 @@ class MySQL extends Compiler {
 			join(', ',$this->Verse->GetTables())
 		);
 
+		////////
+
+		if($MultiTable)
 		if($joins = $this->Verse->GetJoins())
 		$this->QueryString .= $this->GetJoinString($joins);
 
@@ -181,6 +205,7 @@ class MySQL extends Compiler {
 		if($havings = $this->Verse->GetHavings())
 		$this->QueryString .= $this->GetHavingString($havings);
 
+		if(!$MultiTable)
 		if(($limit = $this->Verse->GetLimit()) !== 0)
 		$this->QueryString .= $this->GetLimitString($limit);
 
