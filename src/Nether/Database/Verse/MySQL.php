@@ -159,9 +159,21 @@ class MySQL extends Compiler {
 	//*/
 
 		$this->QueryString = sprintf(
-			'DELETE FROM %s ',
+			'DELETE %s FROM %s ',
+			join(', ',array_map(
+				function($Val){
+					if(strpos($Val,' ') === FALSE)
+					return $Val;
+					else
+					return trim(substr($Val,strpos($Val,' ')));
+				},
+				$this->Verse->GetTables()
+			)),
 			join(', ',$this->Verse->GetTables())
 		);
+
+		if($joins = $this->Verse->GetJoins())
+		$this->QueryString .= $this->GetJoinString($joins);
 
 		if($conds = $this->Verse->GetConditions())
 		$this->QueryString .= $this->GetConditionString($conds);
