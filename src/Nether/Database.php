@@ -32,10 +32,10 @@ will want to use Nether\Database::Get($Alias) instead.
 	@type array
 	a singleton array for holding all the Database objects for each unique
 	connection that has been opened. example new Database('Default') will
-	cause DBC['Default'] to contain a reference to that Database instance. you
+	cause DBO['Default'] to contain a reference to that Database instance. you
 	can use this to use a more dependency injection friendly style of coding
 	if you do not want to new Database in each method you need db access. your
-	unit tests can then store a mock in DBC['Default']. see the static Get
+	unit tests can then store a mock in DBO['Default']. see the static Get
 	method for info on how the other half of this works - because you do not
 	want to have to array_key_exists this yourself every time you need db.
 	//*/
@@ -118,6 +118,7 @@ will want to use Nether\Database::Get($Alias) instead.
 
 		// if we already have an item created here then we shall reuse it.
 		if(array_key_exists($Alias,static::$DBO))
+		if(static::$DBO[$Alias] instanceof Nether\Database)
 		return static::$DBO[$Alias];
 
 		// else we will create a new one.
@@ -126,6 +127,12 @@ will want to use Nether\Database::Get($Alias) instead.
 
 	////////////////////////////////
 	////////////////////////////////
+
+	protected
+	$Alias = NULL;
+	/*//
+	@date 2018-06-22
+	//*/
 
 	protected
 	$Driver = null;
@@ -256,13 +263,17 @@ will want to use Nether\Database::Get($Alias) instead.
 	above is true the next time you create an instance of this.
 	//*/
 
+		$this->Alias = $Alias;
+
 		if(array_key_exists($Alias,static::$DBX)) {
-			// reuse the existing driver if available and
-			// then we are done here.
-			$this->Driver = static::$DBX[$Alias];
-			$this->Reused = true;
-			static::$ConnectReuse++;
-			return;
+			if(static::$DBX[$Alias] instanceof PDO) {
+				// reuse the existing driver if available and
+				// then we are done here.
+				$this->Driver = static::$DBX[$Alias];
+				$this->Reused = true;
+				static::$ConnectReuse++;
+				return;
+			}
 		}
 
 		////////
@@ -346,6 +357,31 @@ will want to use Nether\Database::Get($Alias) instead.
 	//*/
 
 		return $this->Driver->Rollback();
+	}
+
+	public function
+	Close() {
+	/*//
+	@return void
+	@date 2018-06-22
+	close a database connection. technically it is only an attempt to close.
+	the probably most dumb thing about pdo is that it ref counts with no
+	method to forecably kill off connections. if you have any living instances
+	then the db will not really close. but that problem exists regardless of
+	you use nether or not. in this case though we at least will force a new
+	connection next invocation.
+	//*/
+
+		// kill pdo.
+		$this->Driver = NULL;
+		static::$DBX[$this->Alias] = NULL;
+		unset(static::$DBX[$this->Alias]);
+
+		// kill db object cache.
+		static::$DBO[$this->Alias] = NULL;
+		unset(static::$DBO[$this->Alias]);
+
+		return;
 	}
 
 	////////////////////////////////
