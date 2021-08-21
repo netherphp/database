@@ -1,0 +1,78 @@
+<?php
+
+require('vendor/autoload.php');
+
+use Nether\Database\Struct\TableClassInfo;
+
+$App = new class extends Nether\Console\Client {
+
+	#[Nether\Console\Meta\Subcommand('sql-create')]
+	#[Nether\Console\Meta\Error(1,'no class specified')]
+	#[Nether\Console\Meta\Error(2,'class not found')]
+	public function
+	HandleSqlCreate() {
+	/*//
+	@date 2021-08-19
+	read the class attributes and generate the sql required to create this
+	table in the database server.
+	//*/
+
+		$Class = $this->GetInput(2);
+		$Table = NULL;
+		$SQL = '';
+		$Fields = [];
+		$LF = PHP_EOL;
+
+		////////
+
+		if(!$Class)
+		$this->Quit(1);
+
+		$Class = static::TranslateClassName($Class);
+
+		if(!class_exists($Class))
+		$this->Quit(2);
+
+		////////
+
+		// @todo 2021-08-20 add create syntax to verse.
+
+		$Table = new TableClassInfo($Class);
+		//Toaster\Misc\Util::VarDump($Table);
+
+		$SQL = "CREATE TABLE {$Table->Name} ({$LF}";
+
+		foreach($Table->Fields as $Field)
+		$Fields[] = "\t{$Field}";
+
+		$SQL .= join(",{$LF}",$Fields);
+		$SQL .= "{$LF});{$LF}";
+
+		echo $SQL;
+
+		return;
+	}
+
+	static public function
+	TranslateClassName(string $Input):
+	string {
+	/*//
+	@date 2021-08-19
+	i want to support a few different syntaxes for inputting class names
+	since php went with backslashes as namespaceoperators. i said it then,
+	and im saying it now. choosing backslashes to avoid extra work to make it
+	actually be good was fucking stupid.
+	//*/
+
+		if(str_contains($Input,'.'))
+		return str_replace('.','\\',$Input);
+
+		if(str_contains($Input,'-'))
+		return str_replace('-','\\',$Input);
+
+		return $Input;
+	}
+
+};
+
+$App->Run();
