@@ -12,11 +12,8 @@ class TableClassInfo {
 	public string
 	$Name;
 
-	public string
-	$PrimaryKey;
-
-	public string
-	$ObjectKey;
+	public ?string
+	$Comment = NULL;
 
 	public array
 	$Fields = [];
@@ -58,8 +55,7 @@ class TableClassInfo {
 	void {
 
 		$this->Name = $Inst->Name;
-		$this->PrimaryKey = $Inst->PrimaryKey;
-		$this->ObjectKey = $Inst->ObjectKey;
+		$this->Comment = $Inst->Comment;
 
 		$Props = $Class->GetProperties();
 		$Prop = NULL;

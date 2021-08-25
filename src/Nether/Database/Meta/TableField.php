@@ -5,8 +5,10 @@ namespace Nether\Database\Meta;
 use Nether;
 
 use ReflectionProperty;
+use Stringable;
 
-abstract class TableField {
+abstract class TableField
+implements Stringable {
 /*//
 @date 2021-08-20
 //*/
@@ -14,16 +16,34 @@ abstract class TableField {
 	public ?string
 	$Name;
 
+	public bool
+	$Nullable;
+
+	public mixed
+	$Default;
+
 	public ?ForeignKey
 	$ForeignKey = NULL;
 
+	public ?FieldIndex
+	$Index = NULL;
+
+	public ?PrimaryKey
+	$PrimaryKey = NULL;
+
 	public function
-	__Construct(?string $Name=NULL) {
+	__Construct(
+		?string $Name=NULL,
+		bool $Nullable=TRUE,
+		mixed $Default=FALSE
+	) {
 	/*//
 	@date 2021-08-20
 	//*/
 
 		$this->Name = $Name;
+		$this->Nullable = $Nullable;
+		$this->Default = $Default;
 
 		return;
 	}
@@ -56,13 +76,55 @@ abstract class TableField {
 			if($Attrib->Inst instanceof Nether\Object\Meta\PropertyOrigin)
 			$this->Name = $Attrib->Inst->Name;
 
+			// note if this is a simple field index.
+
+			elseif($Attrib->Inst instanceof FieldIndex)
+			$this->Index = $Attrib->Inst->Learn($this);
+
 			// note if this is a foreign key.
 
 			elseif($Attrib->Inst instanceof ForeignKey)
-			$this->ForeignKey = $Attrib->Inst;
+			$this->ForeignKey = $Attrib->Inst->Learn($this);
+
+			elseif($Attrib->Inst instanceof PrimaryKey)
+			$this->PrimaryKey = $Attrib->Inst->Learn($this);
 		}
 
 		return $this;
 	}
+
+	public function
+	GetFieldDef():
+	string {
+
+		$Output = '';
+
+		////////
+
+		if(!$this->Nullable)
+		$Output .= ' NOT NULL';
+
+		if($this->Default !== FALSE) {
+			if($this->Default === NULL)
+			$Output .= ' DEFAULT NULL';
+
+			else
+			$Output .= sprintf(
+				' DEFAULT "%s"',
+				str_replace('"', '\\"', $this->Default)
+			);
+		}
+
+		////////
+
+		return ltrim($Output);
+	}
+
+	////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////
+
+	abstract public function
+	__ToString():
+	string;
 
 }

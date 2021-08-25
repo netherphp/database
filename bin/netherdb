@@ -35,20 +35,42 @@ $App = new class extends Nether\Console\Client {
 
 		////////
 
-		// @todo 2021-08-20 add create syntax to verse.
 
 		$Table = new TableClassInfo($Class);
-		//Toaster\Misc\Util::VarDump($Table);
 
-		$SQL = "CREATE TABLE {$Table->Name} ({$LF}";
+		$SQL = (
+			(new Nether\Database\Verse)
+			->Create($Table->Name)
+			->Comment($Table->Comment)
+			->Fields((function($Table){
+				$Fields = [];
 
-		foreach($Table->Fields as $Field)
-		$Fields[] = "\t{$Field}";
+				foreach($Table->Fields as $Field)
+				$Fields[$Field->Name] = $Field;
 
-		$SQL .= join(",{$LF}",$Fields);
-		$SQL .= "{$LF});{$LF}";
+				return $Fields;
+			})($Table))
+			->Index((function($Table){
+				$Fields = [];
 
-		echo $SQL;
+				foreach($Table->Fields as $Field)
+				if($Field->Index)
+				$Fields[$Field->Index->Name] = $Field;
+
+				return $Fields;
+			})($Table))
+			->ForeignKey((function($Table){
+				$Fields = [];
+
+				foreach($Table->Fields as $Field)
+				if($Field->ForeignKey)
+				$Fields[$Field->ForeignKey->Name] = $Field;
+
+				return $Fields;
+			})($Table))
+		);
+
+		echo $SQL, PHP_EOL;
 
 		return;
 	}

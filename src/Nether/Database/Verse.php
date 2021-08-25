@@ -2,39 +2,46 @@
 
 namespace Nether\Database;
 
-use \Exception;
-use \Nether;
+use Exception;
+use Nether;
 
 Nether\Option::Define([
-	'nether-database-verse-compiler' => 'Nether\\Database\\Verse\\MySQL'
+	'nether-database-verse-compiler'
+	=> 'Nether\\Database\\Verse\\MySQL'
 ]);
 
 class Verse {
 
-	const ModeSelect = 1;
-	const ModeInsert = 2;
-	const ModeUpdate = 3;
-	const ModeDelete = 4;
+	const
+	ModeSelect = 1,
+	ModeInsert = 2,
+	ModeUpdate = 3,
+	ModeDelete = 4,
+	ModeCreate = 5;
 
-	const InsertNormal = 0;
-	const InsertIgnore = 1;
-	const InsertUpdate = 2;
+	const
+	InsertNormal = 0,
+	InsertIgnore = 1,
+	InsertUpdate = 2;
 
-	const JoinLeft = 1;
-	const JoinRight = 2;
-	const JoinInner = 4;
-	const JoinOuter = 8;
-	const JoinNatural = 16;
+	const
+	JoinLeft    = 1,
+	JoinRight   = 2,
+	JoinInner   = 4,
+	JoinOuter   = 8,
+	JoinNatural = 16;
 
-	const WhereAnd = 1;
-	const WhereOr = 2;
-	const WhereNot = 4;
+	const
+	WhereAnd = 1,
+	WhereOr  = 2,
+	WhereNot = 4;
 
-	const SortAsc = 1;
-	const SortDesc = 2;
+	const
+	SortAsc  = 1,
+	SortDesc = 2;
 
 	protected
-	$Compiler = null;
+	$Compiler = NULL;
 	/*//
 	@type string
 	the name of the class that should compile the query into an SQL string.
@@ -47,7 +54,7 @@ class Verse {
 	// your code that needs to deal with the database.
 
 	protected
-	$Database = null;
+	$Database = NULL;
 	/*//
 	@type string
 	the type that defines the type of database we are going to compile to.
@@ -104,7 +111,7 @@ class Verse {
 	////////////////
 
 	public function
-	__Construct($DB=null) {
+	__Construct($DB=NULL) {
 
 		if($DB) $this->Database = $DB;
 
@@ -127,7 +134,7 @@ class Verse {
 	////////////////
 
 	protected
-	$Pretty = false;
+	$Pretty = FALSE;
 	/*//
 	@type bool
 	make the query a little more readable for human eyes.
@@ -179,7 +186,7 @@ class Verse {
 	////////////////
 
 	protected
-	$Fields = null;
+	$Fields = NULL;
 	/*//
 	@type array
 	store field definitions for various query types. select will use it as a
@@ -196,7 +203,7 @@ class Verse {
 	////////////////
 
 	protected
-	$Tables = null;
+	$Tables = NULL;
 	/*//
 	@type array
 	store the table defintions for various query types. all query types will
@@ -212,7 +219,7 @@ class Verse {
 	////////////////
 
 	protected
-	$Joins = null;
+	$Joins = NULL;
 	/*//
 	@type array
 	store the join definitions for various query types. it will contain a list
@@ -228,7 +235,7 @@ class Verse {
 	////////////////
 
 	protected
-	$Conditions = null;
+	$Conditions = NULL;
 	/*//
 	@type array
 	store the conditions for various query types. it will contain a list of all
@@ -240,6 +247,8 @@ class Verse {
 	/*//
 	return the conditions, baking any codas.
 	//*/
+
+		$Cond = NULL;
 
 		foreach($this->Conditions as $Cond)
 		if($Cond instanceof Coda)
@@ -265,7 +274,7 @@ class Verse {
 	////////////////
 
 	protected
-	$Sorts = null;
+	$Sorts = NULL;
 	/*//
 	@type array
 	store the sort parameters for queries. it will contain a list of all the
@@ -281,7 +290,7 @@ class Verse {
 	////////////////
 
 	protected
-	$Groups = null;
+	$Groups = NULL;
 	/*//
 	@type array
 	store the grouping conditions for queries. it will contain a list of all the
@@ -321,6 +330,69 @@ class Verse {
 	public function
 	GetOffset() {
 		return (int)$this->Offset;
+	}
+
+	////////////////
+	////////////////
+
+	protected ?string
+	$Charset = NULL;
+
+	public function
+	GetCharset():
+	?string {
+
+		return $this->Charset;
+	}
+
+	protected ?string
+	$Collate = NULL;
+
+	public function
+	GetCollate():
+	?string {
+
+		return $this->Collate;
+	}
+
+	protected ?string
+	$Engine = NULL;
+
+	public function
+	GetEngine():
+	?string {
+
+		return $this->Engine;
+	}
+
+	protected ?array
+	$ForeignKeys = [];
+
+	public function
+	GetForeignKeys():
+	?array {
+
+		return $this->ForeignKeys;
+	}
+
+	protected ?array
+	$Indexes = [];
+
+	public function
+	GetIndexes():
+	?array {
+
+		return $this->Indexes;
+	}
+
+	protected ?string
+	$Comment = NULL;
+
+	public function
+	GetComment():
+	?string {
+
+		return $this->Comment;
 	}
 
 	////////////////
@@ -374,8 +446,8 @@ class Verse {
 		$this->Havings = [];
 		$this->Sorts = [];
 		$this->Groups = [];
-		$this->Limit = false;
-		$this->Offset = false;
+		$this->Limit = FALSE;
+		$this->Offset = FALSE;
 
 		return;
 	}
@@ -405,7 +477,7 @@ class Verse {
 	}
 
 	protected function
-	MergeFlaggedValues(Array &$Pool, $Addl, $Flag) {
+	MergeFlaggedValues(array &$Pool, $Addl, $Flag) {
 	/*//
 	@argv array Pool, mixed Additions, Int Flags
 	//*/
@@ -429,7 +501,7 @@ class Verse {
 	////////////////
 
 	public function
-	Select($Arg=null, $Flags=0, $KeepData=FALSE) {
+	Select($Arg=NULL, $Flags=0, $KeepData=FALSE) {
 	/*//
 	@argv string Table
 	@argv array TableList
@@ -449,7 +521,7 @@ class Verse {
 	}
 
 	public function
-	Update($Arg=null, $Flags=0, $KeepData=FALSE) {
+	Update($Arg=NULL, $Flags=0, $KeepData=FALSE) {
 	/*//
 	@argv string Table
 	@argv array TableList
@@ -469,7 +541,7 @@ class Verse {
 	}
 
 	public function
-	Insert($Arg=null, $Flags=0, $KeepData=FALSE) {
+	Insert($Arg=NULL, $Flags=0, $KeepData=FALSE) {
 	/*//
 	@argv string Table
 	@return self
@@ -494,7 +566,7 @@ class Verse {
 	}
 
 	public function
-	Delete($Arg=null, $Flags=0, $KeepData=FALSE) {
+	Delete($Arg=NULL, $Flags=0, $KeepData=FALSE) {
 	/*//
 	@argv string Table
 	@argv array TableList
@@ -510,6 +582,25 @@ class Verse {
 		$this->ResetQueryProperties();
 
 		$this->MergeValues($this->Tables,$Arg);
+		return $this;
+	}
+
+	public function
+	Create($Arg=NULL, $KeepData=FALSE) {
+	/*//
+	@date 2021-08-24
+	//*/
+
+		$this->Mode = static::ModeCreate;
+
+		if(!$KeepData)
+		$this->ResetQueryProperties();
+
+		if(is_array($Arg))
+		$this->Tables = [current($Arg)];
+		else
+		$this->Tables = [$Arg];
+
 		return $this;
 	}
 
@@ -609,7 +700,7 @@ class Verse {
 	}
 
 	public function
-	OrderBy($Arg, $Flags=self::OrderAsc) {
+	OrderBy($Arg, $Flags=self::SortAsc) {
 	/*//
 	@alias self::Sort
 	provide bc and context for select queries.
@@ -694,6 +785,75 @@ class Verse {
 	//*/
 
 		return $this->Fields($Argv);
+	}
+
+	public function
+	Charset(?string $Input):
+	static {
+	/*//
+	@date 2021-08-24
+	//*/
+
+		$this->Charset = $Input;
+		return $this;
+	}
+
+	public function
+	Collate(?string $Input):
+	static {
+	/*//
+	@date 2021-08-24
+	//*/
+
+		$this->Collate = $Input;
+		return $this;
+	}
+
+	public function
+	Engine(?string $Input):
+	static {
+	/*//
+	@date 2021-08-24
+	//*/
+
+		$this->Engine = $Input;
+		return $this;
+	}
+
+	public function
+	ForeignKey($Arg) {
+	/*//
+	@date 2021-08-24
+	//*/
+
+		if(!isset($this->ForeignKeys))
+		$this->ForeignKeys = [];
+
+		$this->MergeValues($this->ForeignKeys,$Arg);
+		return $this;
+	}
+
+	public function
+	Index($Arg) {
+	/*//
+	@date 2021-08-24
+	//*/
+
+		if(!isset($this->Indexes))
+		$this->Indexes = [];
+
+		$this->MergeValues($this->Indexes,$Arg);
+		return $this;
+	}
+
+	public function
+	Comment(?string $Input) {
+	/*//
+	@date 2021-08-24
+	//*/
+
+		$this->Comment = $Input;
+		return $this;
 	}
 
 }

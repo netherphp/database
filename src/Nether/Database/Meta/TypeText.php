@@ -29,7 +29,19 @@ extends TableField {
 	@date 2021-08-19
 	//*/
 
-		return "{$this->Name} TEXT";
+		return $this->GetFieldDef();
+	}
+
+	public function
+	GetFieldDef():
+	string {
+
+		$Def = "`{$this->Name}` TEXT ";
+		$Def .= parent::GetFieldDef();
+
+		////////
+
+		return trim($Def);
 	}
 
 }

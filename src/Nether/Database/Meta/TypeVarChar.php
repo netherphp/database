@@ -36,7 +36,19 @@ extends TableField {
 	@date 2021-08-19
 	//*/
 
-		return "{$this->Name} VARCHAR($this->Size)";
+		return $this->GetFieldDef();
+	}
+
+	public function
+	GetFieldDef():
+	string {
+
+		$Def = "`{$this->Name}` VARCHAR({$this->Size}) ";
+		$Def .= parent::GetFieldDef();
+
+		////////
+
+		return trim($Def);
 	}
 
 }

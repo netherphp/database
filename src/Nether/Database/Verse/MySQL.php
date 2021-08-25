@@ -2,157 +2,304 @@
 
 namespace Nether\Database\Verse;
 
-use \Exception;
-use \Nether;
-use \Nether\Database\Verse;
+use Nether\Database\Verse;
+use Nether\Database\Meta\TableField;
+use Nether\Database\Meta\FieldIndex;
+use Nether\Database\Meta\ForeignKey;
+use Nether\Database\Meta\PrimaryKey;
 
-class MySQL extends Compiler {
+class MySQL
+extends Compiler {
 
-	protected function GetJoinType($flags) {
-		$type = '';
+	protected function
+	GetJoinType($Flags) {
+		$Type = '';
 
-		if($flags & Verse::JoinInner) $type .= 'INNER ';
-		if($flags & Verse::JoinOuter) $type .= 'OUTER ';
-		if($flags & Verse::JoinNatural) $type .= 'NATURAL ';
-		if($flags & Verse::JoinLeft) $type .= 'LEFT ';
-		if($flags & Verse::JoinRight) $type .= 'RIGHT ';
+		if($Flags & Verse::JoinInner) $Type .= 'INNER ';
+		if($Flags & Verse::JoinOuter) $Type .= 'OUTER ';
+		if($Flags & Verse::JoinNatural) $Type .= 'NATURAL ';
+		if($Flags & Verse::JoinLeft) $Type .= 'LEFT ';
+		if($Flags & Verse::JoinRight) $Type .= 'RIGHT ';
 
-		return "{$type}JOIN";
+		return "{$Type}JOIN";
 	}
 
-	protected function GetWhereType($flags) {
-		$type = '';
+	protected function
+	GetWhereType($Flags) {
+		$Type = '';
 
-		if($flags & Verse::WhereAnd) $type .= 'AND ';
-		if($flags & Verse::WhereOr) $type .= 'OR ';
-		if($flags & Verse::WhereNot) $type .= 'NOT ';
+		if($Flags & Verse::WhereAnd) $Type .= 'AND ';
+		if($Flags & Verse::WhereOr) $Type .= 'OR ';
+		if($Flags & Verse::WhereNot) $Type .= 'NOT ';
 
-		return rtrim($type);
+		return rtrim($Type);
 	}
 
-	protected function GetSortType($flags) {
-		$type = '';
+	protected function
+	GetSortType($Flags) {
+		$Type = '';
 
-		if($flags & Verse::SortAsc) $type = 'ASC';
-		if($flags & Verse::SortDesc) $type = 'DESC';
+		if($Flags & Verse::SortAsc) $Type = 'ASC';
+		if($Flags & Verse::SortDesc) $Type = 'DESC';
 
-		return $type;
+		return $Type;
 	}
 
 	////////////////
 	////////////////
 
-	protected function GetConditionString($conds) {
-		$first = true;
-		$string = 'WHERE ';
+	protected function
+	GetConditionString($Conds) {
 
-		foreach($conds as $cond) {
-			if($first) {
-				$string .= "{$cond->Query} ";
-				$first = false;
+		$Cond = NULL;
+		$First = TRUE;
+		$String = 'WHERE ';
+
+		foreach($Conds as $Cond) {
+			if($First) {
+				$String .= "{$Cond->Query} ";
+				$First = FALSE;
 			} else {
-				$string .= sprintf(
+				$String .= sprintf(
 					'%s %s ',
-					$this->GetWhereType($cond->Flags),
-					$cond->Query
+					$this->GetWhereType($Cond->Flags),
+					$Cond->Query
 				);
 			}
 		}
 
-		return $string;
+		return $String;
 	}
 
-	protected function GetHavingString($conds) {
-		$first = true;
-		$string = 'HAVING ';
+	protected function
+	GetHavingString($Conds) {
 
-		foreach($conds as $cond) {
-			if($first) {
-				$string .= "{$cond->Query} ";
-				$first = false;
+		$Cond = NULL;
+
+		$First = TRUE;
+		$String = 'HAVING ';
+
+		foreach($Conds as $Cond) {
+			if($First) {
+				$String .= "{$Cond->Query} ";
+				$First = FALSE;
 			} else {
-				$string .= sprintf(
+				$String .= sprintf(
 					'%s %s ',
-					$this->GetWhereType($cond->Flags),
-					$cond->Query
+					$this->GetWhereType($Cond->Flags),
+					$Cond->Query
 				);
 			}
 		}
 
-		return $string;
+		return $String;
 	}
 
-	protected function GetJoinString($joins) {
-		$string = '';
+	protected function
+	GetJoinString($Joins) {
+		$Join = NULL;
 
-		foreach($joins as $join) {
-			$string .= sprintf(
+		$Join = NULL;
+
+		$String = '';
+
+		foreach($Joins as $Join) {
+			$String .= sprintf(
 				'%s %s ',
-				$this->GetJoinType($join->Flags),
-				$join->Query
+				$this->GetJoinType($Join->Flags),
+				$Join->Query
 			);
 		}
 
-		return $string;
+		return $String;
 	}
 
-	protected function GetLimitString($limit) {
+	protected function
+	GetLimitString($Limit) {
 
-		return "LIMIT {$limit} ";
+		return "LIMIT {$Limit} ";
 	}
 
-	protected function GetOffsetString($offset) {
+	protected function
+	GetOffsetString($Offset) {
 
-		return "OFFSET {$offset} ";
+		return "OFFSET {$Offset} ";
 	}
 
-	protected function GetSetString($sets) {
-		$first = true;
-		$string = 'SET ';
+	protected function
+	GetSetString($Sets) {
 
-		foreach($sets as $field => $value) {
-			$string .= sprintf(
+		$Field = NULL;
+		$Value = NULL;
+
+		$First = TRUE;
+		$String = 'SET ';
+
+		foreach($Sets as $Field => $Value) {
+			$String .= sprintf(
 				'%s%s=%s',
-				(($first)?(''):(', ')),
-				$field,
-				$value
+				(($First)?(''):(', ')),
+				$Field,
+				$Value
 			);
-			$first = false;
+			$First = FALSE;
 		}
 
-		return "{$string} ";
+		return "{$String} ";
 	}
 
-	protected function GetSortString($sorts) {
-		$first = true;
-		$string = 'ORDER BY ';
+	protected function
+	GetSortString($Sorts) {
 
-		foreach($sorts as $sort) {
-			$string .= sprintf(
+		$Sort = NULL;
+		$First = TRUE;
+		$String = 'ORDER BY ';
+
+		foreach($Sorts as $Sort) {
+			$String .= sprintf(
 				'%s%s %s',
-				(($first)?(''):(', ')),
-				$sort->Query,
-				$this->GetSortType($sort->Flags)
+				(($First)?(''):(', ')),
+				$Sort->Query,
+				$this->GetSortType($Sort->Flags)
 			);
-			$first = false;
+			$First = FALSE;
 		}
 
-		return "{$string} ";
+		return "{$String} ";
 	}
 
-	protected function GetGroupString($groups) {
-		$string = sprintf(
+	protected function
+	GetGroupString($Groups) {
+
+		$String = sprintf(
 			'GROUP BY %s ',
-			implode(', ',$groups)
+			implode(', ',$Groups)
 		);
 
-		return $string;
+		return $String;
+	}
+
+	protected function
+	GetCreateFieldsString(array $Sets, array $Indexes, array $ForeignKeys):
+	string {
+
+		$Value = NULL;
+		$First = TRUE;
+		$String = '';
+
+		// generate the list of fields on this table.
+
+		foreach($Sets as $Value) {
+			$String .= sprintf(
+				'%s%s',
+				(($First)?("(\n\t"):(",\n\t")),
+				$Value
+			);
+
+			$First = FALSE;
+		}
+
+		// generate primary key on this table.
+
+		foreach($Sets as $Value) {
+			if($Value instanceof TableField)
+			if($Value->PrimaryKey instanceof PrimaryKey) {
+				$String .= sprintf(
+					'%sPRIMARY KEY (`%s`) USING BTREE',
+					(($First)?("(\n\t"):(",\n\t")),
+					$Value->Name
+				);
+
+				$First = FALSE;
+			}
+		}
+
+		// generate the list of indexes on this table.
+
+		foreach($Indexes as $Value) {
+			if($Value instanceof TableField)
+			if($Value->Index instanceof FieldIndex) {
+				$String .= sprintf(
+					'%sINDEX `%s` (`%s`) USING %s',
+					(($First)?("(\n\t"):(",\n\t")),
+					$Value->Index->Name,
+					$Value->Name,
+					$Value->Index->Method ?? 'BTREE'
+				);
+
+				$First = FALSE;
+			}
+		}
+
+		// generate the list of foreign keys on this table.
+
+		foreach($ForeignKeys as $Value) {
+			if($Value instanceof TableField)
+			if($Value->ForeignKey instanceof ForeignKey) {
+				if(!array_key_exists($Value->ForeignKey->Name,$Indexes))
+				$String .= sprintf(
+					'%sINDEX `%s` (`%s`) USING BTREE',
+					(($First)?("(\n\t"):(",\n\t")),
+					$Value->ForeignKey->Name,
+					$Value->Name
+				);
+
+				$String .= sprintf(
+					'%sCONSTRAINT `%s` FOREIGN KEY(`%s`) REFERENCES `%s` (`%s`) ON UPDATE %s ON DELETE %s',
+					(($First)?("(\n\t"):(",\n\t")),
+					$Value->ForeignKey->Name,
+					$Value->Name,
+					$Value->ForeignKey->Table,
+					$Value->ForeignKey->Key,
+					$Value->ForeignKey->Update,
+					$Value->ForeignKey->Delete
+				);
+
+				$First = FALSE;
+			}
+		}
+
+		return "{$String}\n)";
+	}
+
+	protected function
+	GetCreateCharsetString(string $Input):
+	string {
+
+		return "CHARSET={$Input}";
+	}
+
+	protected function
+	GetCreateCollateString(string $Input):
+	string {
+
+		return "COLLATE={$Input}";
+	}
+
+	protected function
+	GetCreateEngineString(string $Input):
+	string {
+
+		return "ENGINE={$Input}";
+	}
+
+	protected function
+	GetCreateCommentString(?string $Input):
+	string {
+
+		if(!$Input)
+		return '';
+
+		$Input = str_replace('"', '\\"', $Input);
+
+		return "COMMENT=\"{$Input}\"";
 	}
 
 	////////////////
 	////////////////
 
-	protected function GenerateDeleteQuery() {
+	protected function
+	GenerateDeleteQuery() {
 	/*//
 	@return string
 	generate a DELETE style query.
@@ -162,6 +309,16 @@ class MySQL extends Compiler {
 		// table or join searches in the delete. we consider the need for
 		// alternate syntax to generate the most performant and featured
 		// query possible.
+
+		$Joins = NULL;
+		$Conds = NULL;
+		$Havings = NULL;
+		$Limit = NULL;
+
+		$Joins = NULL;
+		$Conds = NULL;
+		$Havings = NULL;
+		$Limit = NULL;
 
 		$MultiTable = FALSE;
 
@@ -196,23 +353,24 @@ class MySQL extends Compiler {
 		////////
 
 		if($MultiTable)
-		if($joins = $this->Verse->GetJoins())
-		$this->QueryString .= $this->GetJoinString($joins);
+		if($Joins = $this->Verse->GetJoins())
+		$this->QueryString .= $this->GetJoinString($Joins);
 
-		if($conds = $this->Verse->GetConditions())
-		$this->QueryString .= $this->GetConditionString($conds);
+		if($Conds = $this->Verse->GetConditions())
+		$this->QueryString .= $this->GetConditionString($Conds);
 
-		if($havings = $this->Verse->GetHavings())
-		$this->QueryString .= $this->GetHavingString($havings);
+		if($Havings = $this->Verse->GetHavings())
+		$this->QueryString .= $this->GetHavingString($Havings);
 
 		if(!$MultiTable)
-		if(($limit = $this->Verse->GetLimit()) !== 0)
-		$this->QueryString .= $this->GetLimitString($limit);
+		if(($Limit = $this->Verse->GetLimit()) !== 0)
+		$this->QueryString .= $this->GetLimitString($Limit);
 
 		return $this->QueryString;
 	}
 
-	protected function GenerateInsertQuery() {
+	protected function
+	GenerateInsertQuery() {
 	/*//
 	@return string
 	generate an INSERT style query.
@@ -243,11 +401,28 @@ class MySQL extends Compiler {
 		return $this->QueryString;
 	}
 
-	protected function GenerateSelectQuery() {
+	protected function
+	GenerateSelectQuery() {
 	/*//
 	@return string
 	generate a SELECT style query.
 	//*/
+
+		$Joins = NULL;
+		$Conds = NULL;
+		$Groups = NULL;
+		$Havings = NULL;
+		$Sorts = NULL;
+		$Limit = NULL;
+		$Offset = NULL;
+
+		$Joins = NULL;
+		$Conds = NULL;
+		$Groups = NULL;
+		$Havings = NULL;
+		$Sorts = NULL;
+		$Limit = NULL;
+		$Offset = NULL;
 
 		$this->QueryString = sprintf(
 			'SELECT %s FROM %s ',
@@ -255,57 +430,107 @@ class MySQL extends Compiler {
 			implode(', ',$this->Verse->GetTables())
 		);
 
-		if($joins = $this->Verse->GetJoins())
-		$this->QueryString .= $this->GetJoinString($joins);
+		if($Joins = $this->Verse->GetJoins())
+		$this->QueryString .= $this->GetJoinString($Joins);
 
-		if($conds = $this->Verse->GetConditions())
-		$this->QueryString .= $this->GetConditionString($conds);
+		if($Conds = $this->Verse->GetConditions())
+		$this->QueryString .= $this->GetConditionString($Conds);
 
-		if($groups = $this->Verse->GetGroups())
-		$this->QueryString .= $this->GetGroupString($groups);
+		if($Groups = $this->Verse->GetGroups())
+		$this->QueryString .= $this->GetGroupString($Groups);
 
-		if($havings = $this->Verse->GetHavings())
-		$this->QueryString .= $this->GetHavingString($havings);
+		if($Havings = $this->Verse->GetHavings())
+		$this->QueryString .= $this->GetHavingString($Havings);
 
-		if($sorts = $this->Verse->GetSorts())
-		$this->QueryString .= $this->GetSortString($sorts);
+		if($Sorts = $this->Verse->GetSorts())
+		$this->QueryString .= $this->GetSortString($Sorts);
 
-		if(($limit = $this->Verse->GetLimit()) !== 0)
-		$this->QueryString .= $this->GetLimitString($limit);
+		if(($Limit = $this->Verse->GetLimit()) !== 0)
+		$this->QueryString .= $this->GetLimitString($Limit);
 
-		if(($offset = $this->Verse->GetOffset()) !== 0)
-		$this->QueryString .= $this->GetOffsetString($offset);
+		if(($Offset = $this->Verse->GetOffset()) !== 0)
+		$this->QueryString .= $this->GetOffsetString($Offset);
 
 		return trim($this->QueryString);
 	}
 
-	protected function GenerateUpdateQuery() {
+	protected function
+	GenerateUpdateQuery() {
 	/*//
 	@return string
 	generate an UPDATE style query.
 	//*/
+
+		$Joins = NULL;
+		$Fields = NULL;
+		$Conds = NULL;
+		$Havings = NULL;
+		$Limit = NULL;
+
+		$Joins = NULL;
+		$Fields = NULL;
+		$Conds = NULL;
+		$Havings = NULL;
+		$Limit = NULL;
 
 		$this->QueryString = sprintf(
 			'UPDATE %s ',
 			join(', ',$this->Verse->GetTables())
 		);
 
-		if($joins = $this->Verse->GetJoins())
-		$this->QueryString .= $this->GetJoinString($joins);
+		if($Joins = $this->Verse->GetJoins())
+		$this->QueryString .= $this->GetJoinString($Joins);
 
-		if($fields = $this->Verse->GetFields())
-		$this->QueryString .= $this->GetSetString($fields);
+		if($Fields = $this->Verse->GetFields())
+		$this->QueryString .= $this->GetSetString($Fields);
 
-		if($conds = $this->Verse->GetConditions())
-		$this->QueryString .= $this->GetConditionString($conds);
+		if($Conds = $this->Verse->GetConditions())
+		$this->QueryString .= $this->GetConditionString($Conds);
 
-		if($havings = $this->Verse->GetHavings())
-		$this->QueryString .= $this->GetHavingString($havings);
+		if($Havings = $this->Verse->GetHavings())
+		$this->QueryString .= $this->GetHavingString($Havings);
 
-		if(($limit = $this->Verse->GetLimit()) !== 0)
-		$this->QueryString .= $this->GetLimitString($limit);
+		if(($Limit = $this->Verse->GetLimit()) !== 0)
+		$this->QueryString .= $this->GetLimitString($Limit);
 
 		return $this->QueryString;
+	}
+
+	protected function
+	GenerateCreateQuery() {
+	/*//
+	@date 2021-08-24
+	//*/
+
+		$this->QueryString .= sprintf(
+			"CREATE TABLE `%s` %s\n%s\n%s\n%s\n%s",
+			current($this->Verse->GetTables()),
+			$this->GetCreateFieldsString(
+				$this->Verse->GetFields()
+				?? [],
+				$this->Verse->GetIndexes()
+				?? [],
+				$this->Verse->GetForeignKeys()
+				?? []
+			),
+			$this->GetCreateCharsetString(
+				$this->Verse->GetCharset()
+				?? 'utf8mb4'
+			),
+			$this->GetCreateCollateString(
+				$this->Verse->GetCollate()
+				?? 'utf8mb4_general_ci'
+			),
+			$this->GetCreateEngineString(
+				$this->Verse->GetEngine()
+				?? 'InnoDB'
+			),
+			$this->GetCreateCommentString(
+				$this->Verse->GetComment()
+			)
+		);
+
+		return trim($this->QueryString);
 	}
 
 }

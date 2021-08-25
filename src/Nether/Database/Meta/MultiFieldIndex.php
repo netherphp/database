@@ -3,47 +3,30 @@
 namespace Nether\Database\Meta;
 
 use Attribute;
-use Nether\Database\Meta\TableField;
 
 #[Attribute(Attribute::TARGET_PROPERTY)]
-class ForeignKey {
+class FieldIndex {
 /*//
 @date 2021-08-20
 //*/
 
-	public string
-	$Table;
-
-	public string
-	$Key;
-
 	public ?string
 	$Name;
 
-	public string
-	$Update;
-
-	public string
-	$Delete;
+	public ?string
+	$Type;
 
 	public function
 	__Construct(
-		string $Table,
-		string $Key,
 		?string $Name=NULL,
-		?string $Update=NULL,
-		?string $Delete=NULL
+		?string $Type=NULL
 	) {
 	/*//
 	@date 2021-08-20
 	//*/
 
-		$this->Table = $Table;
-		$this->Key = $Key;
-
 		$this->Name = $Name;
-		$this->Update = $Update ?? 'CASCADE';
-		$this->Delete = $Delete ?? 'CASCADE';
+		$this->Type = $Type;
 
 		return;
 	}
@@ -56,7 +39,7 @@ class ForeignKey {
 	//*/
 
 		if(!$this->Name)
-		$this->Name = "Fnk{$Field->Name}";
+		$this->Name = "Idx{$Field->Name}";
 
 		return $this;
 	}
