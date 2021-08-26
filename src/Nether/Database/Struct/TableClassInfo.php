@@ -18,6 +18,12 @@ class TableClassInfo {
 	public array
 	$Fields = [];
 
+	public string
+	$PrimaryKey;
+
+	public string
+	$ObjectKey;
+
 	////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////
 
@@ -60,10 +66,12 @@ class TableClassInfo {
 		$Props = $Class->GetProperties();
 		$Prop = NULL;
 		$Attrib = NULL;
+		$Name = NULL;
 		$Inst = NULL;
 
 		foreach($Props as $Prop) {
 			$Attribs = $Prop->GetAttributes();
+			$Name = $Prop->GetName();
 
 			// prime them so they can inspect eachother.
 			foreach($Attribs as $Attrib)
@@ -71,8 +79,14 @@ class TableClassInfo {
 
 			// find the table fields.
 			foreach($Attribs as $Attrib)
-			if($Attrib->Inst instanceof Meta\TableField)
-			$this->Fields[] = $Attrib->Inst->Learn($Prop,$Attribs);
+			if($Attrib->Inst instanceof Meta\TableField) {
+				$this->Fields[$Name] = $Attrib->Inst->Learn($Prop,$Attribs);
+
+				if($this->Fields[$Name]->PrimaryKey) {
+					$this->PrimaryKey = $this->Fields[$Name]->Name;
+					$this->ObjectKey = $Name;
+				}
+			}
 
 		}
 

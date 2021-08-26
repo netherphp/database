@@ -2,6 +2,7 @@
 
 namespace Nether;
 use \Nether;
+use Nether\Database\Verse;
 use \PDO;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -106,7 +107,8 @@ will want to use Nether\Database::Get($Alias) instead.
 	////////////////////////////////
 
 	public static function
-	Get($Alias='Default') {
+	Get($Alias='Default'):
+	static {
 	/*//
 	@return Nether\Database
 	fetch a database object which has already been created once before. unless
@@ -173,7 +175,8 @@ will want to use Nether\Database::Get($Alias) instead.
 	//*/
 
 	public function
-	GetVerse() {
+	GetVerse():
+	Verse {
 	/*//
 	@return Nether\Database\Verse
 	the last verse object used. if no versen hath been used then one shall be
@@ -187,14 +190,15 @@ will want to use Nether\Database::Get($Alias) instead.
 	}
 
 	public function
-	NewVerse() {
+	NewVerse():
+	Verse {
 	/*//
 	@return Nether\Database\Verse
 	begin a new query verse. remembers the last one used because that seemed
 	like a feature that could be useful later.
 	//*/
 
-		$this->Verse = new Nether\Database\Verse($this);
+		$this->Verse = new Verse($this);
 		return $this->Verse;
 	}
 

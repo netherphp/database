@@ -95,14 +95,15 @@ class Verse {
 	}
 
 	public function
-	Query($Argv=[]) {
+	Query($Argv=[]):
+	Result {
 	/*//
 	@argv String ClassName
 	pass the request to query to the underlying database.
 	//*/
 
 		if(!$this->Database instanceof Nether\Database)
-		throw new Exception('unable to query withotu a database assigned to the verse.');
+		throw new Exception('unable to query without a database assigned to the verse.');
 
 		return $this->Database->Query($this,$Argv);
 	}
