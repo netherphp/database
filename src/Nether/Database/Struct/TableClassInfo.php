@@ -80,7 +80,7 @@ class TableClassInfo {
 			// find the table fields.
 			foreach($Attribs as $Attrib)
 			if($Attrib->Inst instanceof Meta\TableField) {
-				$this->Fields[$Name] = $Attrib->Inst->Learn($Prop,$Attribs);
+				$this->Fields[$Name] = $Attrib->Inst->Learn($this,$Prop,$Attribs);
 
 				if($this->Fields[$Name]->PrimaryKey) {
 					$this->PrimaryKey = $this->Fields[$Name]->Name;

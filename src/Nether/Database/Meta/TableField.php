@@ -3,7 +3,7 @@
 namespace Nether\Database\Meta;
 
 use Nether;
-
+use Nether\Database\Struct\TableClassInfo;
 use ReflectionProperty;
 use Stringable;
 
@@ -49,7 +49,7 @@ implements Stringable {
 	}
 
 	public function
-	Learn(ReflectionProperty $Prop, ?array $Attribs=NULL):
+	Learn(TableClassInfo $Table, ReflectionProperty $Prop, ?array $Attribs=NULL):
 	static {
 	/*//
 	@date 2021-08-20
@@ -79,15 +79,15 @@ implements Stringable {
 			// note if this is a simple field index.
 
 			elseif($Attrib->Inst instanceof FieldIndex)
-			$this->Index = $Attrib->Inst->Learn($this);
+			$this->Index = $Attrib->Inst->Learn($Table, $this);
 
 			// note if this is a foreign key.
 
 			elseif($Attrib->Inst instanceof ForeignKey)
-			$this->ForeignKey = $Attrib->Inst->Learn($this);
+			$this->ForeignKey = $Attrib->Inst->Learn($Table, $this);
 
 			elseif($Attrib->Inst instanceof PrimaryKey)
-			$this->PrimaryKey = $Attrib->Inst->Learn($this);
+			$this->PrimaryKey = $Attrib->Inst->Learn($Table, $this);
 		}
 
 		return $this;

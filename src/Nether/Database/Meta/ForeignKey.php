@@ -4,6 +4,7 @@ namespace Nether\Database\Meta;
 
 use Attribute;
 use Nether\Database\Meta\TableField;
+use Nether\Database\Struct\TableClassInfo;
 
 #[Attribute(Attribute::TARGET_PROPERTY)]
 class ForeignKey {
@@ -49,14 +50,14 @@ class ForeignKey {
 	}
 
 	public function
-	Learn(TableField $Field):
+	Learn(TableClassInfo $Table, TableField $Field):
 	static {
 	/*//
 	@date 2021-08-24
 	//*/
 
 		if(!$this->Name)
-		$this->Name = "Fnk{$Field->Name}";
+		$this->Name = "Fnk{$Table->Name}{$this->Table}{$Field->Name}";
 
 		return $this;
 	}

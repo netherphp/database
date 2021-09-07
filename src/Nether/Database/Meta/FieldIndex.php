@@ -3,6 +3,7 @@
 namespace Nether\Database\Meta;
 
 use Attribute;
+use Nether\Database\Struct\TableClassInfo;
 
 #[Attribute(Attribute::TARGET_PROPERTY)]
 class FieldIndex {
@@ -37,7 +38,7 @@ class FieldIndex {
 	}
 
 	public function
-	Learn(TableField $Field):
+	Learn(TableClassInfo $Table, TableField $Field):
 	static {
 	/*//
 	@date 2021-08-24
