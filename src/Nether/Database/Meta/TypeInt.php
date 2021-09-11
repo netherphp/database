@@ -5,7 +5,7 @@ namespace Nether\Database\Meta;
 use Attribute;
 
 #[Attribute(Attribute::TARGET_PROPERTY)]
-class TypeBigInt
+class TypeInt
 extends TableField {
 /*//
 @date 2021-08-19
@@ -16,6 +16,9 @@ extends TableField {
 
 	public bool
 	$AutoInc;
+
+	protected string
+	$TypeDef = 'INT';
 
 	////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////
@@ -48,7 +51,7 @@ extends TableField {
 	GetFieldDef():
 	string {
 
-		$Def = "`{$this->Name}` BIGINT ";
+		$Def = "`{$this->Name}` {$this->TypeDef} ";
 
 		if($this->Unsigned)
 		$Def .= 'UNSIGNED ';
