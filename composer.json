@@ -9,15 +9,15 @@
 			"homepage": "http://pegasusgate.net/+bob",
 			"role": "developer" }
 	],
-	"require":{
-		"php": ">=8.0.0",
-		"netherphp/object":"^4.1",
-		"netherphp/option":"^1.0"
-	},
 	"autoload":{
 		"psr-0": {
 			"Nether\\": "src/"
 		}
+	},
+	"require":{
+		"php": ">=8.0.0",
+		"netherphp/object":"^4.1",
+		"netherphp/option":"^1.0"
 	},
 	"require-dev": {
 		"phpunit/phpunit": "^9.5",

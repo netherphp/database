@@ -18,8 +18,8 @@ extends PHPUnit\Framework\TestCase {
 		$Verse = $DB->NewVerse();
 		$Argv = (object)[ ':ObjectIDs' => [42,69,1080] ];
 		$Dataset = [];
-		$Stage1Query = "SELECT Field1, Field2, Field3 FROM TableName WHERE ObjectID IN(:ObjectIDs)";
-		$Stage2Query = "SELECT Field1, Field2, Field3 FROM TableName WHERE ObjectID IN(:__ObjectIDs__0,:__ObjectIDs__1,:__ObjectIDs__2)";
+		$Stage1Query = "SELECT Field1, Field2, Field3 FROM TableName WHERE (ObjectID IN(:ObjectIDs))";
+		$Stage2Query = "SELECT Field1, Field2, Field3 FROM TableName WHERE (ObjectID IN(:__ObjectIDs__0,:__ObjectIDs__1,:__ObjectIDs__2))";
 
 		$SQL = $Verse
 		->Select('TableName')
