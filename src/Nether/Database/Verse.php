@@ -2,15 +2,38 @@
 
 namespace Nether\Database;
 
-use Exception;
-use Nether;
+use Nether\Option;
+use Nether\Database;
+use Nether\Database\Result;
+use Nether\Database\Struct\FlaggedQueryValue;
 
-Nether\Option::Define([
-	'nether-database-verse-compiler'
-	=> 'Nether\\Database\\Verse\\MySQL'
+use Stringable;
+use Exception;
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+Option::Define([
+	'Nether.Database.Verse.Compiler'
+	=> 'Nether\\Database\\Verse\\MySQL',
+
+	'Nether.Database.Verse.DefaultConnection'
+	=> 'Default'
 ]);
 
-class Verse {
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+class Verse
+implements Stringable {
+/*//
+@date 2020-06-24
+provides a walkable interface to construct an query programatically
+and execute it against the database.
+//*/
+
+	////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////
 
 	const
 	ModeSelect = 1,
@@ -20,16 +43,17 @@ class Verse {
 	ModeCreate = 5;
 
 	const
-	InsertNormal = 0,
-	InsertIgnore = 1,
-	InsertUpdate = 2;
+	InsertNormal      = 0,
+	InsertIgnore      = 1,
+	InsertUpdate      = 2,
+	InsertReuseUnique = 3;
 
 	const
-	JoinLeft    = 1,
-	JoinRight   = 2,
-	JoinInner   = 4,
-	JoinOuter   = 8,
-	JoinNatural = 16;
+	JoinLeft    = (1 << 0),
+	JoinRight   = (1 << 1),
+	JoinInner   = (1 << 2),
+	JoinOuter   = (1 << 3),
+	JoinNatural = (1 << 4);
 
 	const
 	WhereAnd = 1,
@@ -40,373 +64,509 @@ class Verse {
 	SortAsc  = 1,
 	SortDesc = 2;
 
-	protected
-	$Compiler = NULL;
+	const
+	OptConnectionDefault = 'Nether.Database.Verse.ConnectionDefault',
+	OptVerseCompiler = 'Nether.Database.Verse.Compiler';
+
+	////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////
+
+	public string
+	$Compiler;
 	/*//
-	@type string
-	the name of the class that should compile the query into an SQL string.
+	@date 2022-02-17
+	name of the class to construct compilers out of.
 	//*/
 
-	////////////////
-	////////////////
-
-	// database passthru stuffs. these are mainly to simplify how you write
-	// your code that needs to deal with the database.
-
-	protected
-	$Database = NULL;
+	public ?Database
+	$Database;
 	/*//
-	@type string
-	the type that defines the type of database we are going to compile to.
-	this is the type from the database instance that created the verse.
+	@date 2022-02-17
+	reference to the database connection.
 	//*/
+
+	public bool
+	$Pretty = FALSE;
+	/*//
+	@date 2022-02-17
+	make the query a little more readable for human eyes.
+	//*/
+
+	////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////
+
+	protected int
+	$Mode;
+	/*//
+	@date 2022-02-17
+	define the type of query we are going to produce. (select, insert, etc.)
+	//*/
+
+	protected int
+	$Flags;
+	/*//
+	@date 2022-02-17
+	define special flags that modify the overall behaviour of a query. these
+	flags are specific to the various modes like SELECT, INSERT, etc.
+	//*/
+
+	protected array
+	$Tables;
+	/*//
+	@date 2022-02-17
+	store the table defintions for various query types. all query types will
+	use this as a flat list of tables to hit.
+	//*/
+
+	protected array
+	$Joins;
+	/*//
+	@date 2022-02-17
+	store the join definitions for various query types. it will contain a list
+	of objects that better define each join.
+	//*/
+
+	protected array
+	$Fields;
+	/*//
+	@date 2022-02-17
+	store field definitions for various query types. select will use it as a
+	flat list of fields to fetch. update and insert will use it as a key-value
+	pair for the set/value statements.
+	//*/
+
+	protected array
+	$Conditions;
+	/*//
+	@date 2022-02-17
+	store the conditions for various query types. it will contain a list of all
+	the things for where clauses.
+	//*/
+
+	protected array
+	$Havings;
+	/*//
+	@date 2022-02-17
+	store having conditions. it will contain a list of all the things for the
+	having clauses.
+	//*/
+
+	protected array
+	$Sorts;
+	/*//
+	@date 2022-02-17
+	store the sort parameters for queries. it will contain a list of all the
+	things for order by clauses.
+	//*/
+
+	protected array
+	$Groups;
+	/*//
+	@date 2022-02-17
+	store the grouping conditions for queries. it will contain a list of all the
+	things for group by clauses.
+	//*/
+
+	protected int
+	$Limit;
+	/*//
+	@date 2022-02-17
+	how many rows to limit this query to.
+	//*/
+
+	protected int
+	$Offset;
+	/*//
+	@date 2022-02-17
+	how many rows to offset this query by.
+	//*/
+
+	protected string
+	$Charset;
+	/*//
+	@date 2022-02-17
+	charset to use for this table.
+	//*/
+
+	protected string
+	$Collate;
+	/*//
+	@date 2022-02-17
+	collation to use for this table.
+	//*/
+
+	protected string
+	$Engine;
+	/*//
+	@date 2022-02-17
+	db engine to use for this table.
+	//*/
+
+	protected array
+	$ForeignKeys;
+	/*//
+	@date 2022-02-17
+	list of foreign keys for this table.
+	//*/
+
+	protected array
+	$Indexes;
+	/*//
+	@date 2022-02-17
+	list of indexes for this table.
+	//*/
+
+	protected string
+	$Comment;
+	/*//
+	@date 2022-02-17
+	comment to use for this table.
+	//*/
+
+	////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////
 
 	public function
-	GetDatabase() {
+	__Construct(?Database $Database=NULL, ?string $Compiler=NULL) {
 	/*//
-	@return Nether\Database
+	@date 2020-11-24
 	//*/
 
-		return $this->Database;
-	}
+		$this->Database = $Database ?? $this->GetDefaultConnection();
+		$this->Compiler = $Compiler ?? $this->GetDefaultCompiler();
 
-	public function
-	SetDatabase(Nether\Database $DB) {
-	/*//
-	@argv Nether\Database DB
-	@return self
-	//*/
-
-		$this->Database = $DB;
-		return $this;
-	}
-
-	public function
-	NewCoda($ClassName) {
-	/*//
-	@argv String ClassName
-	pass the request for a new coda to the underlying database.
-	//*/
-
-		if(!$this->Database instanceof Nether\Database)
-		throw new \Exception('unable to create coda without a database assigned to the verse.');
-
-		return $this->Database->NewCoda($ClassName);
-	}
-
-	public function
-	Query($Argv=[]):
-	Result {
-	/*//
-	@argv String ClassName
-	pass the request to query to the underlying database.
-	//*/
-
-		if(!$this->Database instanceof Nether\Database)
-		throw new Exception('unable to query without a database assigned to the verse.');
-
-		return $this->Database->Query($this,$Argv);
-	}
-
-	////////////////
-	////////////////
-
-	public function
-	__Construct($DB=NULL) {
-
-		if($DB) $this->Database = $DB;
-
-		$this->Compiler = Nether\Option::Get('nether-database-verse-compiler');
-		$this->ResetQueryProperties();
+		$this->ResetQueryProperties(TRUE);
 		return;
 	}
 
 	public function
 	__ToString() {
 	/*//
-	when used in a string context this object should automatically compile the
-	query we have generated.
+	@implements Stringable
+	@date 2020-11-24
 	//*/
 
 		return $this->GetSQL();
 	}
 
-	////////////////
-	////////////////
+	////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////
 
-	protected
-	$Pretty = FALSE;
+	// primary query mode selection.
+
+	public function
+	Select(string $Arg, int $Flags=0, bool $Reset=TRUE):
+	static {
 	/*//
-	@type bool
-	make the query a little more readable for human eyes.
+	@date 2022-02-17
+	begin a new verse in the style of SELECT, defining what table which
+	we want to pull data from.
 	//*/
 
-	public function
-	GetPretty() {
-		return $this->Pretty;
-	}
+		$this->Mode = static::ModeSelect;
+		$this->Flags = $Flags;
 
-	public function
-	SetPretty($Bool) {
-		$this->Pretty = (bool)$Bool;
+		if($Reset)
+		$this->ResetQueryProperties();
+
+		$this->MergeValues($this->Tables, $Arg);
 		return $this;
 	}
 
-	////////////////
-	////////////////
-
-	protected
-	$Mode = 0;
+	public function
+	Update(string $Arg, int $Flags=0, bool $Reset=TRUE):
+	static {
 	/*//
-	@type int
-	define the type of query we are going to produce. (select, insert, etc.)
+	@date 2022-02-17
+	begin a new verse in the style of UPDATE, defining what tables which to
+	update data in.
 	//*/
 
+		$this->Mode = static::ModeUpdate;
+		$this->Flags = $Flags;
+
+		if($Reset)
+		$this->ResetQueryProperties();
+
+		$this->MergeValues($this->Tables, $Arg);
+		return $this;
+	}
+
 	public function
-	GetMode() {
+	Insert(string $Arg, int $Flags=0, bool $Reset=TRUE):
+	static {
+	/*//
+	@date 2022-02-17
+	begin a new verse in the style of INSERT, defining what tables which to
+	insert into.
+	//*/
+
+		$this->Mode = static::ModeInsert;
+		$this->Flags = $Flags;
+
+		if($Reset)
+		$this->ResetQueryProperties();
+
+		$this->Tables = [ $Arg ];
+		return $this;
+	}
+
+	public function
+	Delete(string $Arg, int $Flags=0, bool $Reset=TRUE):
+	static {
+	/*//
+	@date 2022-02-17
+	begin a new verse in the style of DELETE, defining what tables which
+	to delete from.
+	//*/
+
+		$this->Mode = static::ModeDelete;
+		$this->Flags = $Flags;
+
+		if($Reset)
+		$this->ResetQueryProperties();
+
+		$this->MergeValues($this->Tables, $Arg);
+		return $this;
+	}
+
+	public function
+	Create(string $Arg, bool $Reset=TRUE):
+	static {
+	/*//
+	@date 2021-08-24
+	begin a new verse in the style of CREATE, defining what table to create.
+	//*/
+
+		$this->Mode = static::ModeCreate;
+
+		if($Reset)
+		$this->ResetQueryProperties();
+
+		$this->Tables = [$Arg];
+		return $this;
+	}
+
+	////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////
+
+	public function
+	GetMode():
+	int {
+	/*//
+	@date 2022-02-17
+	Get the current mode of the query.
+	//*/
+
 		return $this->Mode;
 	}
 
-	////////////////
-	////////////////
-
-	protected
-	$Flags = 0;
+	public function
+	GetFlags():
+	int {
 	/*//
-	@type int
-	define special flags that modify the overall behaviour of a query. these
-	flags are specific to the various modes like SELECT, INSERT, etc.
+	@date 2022-02-17
+	get the flags for this query.
 	//*/
 
-	public function
-	GetFlags() {
 		return $this->Flags;
 	}
 
-	////////////////
-	////////////////
-
-	protected
-	$Fields = NULL;
+	public function
+	GetTables():
+	array {
 	/*//
-	@type array
-	store field definitions for various query types. select will use it as a
-	flat list of fields to fetch. update and insert will use it as a key-value
-	pair for the set/value statements.
+	@date 2022-02-17
+	get the tables for this query.
 	//*/
 
-	public function
-	GetFields() {
-		return $this->Fields;
-	}
-
-	////////////////
-	////////////////
-
-	protected
-	$Tables = NULL;
-	/*//
-	@type array
-	store the table defintions for various query types. all query types will
-	use this as a flat list of tables to hit.
-	//*/
-
-	public function
-	GetTables() {
 		return $this->Tables;
 	}
 
-	////////////////
-	////////////////
-
-	protected
-	$Joins = NULL;
+	public function
+	GetJoins():
+	array {
 	/*//
-	@type array
-	store the join definitions for various query types. it will contain a list
-	of objects that better define each join.
+	@date 2022-02-17
+	get the join definitions for this query.
 	//*/
 
-	public function
-	GetJoins() {
 		return $this->Joins;
 	}
 
-	////////////////
-	////////////////
-
-	protected
-	$Conditions = NULL;
+	public function
+	GetFields():
+	array {
 	/*//
-	@type array
-	store the conditions for various query types. it will contain a list of all
-	the things for where clauses.
+	@date 2022-02-17
+	get the fields for this query.
 	//*/
+
+		return $this->Fields;
+	}
 
 	public function
-	GetConditions() {
+	GetConditions():
+	array {
 	/*//
-	return the conditions, baking any codas.
+	@date 2022-02-17
+	get the conditions for this query.
 	//*/
-
-		$Cond = NULL;
-
-		foreach($this->Conditions as $Cond)
-		if($Cond instanceof Coda)
-		$Cond->SetDatabase($this->Database);
 
 		return $this->Conditions;
 	}
 
-	protected
-	$Havings = NULL;
+	public function
+	GetHavings():
+	array {
 	/*//
-	@type Array
-	store having conditions. it will contain a list of all the things for the
-	having clauses.
+	@date 2022-02-17
+	get the having conditions.
 	//*/
 
-	public function
-	GetHavings() {
 		return $this->Havings;
 	}
 
-	////////////////
-	////////////////
-
-	protected
-	$Sorts = NULL;
+	public function
+	GetSorts():
+	array {
 	/*//
-	@type array
-	store the sort parameters for queries. it will contain a list of all the
-	things for order by clauses.
+	@date 2022-02-17
+	get the sort parameters for queries.
 	//*/
 
-	public function
-	GetSorts() {
 		return $this->Sorts;
 	}
 
-	////////////////
-	////////////////
-
-	protected
-	$Groups = NULL;
+	public function
+	GetGroups():
+	array {
 	/*//
-	@type array
-	store the grouping conditions for queries. it will contain a list of all the
-	things for group by clauses.
+	@date 2022-02-17
+	get the grouping conditions for queries.
 	//*/
 
-	public function
-	GetGroups() {
 		return $this->Groups;
 	}
 
-	////////////////
-	////////////////
-
-	protected
-	$Limit = 0;
+	public function
+	GetLimit():
+	int {
 	/*//
-	@type int
-	store the count for limit clauses.
+	@date 2022-02-17
+	get the limit for this query.
 	//*/
 
-	public function
-	GetLimit() {
-		return (int)$this->Limit;
+		return $this->Limit;
 	}
 
-	////////////////
-	////////////////
-
-	protected
-	$Offset = 0;
+	public function
+	GetOffset():
+	int {
 	/*//
-	@type int
-	store the count for offset clauses.
+	@date 2022-02-17
+	get the offset for this query.
 	//*/
 
-	public function
-	GetOffset() {
-		return (int)$this->Offset;
+		return $this->Offset;
 	}
-
-	////////////////
-	////////////////
-
-	protected ?string
-	$Charset = NULL;
 
 	public function
 	GetCharset():
-	?string {
+	string {
+	/*//
+	@date 2022-02-17
+	get the charset for this query.
+	//*/
 
 		return $this->Charset;
 	}
 
-	protected ?string
-	$Collate = NULL;
-
 	public function
 	GetCollate():
-	?string {
+	string {
+	/*//
+	@date 2022-02-17
+	get the collate for this query.
+	//*/
 
 		return $this->Collate;
 	}
 
-	protected ?string
-	$Engine = NULL;
-
 	public function
 	GetEngine():
-	?string {
+	string {
+	/*//
+	@date 2022-02-17
+	get the engine for this query.
+	//*/
 
 		return $this->Engine;
 	}
 
-	protected ?array
-	$ForeignKeys = [];
-
 	public function
 	GetForeignKeys():
-	?array {
+	array {
+	/*//
+	@date 2022-02-17
+	get the foreign keys for this table.
+	//*/
 
 		return $this->ForeignKeys;
 	}
 
-	protected ?array
-	$Indexes = [];
-
 	public function
 	GetIndexes():
-	?array {
+	array {
+	/*//
+	@date 2022-02-17
+	get the indexes for this table.
+	//*/
 
 		return $this->Indexes;
 	}
 
-	protected ?string
-	$Comment = NULL;
-
 	public function
 	GetComment():
-	?string {
+	string {
+	/*//
+	@date 2022-02-17
+	get the comment for this table.
+	//*/
 
 		return $this->Comment;
 	}
 
-	////////////////
-	////////////////
+	////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////
 
 	public function
-	GetSQL() {
+	Query(array $Argv=[]):
+	Result {
 	/*//
-	@return string
+	@date 2022-02-17
+	pass the request to query to the underlying database.
+	//*/
+
+		if($this->Database === NULL)
+		throw new Exception('No database connection available.');
+
+		return (
+			($this->Database)
+			->Query($this, $Argv)
+		);
+	}
+
+
+	public function
+	GetSQL():
+	string {
+	/*//
+	@date 2022-02-17
 	fetch the compiled sql query that we have described in this verse.
 	//*/
 
-		$SQL = new $this->Compiler($this);
+		$SQL = new ($this->Compiler)($this);
 		$String = $SQL->Get();
 
 		if($this->Pretty)
@@ -419,26 +579,52 @@ class Verse {
 		return $String;
 	}
 
-	public function
-	GetNamedArgs() {
+	////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////
+
+	protected function
+	GetDefaultCompiler():
+	string {
 	/*//
-	@deprecated moved
-	@return array[string, ...]
-	find out all the named arguments that were in the final query.
+	@date 2022-02-17
+	get the default compiler.
 	//*/
 
-		$SQL = $this->GetSQL();
-
-		preg_match_all('/:([a-z0-9]+)/i',$SQL,$Match);
-		return $Match[1];
+		return Option::Get(self::OptVerseCompiler);
 	}
 
 	protected function
-	ResetQueryProperties() {
+	GetDefaultConnection():
+	?Database {
+	/*//
+	@date 2022-02-17
+	try to connect to the default database connection if configured.
+	//*/
+
+		$Default = Option::Get(self::OptConnectionDefault);
+
+		if(!is_string($Default))
+		return NULL;
+
+		$Database = Database::Get($Default);
+
+		if(!($Database instanceof Database))
+		return NULL;
+
+		return $Database;
+	}
+
+	protected function
+	ResetQueryProperties(bool $Full=FALSE):
+	static {
 	/*//
 	reset all the properties of this verse incase this instance is reused to
 	generate multiple sql queries.
 	//*/
+
+		// @todo 2022-02-17
+		// move the charset, collate, engine defaults into the compiler
+		// somehow so engines can set reasonable defaults themselves.
 
 		$this->Fields = [];
 		$this->Tables = [];
@@ -447,413 +633,339 @@ class Verse {
 		$this->Havings = [];
 		$this->Sorts = [];
 		$this->Groups = [];
-		$this->Limit = FALSE;
-		$this->Offset = FALSE;
+		$this->Limit = 0;
+		$this->Offset = 0;
+		$this->Charset = 'utf8mb4';
+		$this->Collate = 'utf8mb4_general_ci';
+		$this->Engine = 'InnoDB';
+		$this->ForeignKeys = [];
+		$this->Indexes = [];
+		$this->Comment = '';
 
-		return;
+		if($Full) {
+			$this->Mode = 0;
+			$this->Flags = 0;
+		}
+
+		return $this;
 	}
 
 	protected function
-	MergeValues(array &$Pool, $Addl) {
+	MergeValues(array &$Pool, mixed $Addl):
+	static {
 	/*//
-	@argv array Pool, mixed Additions
-	merge values into the pool. such description, wow.
-	so you give this a pool, the pool is the array of values you want to end
-	up with. this thing must be an array. then you give it an additional item
-	you want to add. if the additional item is an array it will do an array
-	merge so that you can overwrite named (associative array) values. if it is
-	not then it is just appended to the array pool.
+	@date 2022-02-17
+	merge merge the additional values into the pool of values given.
+	the additional can be a single value or an array of values.
 	//*/
 
-		if(is_array($Addl)) {
-			foreach($Addl as $Key => $Query) {
-				if(is_numeric($Key)) $Pool[] = $Query;
-				else $Pool[$Key] = $Query;
-			}
-		} else {
-			$Pool[] = $Addl;
+		$Key = NULL;
+		$Query = NULL;
+
+		////////
+
+		if(is_array($Addl))
+		foreach($Addl as $Key => $Query) {
+			if(is_numeric($Key))
+			$Pool[] = $Query;
+
+			else
+			$Pool[$Key] = $Query;
 		}
 
-		return;
-	}
-
-	protected function
-	MergeFlaggedValues(array &$Pool, $Addl, $Flag) {
-	/*//
-	@argv array Pool, mixed Additions, Int Flags
-	//*/
-
-		if(is_array($Addl)) {
-			foreach($Addl as $Key => $Query) {
-				if(is_numeric($Key))
-				$Pool[] = (object)[ 'Flags'=>$Flag, 'Query'=>$Query ];
-
-				else
-				$Pool[$Key] = (object)[ 'Flags'=>$Flag, 'Query'=>$Query ];
-			}
-		} else {
-			$Pool[] = (object)[ 'Flags'=>$Flag, 'Query'=>$Addl ];
-		}
-
-		return;
-	}
-
-	////////////////
-	////////////////
-
-	public function
-	Select($Arg=NULL, $Flags=0, $KeepData=FALSE) {
-	/*//
-	@argv string Table
-	@argv array TableList
-	@return self
-	begin a new verse in the style of SELECT, defining what tables from which
-	we want to pull data from.
-	//*/
-
-		$this->Mode = static::ModeSelect;
-		$this->Flags = $Flags;
-
-		if(!$KeepData)
-		$this->ResetQueryProperties();
-
-		$this->MergeValues($this->Tables,$Arg);
-		return $this;
-	}
-
-	public function
-	Update($Arg=NULL, $Flags=0, $KeepData=FALSE) {
-	/*//
-	@argv string Table
-	@argv array TableList
-	@return self
-	begin a new verse in the style of UPDATE, defining what tables in which to
-	update data in.
-	//*/
-
-		$this->Mode = static::ModeUpdate;
-		$this->Flags = $Flags;
-
-		if(!$KeepData)
-		$this->ResetQueryProperties();
-
-		$this->MergeValues($this->Tables,$Arg);
-		return $this;
-	}
-
-	public function
-	Insert($Arg=NULL, $Flags=0, $KeepData=FALSE) {
-	/*//
-	@argv string Table
-	@return self
-	begin a new verse in the style of INSERT, defining what tables in which to
-	insert into.
-	//*/
-
-		$this->Mode = static::ModeInsert;
-		$this->Flags = $Flags;
-
-		if(!$KeepData)
-		$this->ResetQueryProperties();
-
-		if($Arg) {
-			if(!is_string($Arg))
-			throw new Exception('INSERT only expects one table.');
-
-			$this->Tables = [ $Arg ];
-		}
-
-		return $this;
-	}
-
-	public function
-	Delete($Arg=NULL, $Flags=0, $KeepData=FALSE) {
-	/*//
-	@argv string Table
-	@argv array TableList
-	@return self
-	begin a new verse in the style of DELETE, defining what tables from which
-	to delete from.
-	//*/
-
-		$this->Mode = static::ModeDelete;
-		$this->Flags = $Flags;
-
-		if(!$KeepData)
-		$this->ResetQueryProperties();
-
-		$this->MergeValues($this->Tables,$Arg);
-		return $this;
-	}
-
-	public function
-	Create($Arg=NULL, $KeepData=FALSE) {
-	/*//
-	@date 2021-08-24
-	//*/
-
-		$this->Mode = static::ModeCreate;
-
-		if(!$KeepData)
-		$this->ResetQueryProperties();
-
-		if(is_array($Arg))
-		$this->Tables = [current($Arg)];
 		else
-		$this->Tables = [$Arg];
+		$Pool[] = $Addl;
+
+		////////
 
 		return $this;
 	}
 
-	////////////////
-	////////////////
+	protected function
+	MergeFlaggedValues(array &$Pool, mixed $Addl, int $Flags):
+	static {
+	/*//
+	@date 2022-02-17
+	merge the additional values into the pool of values given.
+	the additional can be a single value or an array of values. the flags
+	get shared across all the additionals.
+	//*/
+
+		$Key = NULL;
+		$Query = NULL;
+
+		////////
+
+		if(is_array($Addl))
+		foreach($Addl as $Key => $Query) {
+			if(is_numeric($Key))
+			$Pool[] = new FlaggedQueryValue($Flags, $Query);
+
+			else
+			$Pool[$Key] = new FlaggedQueryValue($Flags, $Query);
+		}
+
+		else
+		$Pool[] = new FlaggedQueryValue($Flags, $Addl);
+
+		////////
+
+		return $this;
+	}
+
+	////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////
 
 	public function
-	Table($Arg) {
+	Table(string|array $Table):
+	static {
 	/*//
-	@argv string Table
-	@argv string TableList
-	@return self
+	@date 2022-02-17
 	define what tables this verse should muck around with.
 	//*/
 
-		$this->MergeValues($this->Tables,$Arg);
+		$this->MergeValues($this->Tables, $Table);
 		return $this;
 	}
 
 	public function
-	From($Arg) {
+	From(string|array $Table):
+	static {
 	/*//
+	@date 2022-02-17
 	@alias self::Table
-	provide bc and context for select/delete.
+	provide context for select/delete.
 	//*/
 
-		return $this->Table($Arg);
+		return $this->Table($Table);
 	}
 
 	public function
-	Into($Arg) {
+	Into(string|array $Table):
+	static {
 	/*//
+	@date 2022-02-17
 	@alias self::Table
-	provide bc and context for update/insert.
+	provide context for update/insert.
 	//*/
 
-		return $this->Table($Arg);
+		return $this->Table($Table);
 	}
 
 	public function
-	Join($Arg, $Flags=self::JoinLeft) {
+	Join(string|array $Table, int $Flags=self::JoinLeft):
+	static {
 	/*//
-	@argv string Table, int JoinFlags default self::JoinLeft
-	@argv array TableList, int JoinFlags default self::JoinLeft
-	@return self
+	@date 2022-02-17
 	define what tables should be joined into this verse and how they should be
 	joined to the main query.
 	//*/
 
-		$this->MergeFlaggedValues($this->Joins,$Arg,$Flags);
+		$this->MergeFlaggedValues($this->Joins, $Table, $Flags);
 		return $this;
 	}
 
 	public function
-	Where($Arg, $Flags=self::WhereAnd) {
+	Where(string|array $Condition, int $Flags=self::WhereAnd):
+	static {
 	/*//
-	@argv string Condition, int CondFlags default self::WhereAnd
-	@argv array CondList, int CondFlags default self::WhereAnd
-	@return self
+	@date 2022-02-17
 	define what conditions should be imposed in this verse and how they should
 	chain into eachother. whereception is not currently well supported by the
 	sql compiler yet.
 	//*/
 
-		$this->MergeFlaggedValues($this->Conditions,$Arg,$Flags);
+		$this->MergeFlaggedValues($this->Conditions, $Condition, $Flags);
 		return $this;
 	}
 
 	public function
-	Having($Arg, $Flags=self::WhereAnd) {
+	Having(string|array $Condition, int $Flags=self::WhereAnd):
+	static {
 	/*//
-	@argv string Condition, int CondFlags default self::WhereAnd
-	@argv array CondList, int CondFlags default self::WhereAnd
-	@return self
+	@date 2022-02-17
 	define what conditions should be imposed in this verse and how they should
 	chain into eachother. whereception is not currently well supported by the
 	sql compiler yet.
 	//*/
 
-		$this->MergeFlaggedValues($this->Havings,$Arg,$Flags);
+		$this->MergeFlaggedValues($this->Havings, $Condition, $Flags);
 		return $this;
 	}
 
 	public function
-	Sort($Arg, $Flags=self::SortAsc) {
+	Sort(string|array $Sorting, int $Flags=self::SortAsc):
+	static {
 	/*//
-	@argv string Sort, int SortFlags default self::OrderAsc
-	@argv array SortList, int SortFlags default self::OrderAnd
-	@return self
-	define what conditions should be imposed in this verse and how they should
-	chain into eachother. whereception is not currently well supported by the
-	sql compiler yet.
+	@date 2022-02-17
+	define what sorts should be imposed in this verse.
 	//*/
 
-		$this->MergeFlaggedValues($this->Sorts,$Arg,$Flags);
+		$this->MergeFlaggedValues($this->Sorts, $Sorting, $Flags);
 		return $this;
 	}
 
 	public function
-	OrderBy($Arg, $Flags=self::SortAsc) {
+	OrderBy(string|array $Sorting, int $Flags=self::SortAsc):
+	static {
 	/*//
+	@date 2022-02-17
 	@alias self::Sort
-	provide bc and context for select queries.
+	provide context for select queries.
 	//*/
 
-		return $this->Sort($Arg,$Flags);
+		return $this->Sort($Sorting, $Flags);
 	}
 
 	public function
-	Group($Arg) {
+	Group(string|array $Grouping):
+	static {
 	/*//
-	@argv string GroupCondition
-	@argv string GroupConditionList
+	@date 2022-02-17
+	define what groupings should be imposed in this verse.
 	//*/
 
-		$this->MergeValues($this->Groups,$Arg);
+		$this->MergeValues($this->Groups, $Grouping);
 		return $this;
 	}
 
 	public function
-	GroupBy($Arg) {
+	GroupBy(string|array $Grouping):
+	static {
 	/*//
+	@date 2022-02-17
 	@alias self::Group
-	provide bc and context for grouping.
+	provide context for grouping.
 	//*/
 
-		return $this->Group($Arg);
+		return $this->Group($Grouping);
 	}
 
 	public function
-	Limit($Count) {
+	Limit(int $Num):
+	static {
 	/*//
-	@argv int Count
-	@return self
+	@date	2022-02-17
 	how many items to limit the result of this verse by.
 	//*/
 
-		$this->Limit = (int)$Count;
+		$this->Limit = $Num;
 		return $this;
 	}
 
 	public function
-	Offset($Offset) {
+	Offset(int $Num):
+	static {
 	/*//
-	@argv int Offset
-	@return self
+	@date 2022-02-17
 	how many items to offset the result of this verse by.
 	//*/
 
-		$this->Offset = (int)$Offset;
+		$this->Offset = $Num;
 		return $this;
 	}
 
 	public function
-	Fields($Arg) {
+	Fields(string|array $Fields) {
 	/*//
-	@argv array FieldList
+	@date 2022-02-17
 	define what fields this verse should operate against. some queries (select)
 	will use this as a flat list. others (insert/update) will use it a key value
 	list.
 	//*/
 
-		$this->MergeValues($this->Fields,$Arg);
+		$this->MergeValues($this->Fields, $Fields);
 		return $this;
 	}
 
 	public function
-	Values($Argv) {
+	Values(string|array $Values) {
 	/*//
+	@date 2022-02-17
 	@alias self::Fields
-	provide bc and context for insert queries.
+	provide context for insert queries.
 	//*/
 
-		return $this->Fields($Argv);
+		return $this->Fields($Values);
 	}
 
 	public function
-	Set($Argv) {
+	Set(string|array $Values) {
 	/*//
+	@date 2022-02-17
 	@alias self::Fields
 	provide bc and context for update queries.
 	//*/
 
-		return $this->Fields($Argv);
+		return $this->Fields($Values);
 	}
 
 	public function
-	Charset(?string $Input):
+	Charset(?string $Charset):
 	static {
 	/*//
 	@date 2021-08-24
+	set the charset for this verse.
 	//*/
 
-		$this->Charset = $Input;
+		$this->Charset = $Charset;
 		return $this;
 	}
 
 	public function
-	Collate(?string $Input):
+	Collate(?string $Collation):
 	static {
 	/*//
 	@date 2021-08-24
+	set the collation for this verse.
 	//*/
 
-		$this->Collate = $Input;
+		$this->Collate = $Collation;
 		return $this;
 	}
 
 	public function
-	Engine(?string $Input):
+	Engine(?string $Engine):
 	static {
 	/*//
 	@date 2021-08-24
+	set the engine for this verse.
 	//*/
 
-		$this->Engine = $Input;
+		$this->Engine = $Engine;
 		return $this;
 	}
 
 	public function
-	ForeignKey($Arg) {
+	ForeignKey(string|array $Key) {
 	/*//
 	@date 2021-08-24
+	set the keys for this verse.
 	//*/
 
-		if(!isset($this->ForeignKeys))
-		$this->ForeignKeys = [];
-
-		$this->MergeValues($this->ForeignKeys,$Arg);
+		$this->MergeValues($this->ForeignKeys, $Key);
 		return $this;
 	}
 
 	public function
-	Index($Arg) {
+	Index(string|array $Index) {
 	/*//
 	@date 2021-08-24
+	set the indexing for this verse.
 	//*/
 
-		if(!isset($this->Indexes))
-		$this->Indexes = [];
-
-		$this->MergeValues($this->Indexes,$Arg);
+		$this->MergeValues($this->Indexes, $Index);
 		return $this;
 	}
 
 	public function
-	Comment(?string $Input) {
+	Comment(string $Text) {
 	/*//
 	@date 2021-08-24
+	set the comment for this table.
 	//*/
 
-		$this->Comment = $Input;
+		$this->Comment = $Text;
 		return $this;
 	}
 

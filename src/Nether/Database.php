@@ -10,7 +10,7 @@ use \PDO;
 
 Nether\Option::Define([
 	'nether-database-connections' => [],
-	'nether-database-query-log'   => false
+	'nether-database-query-log'   => FALSE
 ]);
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -137,7 +137,7 @@ will want to use Nether\Database::Get($Alias) instead.
 	//*/
 
 	protected
-	$Driver = null;
+	$Driver = NULL;
 	/*//
 	@type \PDO
 	the pdo object driving this instance.
@@ -168,7 +168,7 @@ will want to use Nether\Database::Get($Alias) instead.
 	////////////////////////////////
 
 	protected
-	$Verse = null;
+	$Verse = NULL;
 	/*//
 	@type Nether\Database\Verse
 	the last verse object we used.
@@ -237,7 +237,7 @@ will want to use Nether\Database::Get($Alias) instead.
 	////////////////////////////////
 
 	protected
-	$Reused = false;
+	$Reused = FALSE;
 	/*//
 	@type boolean
 	marks if the driver being used was opened by a previous object. only really
@@ -259,7 +259,7 @@ will want to use Nether\Database::Get($Alias) instead.
 	////////////////////////////////
 
 	public function
-	__construct($Alias='Default') {
+	__Construct($Alias='Default') {
 	/*//
 	upon object construction we will check if the connection you requested
 	has already been made, and if so, reuse that driver object automatically.
@@ -274,7 +274,7 @@ will want to use Nether\Database::Get($Alias) instead.
 				// reuse the existing driver if available and
 				// then we are done here.
 				$this->Driver = static::$DBX[$Alias];
-				$this->Reused = true;
+				$this->Reused = TRUE;
 				static::$ConnectReuse++;
 				return;
 			}
@@ -283,7 +283,7 @@ will want to use Nether\Database::Get($Alias) instead.
 		////////
 		////////
 
-		$ConnectTime = microtime(true);
+		$ConnectTime = microtime(TRUE);
 		$Config = $this->GetConnectionConfig($Alias);
 
 		$this->Driver = new PDO(
@@ -303,7 +303,7 @@ will want to use Nether\Database::Get($Alias) instead.
 		////////
 
 		static::$DBX[$Alias] = $this->Driver;
-		static::$ConnectTime += microtime(true) - $ConnectTime;
+		static::$ConnectTime += microtime(TRUE) - $ConnectTime;
 		static::$ConnectCount++;
 		return;
 	}
@@ -428,10 +428,12 @@ will want to use Nether\Database::Get($Alias) instead.
 	////////////////////////////////
 
 	public function
-	Query($Format,$Argv=false) {
+	Query($Format,$Argv=FALSE) {
 	/*//
 	@return Nether\Database\Result
 	//*/
+
+		$Statement = NULL;
 
 		if($Argv && !is_array($Argv) && !is_object($Argv))
 		throw new Nether\Database\Error\InvalidQueryInput;
@@ -455,7 +457,7 @@ will want to use Nether\Database::Get($Alias) instead.
 		////////
 		// and then perform the query.
 
-		$QueryTime = microtime(true);
+		$QueryTime = microtime(TRUE);
 
 		if(!($Statement = $this->Driver->Prepare($SQL)))
 		throw new Nether\Database\Error\QueryPrepareFailure;
@@ -471,7 +473,7 @@ will want to use Nether\Database::Get($Alias) instead.
 			];
 		}
 
-		static::$QueryTime += microtime(true) - $QueryTime;
+		static::$QueryTime += microtime(TRUE) - $QueryTime;
 		static::$QueryCount++;
 
 		return $Result;
@@ -485,6 +487,9 @@ will want to use Nether\Database::Get($Alias) instead.
 	that are bound to a single param into multiple params, and detects
 	pre-expanded arguments and binds them to their argument.
 	//*/
+
+		$Binding = NULL;
+		$Arg = NULL;
 
 		$Bound = static::GetNamedArgs($SQL);
 		$Dataset = [];
@@ -539,6 +544,9 @@ will want to use Nether\Database::Get($Alias) instead.
 	expanded into :__ObjectID__0, :__ObjectID__1, etc.
 	//*/
 
+		$Key = NULL;
+		$Value = NULL;
+
 		foreach($Dataset as $Key => $Value) {
 			if(!is_array($Value)) continue;
 			$NewKey = str_replace(':',':__',$Key);
@@ -578,6 +586,8 @@ will want to use Nether\Database::Get($Alias) instead.
 	made from.
 	//*/
 
+		$Trace = NULL;
+
 		$Result = debug_backtrace();
 		$Output = [];
 
@@ -607,7 +617,8 @@ will want to use Nether\Database::Get($Alias) instead.
 	// things below here need to vanish soon. they have already been replaced
 	// by better things.
 
-	public function QueryOld($fmt,$parm=null) {
+	public function
+	QueryOld($Fmt,$Parm=NULL) {
 	/*//
 	@depreciated obviously
 	@return Nether\Database\Query;
@@ -619,39 +630,44 @@ will want to use Nether\Database::Get($Alias) instead.
 		// if given a Database\Query object and an object for the parameters then
 		// fetch the named args in the query and find their matching properties
 		// in the parm object.
-		if(is_object($fmt) && (is_object($parm)||is_array($parm))) {
-			$qarg = [];
-			$parm = (object)$parm;
+		$Statement = NULL;
 
-			foreach($fmt->GetNamedArgs() as $arg) {
-				if(property_exists($parm,$arg)) $qarg[":{$arg}"] = $parm->{$arg};
-				else if(property_exists($parm,":{$arg}")) $qarg["{$arg}"] = $parm->{":{$arg}"};
+		$Statement = NULL;
+
+		if(is_object($Fmt) && (is_object($Parm)||is_array($Parm))) {
+			$Qarg = [];
+			$Parm = (object)$Parm;
+			$Arg = NULL;
+
+			foreach($Fmt->GetNamedArgs() as $Arg) {
+				if(property_exists($Parm,$Arg)) $Qarg[":{$Arg}"] = $Parm->{$Arg};
+				else if(property_exists($Parm,":{$Arg}")) $Qarg["{$Arg}"] = $Parm->{":{$Arg}"};
 			}
 
-			$parm = $qarg;
+			$Parm = $Qarg;
 		}
 
 		else {
 			// if parm is not an array then build it as an array from all the
 			// arguments that were passed to the method.
-			if(!is_array($parm))
-			$parm = array_slice(func_get_args(),1);
+			if(!is_array($Parm))
+			$Parm = array_slice(func_get_args(),1);
 		}
 
 		// try to prepare the statement.
 
-		$qtime = microtime(true);
+		$Qtime = microtime(TRUE);
 
-		if(!($statement = $this->Driver->prepare($fmt)))
+		if(!($Statement = $this->Driver->prepare($Fmt)))
 		throw new \Exception('SQL statement was unable to be prepared.');
 
 		// hand over a query object.
-		$result =  new Nether\Database\Result($this->Driver,$statement,$parm);
+		$Result =  new Nether\Database\Result($this->Driver,$Statement,$Parm);
 
-		static::$QueryTime = microtime(true) - $qtime;
+		static::$QueryTime = microtime(TRUE) - $Qtime;
 		static::$QueryCount++;
 
-		return $result;
+		return $Result;
 	}
 
 }
