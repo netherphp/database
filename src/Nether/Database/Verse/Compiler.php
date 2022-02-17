@@ -2,57 +2,89 @@
 
 namespace Nether\Database\Verse;
 
-use Nether;
 use Nether\Database\Verse;
 
-abstract class Compiler {
+use Exception;
 
-	public Nether\Database\Verse
+abstract class Compiler {
+/*//
+@date 2014-10-21
+provide the base api for the query compiling system.
+//*/
+
+	public Verse
 	$Verse;
+	/*//
+	@date 2022-02-17
+	//*/
 
 	protected string
-	$QueryString = '';
+	$QueryString;
+	/*//
+	@date 2022-02-17
+	//*/
 
-	////////////////
-	////////////////
+	////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////
 
 	public function
-	__Construct(Nether\Database\Verse $V) {
-		$this->Verse = $V;
+	__Construct(Verse $Verse) {
+	/*//
+	@date 2022-02-17
+	//*/
+
+		$this->Verse = $Verse;
 		return;
 	}
 
-	////////////////
-	////////////////
+	////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////
 
 	public function
-	Get() {
-		switch($this->Verse->GetMode()) {
-			case Verse::ModeDelete: return $this->GenerateDeleteQuery();
-			case Verse::ModeInsert: return $this->GenerateInsertQuery();
-			case Verse::ModeSelect: return $this->GenerateSelectQuery();
-			case Verse::ModeUpdate: return $this->GenerateUpdateQuery();
-			case Verse::ModeCreate: return $this->GenerateCreateQuery();
-			default: return 'derp.';
-		}
+	Get():
+	string {
+	/*//
+	@date 2022-02-17
+	//*/
+
+		$Mode = $this->Verse->GetMode();
+
+		if($Mode < Verse::ModeSelect || $Mode > Verse::ModeCreate)
+		throw new Exception('invalid query mode');
+
+		////////
+
+		return match($this->Verse->GetMode()) {
+			Verse::ModeSelect => $this->GenerateSelectQuery(),
+			Verse::ModeInsert => $this->GenerateInsertQuery(),
+			Verse::ModeUpdate => $this->GenerateUpdateQuery(),
+			Verse::ModeDelete => $this->GenerateDeleteQuery(),
+			Verse::ModeCreate => $this->GenerateCreateQuery(),
+			default           => 'SELECT 0;'
+		};
 	}
 
-	////////////////
-	////////////////
+	////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////
 
 	abstract protected function
-	GenerateDeleteQuery();
+	GenerateDeleteQuery():
+	string;
 
 	abstract protected function
-	GenerateInsertQuery();
+	GenerateInsertQuery():
+	string;
 
 	abstract protected function
-	GenerateSelectQuery();
+	GenerateSelectQuery():
+	string;
 
 	abstract protected function
-	GenerateUpdateQuery();
+	GenerateUpdateQuery():
+	string;
 
 	abstract protected function
-	GenerateCreateQuery();
+	GenerateCreateQuery():
+	string;
 
 }

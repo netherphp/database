@@ -299,7 +299,8 @@ extends Compiler {
 	////////////////
 
 	protected function
-	GenerateDeleteQuery() {
+	GenerateDeleteQuery():
+	string {
 	/*//
 	@return string
 	generate a DELETE style query.
@@ -370,7 +371,8 @@ extends Compiler {
 	}
 
 	protected function
-	GenerateInsertQuery() {
+	GenerateInsertQuery():
+	string {
 	/*//
 	@return string
 	generate an INSERT style query.
@@ -402,7 +404,8 @@ extends Compiler {
 	}
 
 	protected function
-	GenerateSelectQuery() {
+	GenerateSelectQuery():
+	string {
 	/*//
 	@return string
 	generate a SELECT style query.
@@ -455,7 +458,8 @@ extends Compiler {
 	}
 
 	protected function
-	GenerateUpdateQuery() {
+	GenerateUpdateQuery():
+	string {
 	/*//
 	@return string
 	generate an UPDATE style query.
@@ -497,7 +501,8 @@ extends Compiler {
 	}
 
 	protected function
-	GenerateCreateQuery() {
+	GenerateCreateQuery():
+	string {
 	/*//
 	@date 2021-08-24
 	//*/

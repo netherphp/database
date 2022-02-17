@@ -27,7 +27,7 @@ Option::Define([
 class Verse
 implements Stringable {
 /*//
-@date 2020-06-24
+@date 2014-10-21
 provides a walkable interface to construct an query programatically
 and execute it against the database.
 //*/
