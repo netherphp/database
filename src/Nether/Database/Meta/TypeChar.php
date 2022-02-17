@@ -5,7 +5,7 @@ namespace Nether\Database\Meta;
 use Attribute;
 
 #[Attribute(Attribute::TARGET_PROPERTY)]
-class TypeVarChar
+class TypeChar
 extends TableField {
 /*//
 @date 2021-08-19
