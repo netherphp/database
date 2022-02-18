@@ -455,7 +455,6 @@ class Database {
 	/*//
 	@modifies $Dataset
 	@date 2022-02-18
-	@todo 2022-02-18 audit
 	fetch an array which describes all the bound data in this query and
 	relate it to the arguments which were passed to query. expands arrays
 	that are bound to a single param into multiple params, and detects
@@ -463,48 +462,49 @@ class Database {
 	//*/
 
 		$Binding = NULL;
+		$Param = NULL;
 		$Arg = NULL;
+		$Key = NULL;
 
 		$Bound = static::GetNamedArgs($SQL);
 		$Dataset = [];
 
-		////////////////////////////////
-		// handle named arguments
-
 		foreach($Bound as $Binding) {
 
-			// if a argument without the prefix was passed then auto prefix
-			// it in the dataset to match the binding.
-			if(property_exists($Argv,$Binding)) {
-				$Dataset[":{$Binding}"] = $Argv->{$Binding};
-			}
+			$Param = ":{$Binding}";
 
-			// if a 1:1 binding to arugment was found then just use it flat.
-			elseif(property_exists($Argv,":{$Binding}")) {
-				$Dataset[":{$Binding}"] = $Argv->{":{$Binding}"};
-			}
+			// make sure all the bindings were prefixed with the colon
+			// if not already.
+
+			if(property_exists($Argv, $Binding))
+			$Dataset[$Param] = $Argv->{$Binding};
+
+			elseif(property_exists($Argv, $Param))
+			$Dataset[$Param] = $Argv->{$Param};
 
 			// if an expanded binding was found, find the common argument
 			// that it should match with for data expansion later.
-			elseif(substr($Binding,0,2) === '__') {
-				$Key = preg_replace('/__(.+?)__\d+/','\\1',$Binding);
 
-				if(!array_key_exists(":{$Key}",$Dataset) && property_exists($Argv,$Key))
-				$Dataset[":{$Key}"] = $Argv->{$Key};
+			elseif(substr($Binding, 0, 2) === '__') {
+				$Key = preg_replace('/__(.+?)__\d+/', '\\1', $Binding);
+				$Param = ":{$Key}";
 
-				elseif(!array_key_exists(":{$Key}",$Dataset) && property_exists($Argv,":{$Key}"))
-				$Dataset[":{$Key}"] = $Argv->{":{$Key}"};
+				if(!array_key_exists($Param, $Dataset) && property_exists($Argv, $Key))
+				$Dataset[$Param] = $Argv->{$Key};
+
+				elseif(!array_key_exists($Param, $Dataset) && property_exists($Argv, $Param))
+				$Dataset[$Param] = $Argv->{$Param};
 			}
 
-		} unset($Binding);
+		}
 
-		////////////////////////////////
-		// handle anonymous arguments.
+		// arguments which were not bound to a named argument just get
+		// added on to the dataset letting the keys inc as they may. this
+		// is to support the older ? style of binding token.
 
-		foreach($Argv as $Key => $Arg) {
-			if(is_int($Key))
-			$Dataset[] = $Arg;
-		} unset($Key,$Arg);
+		foreach($Argv as $Key => $Arg)
+		if(is_int($Key))
+		$Dataset[] = $Arg;
 
 		return;
 	}
@@ -516,7 +516,6 @@ class Database {
 	@modifies $SQL
 	@modifies $Dataset
 	@date 2022-02-18
-	@todo 2022-02-18 audit
 	iterate over a dataset to find any arrays that need to be expanded into
 	flat values to match up with any expanded bindings. so if there is a
 	parameter named :ObjectID and it is an array in the dataset, it will be
@@ -525,20 +524,35 @@ class Database {
 
 		$Key = NULL;
 		$Value = NULL;
+		$NewKey = NULL;
+		$K = NULL;
+		$V = NULL;
 
 		foreach($Dataset as $Key => $Value) {
-			if(!is_array($Value)) continue;
-			$NewKey = str_replace(':',':__',$Key);
+			if(!is_array($Value))
+			continue;
 
+			// explode an array into multiple tokens.
+
+			$NewKey = str_replace(':', ':__', $Key);
 			$NewBindings = [];
+
 			foreach($Value as $K => $V) {
 				$NewBindings[] = $Binding = "{$NewKey}__{$K}";
 				$Dataset[$Binding] = $V;
 			}
 
-			$SQL = str_replace($Key,implode(',',$NewBindings),$SQL);
+			// update the query string and dataset array for the updated
+			// exploded bindings.
+
+			$SQL = str_replace(
+				$Key,
+				implode(',', $NewBindings),
+				$SQL
+			);
+
 			unset($Dataset[$Key]);
-		} unset($Key,$Value,$K,$V,$NewBindings,$Binding);
+		}
 
 		return;
 	}
@@ -578,16 +592,18 @@ class Database {
 		$Trace = NULL;
 
 		$Result = debug_backtrace();
+		$Length = count($Result);
+		$Iter = 0;
+		$Trace = NULL;
 		$Output = [];
 
-		array_shift($Result);
-		array_shift($Result);
+		for($Iter = 2; $Iter < $Length; $Iter++) {
+			$Trace = $Result[$Iter];
 
-		foreach($Result as $Trace) {
-			if(array_key_exists('class',$Trace) && array_key_exists('object',$Trace))
+			if(array_key_exists('class', $Trace) && array_key_exists('object', $Trace))
 			$Output[] = "{$Trace['class']}->{$Trace['function']}";
 
-			elseif(array_key_exists('class',$Trace))
+			elseif(array_key_exists('class', $Trace))
 			$Output[] = "{$Trace['class']}::{$Trace['function']}";
 
 			else
