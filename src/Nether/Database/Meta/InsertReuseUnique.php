@@ -7,7 +7,8 @@ use Nether\Database\Meta\TableField;
 use Nether\Database\Struct\TableClassInfo;
 
 #[Attribute(Attribute::TARGET_CLASS)]
-class InsertIgnoreUnique {
+class InsertReuseUnique
+implements TableAttribute {
 /*//
 @date 2021-08-20
 tables with this attribute will do the ON DUP KEY UPDATE LAST_INSERT_ID trick

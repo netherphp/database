@@ -16,13 +16,16 @@ class TableClassInfo {
 	$Comment = NULL;
 
 	public array
+	$Attributes = [];
+
+	public array
 	$Fields = [];
 
 	public array
 	$Indexes = [];
 
 	public string
-	$PrimaryKey;
+	$PrimaryKey = '';
 
 	public string
 	$ObjectKey;
@@ -48,6 +51,9 @@ class TableClassInfo {
 
 			if($Inst instanceof Meta\TableClass)
 			$this->HandleTableClass($Class, $Inst);
+
+			elseif($Inst instanceof Meta\TableAttribute)
+			$this->HandleTableAttribute($Class, $Inst);
 		}
 
 		if(!isset($this->Name))
@@ -101,6 +107,14 @@ class TableClassInfo {
 		return;
 	}
 
+	protected function
+	HandleTableAttribute(ReflectionClass $Class, Meta\TableAttribute $Inst):
+	void {
+
+		$this->Attributes[] = $Inst;
+		return;
+	}
+
 	public function
 	GetFieldList():
 	array {
@@ -133,6 +147,13 @@ class TableClassInfo {
 		$Fields[$Field->ForeignKey->Name] = $Field;
 
 		return $Fields;
+	}
+
+	public function
+	GetAttributeList():
+	array {
+
+		return $this->Attributes;
 	}
 
 }

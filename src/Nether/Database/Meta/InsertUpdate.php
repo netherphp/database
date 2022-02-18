@@ -7,7 +7,8 @@ use Nether\Database\Meta\TableField;
 use Nether\Database\Struct\TableClassInfo;
 
 #[Attribute(Attribute::TARGET_CLASS)]
-class InsertUpdate {
+class InsertUpdate
+implements TableAttribute {
 /*//
 @date 2021-08-20
 tables with this attribute will include ON DUPLICATE KEY UPDATE clauses to

@@ -9,6 +9,8 @@ use Nether\Database\Meta\FieldIndex;
 use Nether\Database\Meta\ForeignKey;
 use Nether\Database\Meta\PrimaryKey;
 
+use Nether\Database\Error;
+
 class MySQL
 extends Compiler {
 
@@ -106,6 +108,8 @@ extends Compiler {
 		$Update = (($Flags & Verse::InsertUpdate) === Verse::InsertUpdate);
 		$ReuseUnique = (($Flags & Verse::InsertReuseUnique) === Verse::InsertReuseUnique);
 
+		////////
+
 		$this->QueryString = sprintf(
 			'%s INTO %s (%s) VALUES (%s) ',
 			((!$Ignore) ? ('INSERT') : ('INSERT IGNORE')),
@@ -114,14 +118,29 @@ extends Compiler {
 			$Values
 		);
 
-		if($Update)
-		$this->QueryString .= sprintf(
-			'ON DUPLICATE KEY UPDATE %s ',
-			preg_replace(
-				'/^SET /', '',
-				$this->GetSetString($this->Verse->GetFields())
-			)
-		);
+		////////
+
+		if($Update) {
+			$this->QueryString .= sprintf(
+				'ON DUPLICATE KEY UPDATE %s ',
+				preg_replace(
+					'/^SET /', '',
+					$this->GetSetString($this->Verse->GetFields())
+				)
+			);
+		}
+
+		elseif($ReuseUnique) {
+			if(!$this->Verse->GetPrimaryKey())
+			throw new Error\InvalidPrimaryKeyInput;
+
+			$this->QueryString .= sprintf(
+				'ON DUPLICATE KEY UPDATE %1$s=LAST_INSERT_ID(%1$s) ',
+				$this->Verse->GetPrimaryKey()
+			);
+		}
+
+		////////
 
 		return trim($this->QueryString);
 	}

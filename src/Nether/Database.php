@@ -249,6 +249,61 @@ class Database {
 	}
 
 	public function
+	NewVerseInsert(string $ClassName):
+	Verse {
+	/*//
+	@date 2022-02-18
+	//*/
+
+		$this->Verse = Verse::FromMetaInsert($ClassName, $this);
+		return $this->Verse;
+	}
+
+	public function
+	NewVerseSelect(string $ClassName):
+	Verse {
+	/*//
+	@date 2022-02-18
+	//*/
+
+		$this->Verse = Verse::FromMetaSelect($ClassName, $this);
+		return $this->Verse;
+	}
+
+	public function
+	NewVerseDelete(string $ClassName):
+	Verse {
+	/*//
+	@date 2022-02-18
+	//*/
+
+		$this->Verse = Verse::FromMetaDelete($ClassName, $this);
+		return $this->Verse;
+	}
+
+	public function
+	NewVerseUpdate(string $ClassName):
+	Verse {
+	/*//
+	@date 2022-02-18
+	//*/
+
+		$this->Verse = Verse::FromMetaUpdate($ClassName, $this);
+		return $this->Verse;
+	}
+
+	public function
+	NewVerseCreate(string $ClassName):
+	Verse {
+	/*//
+	@date 2022-02-18
+	//*/
+
+		$this->Verse = Verse::FromMetaCreate($ClassName, $this);
+		return $this->Verse;
+	}
+
+	public function
 	IsReused():
 	bool {
 	/*//
@@ -598,7 +653,7 @@ class Database {
 		$Output = [];
 
 		for($Iter = 2; $Iter < $Length; $Iter++) {
-			$Trace = $Result[$Iter];
+			$Trace = (array)$Result[$Iter];
 
 			if(array_key_exists('class', $Trace) && array_key_exists('object', $Trace))
 			$Output[] = "{$Trace['class']}->{$Trace['function']}";

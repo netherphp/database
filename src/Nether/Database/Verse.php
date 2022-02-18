@@ -183,6 +183,13 @@ and execute it against the database.
 	//*/
 
 	protected string
+	$PrimaryKey;
+	/*//
+	@date 2022-02-18
+	the name of the primary key for the table.
+	//*/
+
+	protected string
 	$Charset;
 	/*//
 	@date 2022-02-17
@@ -556,6 +563,17 @@ and execute it against the database.
 	}
 
 	public function
+	PrimaryKey(?string $Name=NULL):
+	static {
+	/*//
+	@date 2022-02-18
+	//*/
+
+		$this->PrimaryKey = $Name ?? '';
+		return $this;
+	}
+
+	public function
 	Charset(?string $Charset):
 	static {
 	/*//
@@ -760,6 +778,17 @@ and execute it against the database.
 	}
 
 	public function
+	GetPrimaryKey():
+	string {
+	/*//
+	@date 2022-02-17
+	get the primary key for this table.
+	//*/
+
+		return $this->PrimaryKey;
+	}
+
+	public function
 	GetCharset():
 	string {
 	/*//
@@ -941,6 +970,7 @@ and execute it against the database.
 		$this->Groups = [];
 		$this->Limit = 0;
 		$this->Offset = 0;
+		$this->PrimaryKey = '';
 		$this->Charset = 'utf8mb4';
 		$this->Collate = 'utf8mb4_general_ci';
 		$this->Engine = 'InnoDB';
@@ -1023,75 +1053,123 @@ and execute it against the database.
 	////////////////////////////////////////////////////////////////
 
 	static public function
-	FromMeta(string $ClassName, int $Mode):
+	FromMeta(string $ClassName, int $Mode, ?Database $DB=NULL):
 	static {
 	/*//
 	@date	2022-02-17
 	//*/
 
-		$Verse = new static;
+		return match($Mode) {
+			static::ModeSelect => static::FromMetaSelect($ClassName, $DB),
+			static::ModeInsert => static::FromMetaInsert($ClassName, $DB),
+			static::ModeUpdate => static::FromMetaUpdate($ClassName, $DB),
+			static::ModeDelete => static::FromMetaDelete($ClassName, $DB),
+			static::ModeCreate => static::FromMetaCreate($ClassName, $DB),
+			default            => static::FromMetaSelect($ClassName, $DB)
+		};
+	}
+
+	static public function
+	FromMetaSelect(string $ClassName, ?Database $DB=NULL):
+	static {
+	/*//
+	@date	2022-02-17
+	//*/
+
+		$Verse = new static($DB);
 		$Table = new TableClassInfo($ClassName);
 
-		match($Mode) {
-			static::ModeSelect => $Verse->Select($Table->Name),
-			static::ModeInsert => $Verse->Insert($Table->Name),
-			static::ModeUpdate => $Verse->Update($Table->Name),
-			static::ModeDelete => $Verse->Delete($Table->Name),
-			static::ModeCreate => $Verse->Create($Table->Name)
-		};
+		////////
+
+		$Verse
+		->Select($Table->Name)
+		->PrimaryKey($Table->PrimaryKey);
 
 		return $Verse;
 	}
 
 	static public function
-	FromMetaSelect(string $ClassName):
+	FromMetaInsert(string $ClassName, ?Database $DB=NULL):
 	static {
 	/*//
 	@date	2022-02-17
 	//*/
 
-		return static::FromMeta($ClassName, static::ModeSelect);
-	}
+		$Verse = new static($DB);
+		$Table = new TableClassInfo($ClassName);
+		$Flags = 0;
+		$Attr = NULL;
 
+		////////
 
-	static public function
-	FromMetaInsert(string $ClassName):
-	static {
-	/*//
-	@date	2022-02-17
-	//*/
+		foreach($Table->Attributes as $Attr) {
+			if($Attr instanceof Meta\InsertIgnore)
+			$Flags |= static::InsertIgnore;
 
-		return static::FromMeta($ClassName, static::ModeInsert);
-	}
+			if($Attr instanceof Meta\InsertReuseUnique)
+			$Flags |= static::InsertReuseUnique;
 
-	static public function
-	FromMetaUpdate(string $ClassName):
-	static {
-	/*//
-	@date	2022-02-17
-	//*/
+			if($Attr instanceof Meta\InsertUpdate)
+			$Flags |= static::InsertUpdate;
+		}
 
-		return static::FromMeta($ClassName, static::ModeUpdate);
-	}
+		////////
 
-	static public function
-	FromMetaDelete(string $ClassName):
-	static {
-	/*//
-	@date	2022-02-17
-	//*/
+		$Verse
+		->Insert($Table->Name, $Flags)
+		->PrimaryKey($Table->PrimaryKey);
 
-		return static::FromMeta($ClassName, static::ModeDelete);
+		////////
+
+		return $Verse;
 	}
 
 	static public function
-	FromMetaCreate(string $ClassName):
+	FromMetaUpdate(string $ClassName, ?Database $DB=NULL):
 	static {
 	/*//
 	@date	2022-02-17
 	//*/
 
-		$Verse = static::FromMeta($ClassName, static::ModeCreate);
+		$Verse = new static($DB);
+		$Table = new TableClassInfo($ClassName);
+
+		////////
+
+		$Verse
+		->Update($Table->Name)
+		->PrimaryKey($Table->PrimaryKey);
+
+		return $Verse;
+	}
+
+	static public function
+	FromMetaDelete(string $ClassName, ?Database $DB=NULL):
+	static {
+	/*//
+	@date	2022-02-17
+	//*/
+
+		$Verse = new static($DB);
+		$Table = new TableClassInfo($ClassName);
+
+		////////
+
+		$Verse
+		->Delete($Table->Name)
+		->PrimaryKey($Table->PrimaryKey);
+
+		return $Verse;
+	}
+
+	static public function
+	FromMetaCreate(string $ClassName, ?Database $DB=NULL):
+	static {
+	/*//
+	@date	2022-02-17
+	//*/
+
+		$Verse = new static($DB);
 		$Table = new TableClassInfo($ClassName);
 
 		$Verse
