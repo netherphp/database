@@ -832,7 +832,7 @@ and execute it against the database.
 	}
 
 	public function
-	Query(array $Argv=[]):
+	Query(array|object $Argv=[]):
 	Result {
 	/*//
 	@date 2022-02-17
