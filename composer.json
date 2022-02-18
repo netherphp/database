@@ -30,5 +30,8 @@
 		"allow-plugins": {
 			"dealerdirect/phpcodesniffer-composer-installer": true
 		}
-	}
+	},
+	"bin": [
+		"bin/netherdb"
+	]
 }
