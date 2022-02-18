@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "62696a769d93ccc9c28b9f1a0aeced13",
+    "content-hash": "821107531b5708007be25f0296811acb",
     "packages": [
         {
             "name": "brick/math",
@@ -295,20 +295,20 @@
         },
         {
             "name": "netherphp/console",
-            "version": "v4.0.6",
+            "version": "v4.0.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/netherphp/console.git",
-                "reference": "bee9894dd89af7d19eff41151ba8d7e3f26ae7b7"
+                "reference": "baa9437d8efcafb4fb86f45477f6f3e1ab674bc5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/netherphp/console/zipball/bee9894dd89af7d19eff41151ba8d7e3f26ae7b7",
-                "reference": "bee9894dd89af7d19eff41151ba8d7e3f26ae7b7",
+                "url": "https://api.github.com/repos/netherphp/console/zipball/baa9437d8efcafb4fb86f45477f6f3e1ab674bc5",
+                "reference": "baa9437d8efcafb4fb86f45477f6f3e1ab674bc5",
                 "shasum": ""
             },
             "require": {
-                "netherphp/object": ">=4.0.0",
+                "netherphp/object": ">=4.1.4",
                 "php": ">=8.0",
                 "ramsey/uuid": "^4.1",
                 "react/react": "^1.1"
@@ -345,9 +345,9 @@
             ],
             "support": {
                 "issues": "https://github.com/netherphp/console/issues",
-                "source": "https://github.com/netherphp/console/tree/v4.0.6"
+                "source": "https://github.com/netherphp/console/tree/v4.0.7"
             },
-            "time": "2021-01-26T21:21:28+00:00"
+            "time": "2022-01-28T02:39:33+00:00"
         },
         {
             "name": "netherphp/object",

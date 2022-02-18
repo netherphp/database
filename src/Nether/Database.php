@@ -1,16 +1,24 @@
 <?php
 
 namespace Nether;
-use \Nether;
+
+use Nether;
+
+use Nether\Option;
 use Nether\Database\Verse;
-use \PDO;
+use Nether\Database\Connection;
+use Nether\Database\Result;
+use Nether\Database\Struct\LogQuery;
+
+use PDO;
+use Stringable;
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-Nether\Option::Define([
-	'nether-database-connections' => [],
-	'nether-database-query-log'   => FALSE
+Option::Define([
+	'Nether.Database.Connections' => [],
+	'Nether.Database.LogQueries'  => FALSE
 ]);
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -18,270 +26,148 @@ Nether\Option::Define([
 
 class Database {
 /*//
-this class provides all the functionality and primary interface for interacting
-with database things.
-
-for simple code you can new Nether\Database($Alias) any time you need access.
-
-for more complex code where you may want to perform dependency injection you
-will want to use Nether\Database::Get($Alias) instead.
+@date 2014-04-23
 //*/
 
-	static
+	static public array
 	$DBO = [];
 	/*//
-	@type array
 	a singleton array for holding all the Database objects for each unique
-	connection that has been opened. example new Database('Default') will
-	cause DBO['Default'] to contain a reference to that Database instance. you
-	can use this to use a more dependency injection friendly style of coding
-	if you do not want to new Database in each method you need db access. your
-	unit tests can then store a mock in DBO['Default']. see the static Get
-	method for info on how the other half of this works - because you do not
-	want to have to array_key_exists this yourself every time you need db.
+	connection that has been opened.
 	//*/
 
-	static
+	static public array
 	$DBX = [];
 	/*//
-	@type array
-	a singleton array for holding all the connections opened by the application
-	for reuse. everything in this list will be the raw pdo connection.
+	a singleton array for holding all the PDO objects for each unique
+	connection that has been opened.
 	//*/
 
-	static
+	static public float
 	$ConnectTime = 0.0;
 	/*//
-	@type float
-	this is the amount of time in seconds that your application (mainly this
-	library) spent connecting to servers. high values here mean your servers
-	are taking too long to establish a connection to database servers.
+	the amount of time in seconds that spent trying to dns and connect to
+	database servers.
 	//*/
 
-	static
+	static public int
 	$ConnectCount = 0;
 	/*//
-	@type int
-	the number of times you have connected to a database server throughout the
-	course of your application. a high number (for most apps, greater than 1)
-	in this stat means you are connecting to way too many damn servers, or that
-	your persistant connections are not persistanting.
+	the number of times a socket to a database server has been opened.
 	//*/
 
-	static
+	static public int
 	$ConnectReuse = 0;
 	/*//
-	@type int
-	the number of times this connection has been reused. you can pretty much
-	consider this a count of how many times you `new Nether\Database`d. a high
-	value in this stat means the persistant connection is working well.
+	the number of times a socket has been reused.
 	//*/
 
-	static
+	static public float
 	$QueryTime = 0.0;
 	/*//
-	@type float
-	this is the amount of time in seconds your application has spent querying
-	databases it has connected to. a high value in this field means that you
-	may be running some very slow queries.
+	the amount of time in seconds the application has spent sending
+	queries and waiting for the result.
 	//*/
 
-	static
+	static public int
 	$QueryCount = 0;
 	/*//
-	@type int
-	this is the number of queries your application has made to databases it has
-	connected to. a high value in this field probably means your cache layer
-	has most likely literally exploded. should have protected that exhaust port
-	better.
+	this is the number of queries the application has made.
 	//*/
 
-	static
+	static public array
 	$QueryLog = [];
 	/*//
-	@type array
-	an array holding all the log entries thusfar if enabled.
+	log of all queries made if enabled.
 	//*/
 
-	////////////////////////////////
-	////////////////////////////////
+	////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////
 
 	public static function
-	Get($Alias='Default'):
+	Get(string $Alias='Default'):
 	static {
 	/*//
-	@return Nether\Database
-	fetch a database object which has already been created once before. unless
-	there was not, in which case create one, save it, then hand it back. this
-	is the other half of what will make dependency injection work - call this
-	to get your database handle instead of "new Nether\Database" - then in your
-	unit tests you can Nether\Database::$DBO[$Alias] = a mock prior to testing.
+	@date 2014-04-23
+	get a database connection by configuration alias. uses a cache to try
+	and help with performance and resource use.
 	//*/
 
 		// if we already have an item created here then we shall reuse it.
-		if(array_key_exists($Alias,static::$DBO))
+
+		if(array_key_exists($Alias, static::$DBO))
 		if(static::$DBO[$Alias] instanceof Nether\Database)
 		return static::$DBO[$Alias];
 
 		// else we will create a new one.
-		return static::$DBO[$Alias] = new static($Alias);
+
+		return (static::$DBO[$Alias] = new static($Alias));
 	}
 
-	////////////////////////////////
-	////////////////////////////////
+	////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////
 
-	protected
-	$Alias = NULL;
+	protected string
+	$Alias;
 	/*//
-	@date 2018-06-22
+	@date 2022-02-18
+	configuration alias for this database connection.
 	//*/
 
-	protected
-	$Driver = NULL;
+	protected PDO
+	$Driver;
 	/*//
-	@type \PDO
+	@date 2022-02-18
 	the pdo object driving this instance.
 	//*/
 
-	public function
-	GetDriver() {
-	/*//
-	@return \PDO
-	give you access to the pdo driver object in case you need to go all lower
-	level in this shit.
-	//*/
-
-		return $this->Driver;
-	}
-
-	public function
-	GetDriverName() {
-	/*//
-	@type string
-	fetch the name of the pdo driver currently in use.
-	//*/
-
-		return $this->Driver->GetAttribute(PDO::ATTR_DRIVER_NAME);
-	}
-
-	////////////////////////////////
-	////////////////////////////////
-
-	protected
-	$Verse = NULL;
-	/*//
-	@type Nether\Database\Verse
-	the last verse object we used.
-	//*/
-
-	public function
-	GetVerse():
-	Verse {
-	/*//
-	@return Nether\Database\Verse
-	the last verse object used. if no versen hath been used then one shall be
-	created and remembered for you.
-	//*/
-
-		if(!$this->Verse)
-		$this->Verse = $this->NewVerse();
-
-		return $this->Verse;
-	}
-
-	public function
-	NewVerse():
-	Verse {
-	/*//
-	@return Nether\Database\Verse
-	begin a new query verse. remembers the last one used because that seemed
-	like a feature that could be useful later.
-	//*/
-
-		$this->Verse = new Verse($this);
-		return $this->Verse;
-	}
-
-	////////////////////////////////
-	////////////////////////////////
-
-	public function
-	GetCoda($Class) {
-	/*//
-	@alias Nether\Database::NewCoda
-	provide consistancy between Verse and Coda API.
-	//*/
-
-		return $this->NewCoda($Class);
-	}
-
-	public function
-	NewCoda($Class) {
-	/*//
-	@return Nether\Database\Coda
-	begin a new query coda.
-	//*/
-
-		if(strpos($Class,'\\') !== 0)
-		$Class = "Nether\\Database\\Coda\\{$Class}";
-
-		if(!class_exists($Class))
-		throw new \Exception("requested coda {$Class} not found.");
-
-		$Coda = new $Class;
-		$Coda->SetDatabase($this);
-		return $Coda;
-	}
-
-	////////////////////////////////
-	////////////////////////////////
-
-	protected
+	protected bool
 	$Reused = FALSE;
 	/*//
-	@type boolean
-	marks if the driver being used was opened by a previous object. only really
-	useful for seeing if the connection recycler is working right.
+	@date 2022-02-18
+	if this object is reusing a previous connection.
 	//*/
 
-	public function
-	IsReused() {
+	protected ?Verse
+	$Verse = NULL;
 	/*//
-	@return boolean
-	return if this connection has been reused (true) or is a fresh
-	connection (false).
+	@date 2022-02-18
+	reference to the last Verse that was used.
 	//*/
 
-		return $this->Reused;
-	}
+	////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////
 
-	////////////////////////////////
-	////////////////////////////////
+	const
+	OptDatabaseConnections = 'Nether.Database.Connections',
+	OptLogQueries = 'Nether.Database.LogQueries';
+
+	////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////
 
 	public function
-	__Construct($Alias='Default') {
+	__Construct(string $Alias='Default') {
 	/*//
-	upon object construction we will check if the connection you requested
-	has already been made, and if so, reuse that driver object automatically.
-	else it will establish a new connection and shove it off so that the
-	above is true the next time you create an instance of this.
+	@date 2022-02-18
 	//*/
 
 		$this->Alias = $Alias;
 
-		if(array_key_exists($Alias,static::$DBX)) {
-			if(static::$DBX[$Alias] instanceof PDO) {
-				// reuse the existing driver if available and
-				// then we are done here.
-				$this->Driver = static::$DBX[$Alias];
-				$this->Reused = TRUE;
-				static::$ConnectReuse++;
-				return;
-			}
+		////////
+
+		// see if a connection can be reused and if so do so.
+
+		if(array_key_exists($Alias, static::$DBX))
+		if(static::$DBX[$Alias] instanceof PDO) {
+			$this->Driver = static::$DBX[$Alias];
+			$this->Reused = TRUE;
+			static::$ConnectReuse++;
+			return;
 		}
 
 		////////
-		////////
+
+		// connect to a server.
 
 		$ConnectTime = microtime(TRUE);
 		$Config = $this->GetConnectionConfig($Alias);
@@ -292,51 +178,124 @@ will want to use Nether\Database::Get($Alias) instead.
 			$Config->Password
 		);
 
+		// tell pdo to shut the hell up so we can handle the errors
+		// more gracefully.
+
 		$this->Driver->SetAttribute(
-			// tell pdo to stfu about errors so that we can
-			// check for them and present them better.
 			PDO::ATTR_ERRMODE,
 			PDO::ERRMODE_SILENT
 		);
 
 		////////
-		////////
+
+		// register this connection.
 
 		static::$DBX[$Alias] = $this->Driver;
 		static::$ConnectTime += microtime(TRUE) - $ConnectTime;
 		static::$ConnectCount++;
+
 		return;
 	}
 
-	////////////////////////////////
-	////////////////////////////////
+	////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////
+
+	public function
+	GetDriver():
+	PDO {
+	/*//
+	@date 2022-02-18
+	get access to the pdo driver object.
+	//*/
+
+		return $this->Driver;
+	}
+
+	public function
+	GetDriverName():
+	string {
+	/*//
+	@date 2022-02-18
+	fetch the name of the pdo driver currently in use.
+	//*/
+
+		return $this->Driver->GetAttribute(PDO::ATTR_DRIVER_NAME);
+	}
+
+	public function
+	GetVerse():
+	Verse {
+	/*//
+	@date 2022-02-18
+	get the previous verse, or a new one if none.
+	//*/
+
+		if($this->Verse)
+		return $this->Verse;
+
+		return $this->NewVerse();
+	}
+
+	public function
+	NewVerse():
+	Verse {
+	/*//
+	@date 2022-02-18
+	begin a new verse.
+	//*/
+
+		$this->Verse = new Verse($this);
+		return $this->Verse;
+	}
+
+	public function
+	IsReused():
+	bool {
+	/*//
+	@date 2022-02-18
+	if this object is reusing a previous connection.
+	//*/
+
+		return $this->Reused;
+	}
+
+	////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////
 
 	protected function
-	GetConnectionConfig($Alias) {
+	GetConnectionConfig(string $Alias):
+	Connection {
 	/*//
-	@return Nether\Database\Connection
+	@date 2022-02-18
 	fetch the specified configuration. if none is found then it will throw an
 	exception instead.
 	//*/
 
-		$Config = Nether\Option::Get('nether-database-connections');
+		$Config = Option::Get(static::OptDatabaseConnections);
 
-		if(!array_key_exists($Alias,$Config))
+		// complain if not found.
+
+		if(!array_key_exists($Alias, $Config))
 		throw new Nether\Database\Error\InvalidConfig($Alias);
 
-		if($Config[$Alias] instanceof Nether\Database\Connection)
+		// if config was already using connection object just return it.
+
+		if($Config[$Alias] instanceof Connection)
 		return $Config[$Alias];
 
-		return new Nether\Database\Connection($Config[$Alias]);
+		// else convert basic array into connection object.
+
+		return new Connection($Config[$Alias]);
 	}
 
 	////////////////////////////////
 	////////////////////////////////
 
 	public function
-	Begin() {
+	Begin():
+	bool {
 	/*//
-	@return bool
+	@date 2022-02-18
 	begin a query transaction.
 	//*/
 
@@ -344,9 +303,10 @@ will want to use Nether\Database::Get($Alias) instead.
 	}
 
 	public function
-	Commit() {
+	Commit():
+	bool {
 	/*//
-	@return bool
+	@date 2022-02-18
 	commit a query transaction.
 	//*/
 
@@ -354,9 +314,10 @@ will want to use Nether\Database::Get($Alias) instead.
 	}
 
 	public function
-	Rollback() {
+	Rollback():
+	bool {
 	/*//
-	@return bool
+	@date 2022-02-18
 	rollback a query transaction.
 	//*/
 
@@ -364,26 +325,23 @@ will want to use Nether\Database::Get($Alias) instead.
 	}
 
 	public function
-	Close() {
+	Close():
+	void {
 	/*//
-	@return void
-	@date 2018-06-22
-	close a database connection. technically it is only an attempt to close.
-	the probably most dumb thing about pdo is that it ref counts with no
-	method to forecably kill off connections. if you have any living instances
-	then the db will not really close. but that problem exists regardless of
-	you use nether or not. in this case though we at least will force a new
-	connection next invocation.
+	@date 2022-02-18
+	close the database connection.
 	//*/
 
+		// kill db object cache.
+
+		static::$DBO[$this->Alias] = NULL;
+		unset(static::$DBO[$this->Alias]);
+
 		// kill pdo.
+
 		$this->Driver = NULL;
 		static::$DBX[$this->Alias] = NULL;
 		unset(static::$DBX[$this->Alias]);
-
-		// kill db object cache.
-		static::$DBO[$this->Alias] = NULL;
-		unset(static::$DBO[$this->Alias]);
 
 		return;
 	}
@@ -392,9 +350,10 @@ will want to use Nether\Database::Get($Alias) instead.
 	////////////////////////////////
 
 	public function
-	GetAttr($Key) {
+	GetAttr(string $Key):
+	mixed {
 	/*//
-	@return mixed
+	@date 2022-02-18
 	fetch a PDO option/attribute from the current connection.
 	//*/
 
@@ -402,22 +361,24 @@ will want to use Nether\Database::Get($Alias) instead.
 	}
 
 	public function
-	SetAttr($Key,$Value) {
+	SetAttr(string $Key, mixed $Value):
+	bool {
 	/*//
-	@return bool
+	@date 2022-02-18
 	set a PDO option/attribute on the current connection.
 	//*/
 
-		return $this->Driver->SetAttribute($Key,$Value);
+		return $this->Driver->SetAttribute($Key, $Value);
 	}
 
 	////////////////////////////////
 	////////////////////////////////
 
 	public function
-	Escape($Value) {
+	Escape(string $Value):
+	string {
 	/*//
-	@argv string Value
+	@date 2022-02-18
 	use the PDO driver to escape data for the current connection.
 	//*/
 
@@ -428,50 +389,59 @@ will want to use Nether\Database::Get($Alias) instead.
 	////////////////////////////////
 
 	public function
-	Query($Format,$Argv=FALSE) {
+	Query(string $Format, array|object $Argv=[]):
+	Result {
 	/*//
-	@return Nether\Database\Result
+	@date 2022-02-18
+	execute a query and return a result.
 	//*/
 
 		$Statement = NULL;
+		$SQL = NULL;
+		$Dataset = [];
+		$QueryTime = 0;
 
-		if($Argv && !is_array($Argv) && !is_object($Argv))
-		throw new Nether\Database\Error\InvalidQueryInput;
-
-		// convert to an object if not an object. this would theoretically
-		// allow you to supply objects with magic methods.
+		// convert to an object if not an object.
 
 		if(!is_object($Argv))
 		$Argv = (object)$Argv;
 
-		////////
-		// build a dataset that directly maps to the bound parameters in the
-		// query with no unused values.
+		// handle if we gave it an object that implements stringable.
+		// mostly for use with Verse but you could send your own object
+		// in here as well.
 
-		$SQL = (is_object($Format))?("{$Format}"):($Format);
-		$Dataset = [];
+		if($Format instanceof Stringable)
+		$SQL = (string)$Format;
 
-		$this->Query_BuildDataset($SQL,$Argv,$Dataset);
-		$this->Query_ExpandDataset($SQL,$Argv,$Dataset);
+		else
+		$SQL = $Format;
 
-		////////
-		// and then perform the query.
+		// build a dataset that directly maps to the bound parameters in
+		// the query with no unused values.
+
+		$this->Query_BuildDataset($SQL, $Argv, $Dataset);
+		$this->Query_ExpandDataset($SQL, $Argv, $Dataset);
+
+		// prepare the query statement.
 
 		$QueryTime = microtime(TRUE);
+		$Statement = $this->Driver->Prepare($SQL);
 
-		if(!($Statement = $this->Driver->Prepare($SQL)))
+		if(!$Statement)
 		throw new Nether\Database\Error\QueryPrepareFailure;
 
-		$Result = new Database\Result($this,$Statement,$Dataset);
-		if(Nether\Option::Get('nether-database-query-log')) {
-			static::$QueryLog[] = (object)[
-				'Time' => round($Result->GetTime(),4),
-				'Query' => $Result->GetQuery(),
-				'Input' => $Result->GetArgs(),
-				'Count' => $Result->GetCount(),
-				'Trace' => static::GetDebugTrace()
-			];
-		}
+		// execute the query statement.
+
+		$Result = new Result($this, $Statement, $Dataset);
+
+		if(Option::Get(static::OptLogQueries))
+		static::$QueryLog[] = new LogQuery(
+			Time: $Result->GetTime(),
+			Query: $Result->GetQuery(),
+			Input: $Result->GetArgs(),
+			Count: $Result->GetCount(),
+			Trace: static::GetDebugTrace()
+		);
 
 		static::$QueryTime += microtime(TRUE) - $QueryTime;
 		static::$QueryCount++;
@@ -480,8 +450,12 @@ will want to use Nether\Database::Get($Alias) instead.
 	}
 
 	public function
-	Query_BuildDataset(&$SQL,$Argv,&$Dataset) {
+	Query_BuildDataset(string $SQL, object $Argv, array &$Dataset):
+	void {
 	/*//
+	@modifies $Dataset
+	@date 2022-02-18
+	@todo 2022-02-18 audit
 	fetch an array which describes all the bound data in this query and
 	relate it to the arguments which were passed to query. expands arrays
 	that are bound to a single param into multiple params, and detects
@@ -532,12 +506,17 @@ will want to use Nether\Database::Get($Alias) instead.
 			$Dataset[] = $Arg;
 		} unset($Key,$Arg);
 
-		return $Dataset;
+		return;
 	}
 
 	public function
-	Query_ExpandDataset(&$SQL,$Argv,&$Dataset) {
+	Query_ExpandDataset(string &$SQL, object $Argv, array &$Dataset):
+	void {
 	/*//
+	@modifies $SQL
+	@modifies $Dataset
+	@date 2022-02-18
+	@todo 2022-02-18 audit
 	iterate over a dataset to find any arrays that need to be expanded into
 	flat values to match up with any expanded bindings. so if there is a
 	parameter named :ObjectID and it is an array in the dataset, it will be
@@ -561,27 +540,37 @@ will want to use Nether\Database::Get($Alias) instead.
 			unset($Dataset[$Key]);
 		} unset($Key,$Value,$K,$V,$NewBindings,$Binding);
 
-		return $Dataset;
+		return;
 	}
 
 	////////////////////////////////
 	////////////////////////////////
 
 	static public function
-	GetNamedArgs($Input) {
+	GetNamedArgs(string $Input):
+	array {
 	/*//
-	@argv string Input
-	@return array[string, ...]
-	find out all the named arguments that were in the final query.
+	@date 2022-02-18
+	find the named arguments that were in the final query.
 	//*/
 
-		preg_match_all('/:([a-z0-9_]+)/i',$Input,$Match);
+		$Match = NULL;
+
+		preg_match_all(
+			'/:([a-z0-9_]+)/i',
+			$Input,
+			$Match
+		);
+
 		return $Match[1];
 	}
 
 	static public function
-	GetDebugTrace() {
+	GetDebugTrace():
+	array {
 	/*//
+	@date 2022-02-18
+	@todo 2022-02-18 optimize this to not use array_shift.
 	fetch some info we can use in the query log to descirbe where a query was
 	made from.
 	//*/
@@ -593,6 +582,7 @@ will want to use Nether\Database::Get($Alias) instead.
 
 		array_shift($Result);
 		array_shift($Result);
+
 		foreach($Result as $Trace) {
 			if(array_key_exists('class',$Trace) && array_key_exists('object',$Trace))
 			$Output[] = "{$Trace['class']}->{$Trace['function']}";
@@ -605,69 +595,6 @@ will want to use Nether\Database::Get($Alias) instead.
 		}
 
 		return $Output;
-	}
-
-	////////////////////////////////
-	////////////////////////////////
-	////////////////////////////////
-	////////////////////////////////
-	////////////////////////////////
-	////////////////////////////////
-
-	// things below here need to vanish soon. they have already been replaced
-	// by better things.
-
-	public function
-	QueryOld($Fmt,$Parm=NULL) {
-	/*//
-	@depreciated obviously
-	@return Nether\Database\Query;
-	builds a query using pdo's bound parameter stuff.
-	//*/
-
-		//echo "<p>{$fmt}</p>";
-
-		// if given a Database\Query object and an object for the parameters then
-		// fetch the named args in the query and find their matching properties
-		// in the parm object.
-		$Statement = NULL;
-
-		$Statement = NULL;
-
-		if(is_object($Fmt) && (is_object($Parm)||is_array($Parm))) {
-			$Qarg = [];
-			$Parm = (object)$Parm;
-			$Arg = NULL;
-
-			foreach($Fmt->GetNamedArgs() as $Arg) {
-				if(property_exists($Parm,$Arg)) $Qarg[":{$Arg}"] = $Parm->{$Arg};
-				else if(property_exists($Parm,":{$Arg}")) $Qarg["{$Arg}"] = $Parm->{":{$Arg}"};
-			}
-
-			$Parm = $Qarg;
-		}
-
-		else {
-			// if parm is not an array then build it as an array from all the
-			// arguments that were passed to the method.
-			if(!is_array($Parm))
-			$Parm = array_slice(func_get_args(),1);
-		}
-
-		// try to prepare the statement.
-
-		$Qtime = microtime(TRUE);
-
-		if(!($Statement = $this->Driver->prepare($Fmt)))
-		throw new \Exception('SQL statement was unable to be prepared.');
-
-		// hand over a query object.
-		$Result =  new Nether\Database\Result($this->Driver,$Statement,$Parm);
-
-		static::$QueryTime = microtime(TRUE) - $Qtime;
-		static::$QueryCount++;
-
-		return $Result;
 	}
 
 }

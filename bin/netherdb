@@ -32,10 +32,16 @@ $App = new class extends Nether\Console\Client {
 
 		////////
 
-		$SQL = (
-			Nether\Database\Verse::FromMetaCreate($Class)
-			->SetPretty(TRUE)
-		);
+		try {
+			$SQL = (
+				Nether\Database\Verse::FromMetaCreate($Class)
+				->SetPretty(TRUE)
+			);
+		}
+
+		catch(Throwable $Err) {
+			throw $Err;
+		}
 
 		echo $SQL, PHP_EOL;
 

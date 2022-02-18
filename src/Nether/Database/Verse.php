@@ -19,7 +19,7 @@ Option::Define([
 	=> 'Nether\\Database\\Verse\\MySQL',
 
 	'Nether.Database.Verse.ConnectionDefault'
-	=> 'Default'
+	=> NULL
 ]);
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -345,6 +345,282 @@ and execute it against the database.
 		$this->ResetQueryProperties();
 
 		$this->Tables = [$Arg];
+		return $this;
+	}
+
+
+	public function
+	Table(string|array $Table):
+	static {
+	/*//
+	@date 2022-02-17
+	define what tables this verse should muck around with.
+	//*/
+
+		$this->MergeValues($this->Tables, $Table);
+		return $this;
+	}
+
+	public function
+	From(string|array $Table):
+	static {
+	/*//
+	@date 2022-02-17
+	@alias self::Table
+	provide context for select/delete.
+	//*/
+
+		return $this->Table($Table);
+	}
+
+	public function
+	Into(string|array $Table):
+	static {
+	/*//
+	@date 2022-02-17
+	@alias self::Table
+	provide context for update/insert.
+	//*/
+
+		return $this->Table($Table);
+	}
+
+	public function
+	Join(string|array $Table, int $Flags=self::JoinLeft):
+	static {
+	/*//
+	@date 2022-02-17
+	define what tables should be joined into this verse and how they should be
+	joined to the main query.
+	//*/
+
+		$this->MergeFlaggedValues($this->Joins, $Table, $Flags);
+		return $this;
+	}
+
+	public function
+	Where(string|array $Condition, int $Flags=self::WhereAnd):
+	static {
+	/*//
+	@date 2022-02-17
+	define what conditions should be imposed in this verse and how they should
+	chain into eachother. whereception is not currently well supported by the
+	sql compiler yet.
+	//*/
+
+		$this->MergeFlaggedValues($this->Conditions, $Condition, $Flags);
+		return $this;
+	}
+
+	public function
+	Having(string|array $Condition, int $Flags=self::WhereAnd):
+	static {
+	/*//
+	@date 2022-02-17
+	define what conditions should be imposed in this verse and how they should
+	chain into eachother. whereception is not currently well supported by the
+	sql compiler yet.
+	//*/
+
+		$this->MergeFlaggedValues($this->Havings, $Condition, $Flags);
+		return $this;
+	}
+
+	public function
+	Sort(string|array $Sorting, int $Flags=self::SortAsc):
+	static {
+	/*//
+	@date 2022-02-17
+	define what sorts should be imposed in this verse.
+	//*/
+
+		$this->MergeFlaggedValues($this->Sorts, $Sorting, $Flags);
+		return $this;
+	}
+
+	public function
+	OrderBy(string|array $Sorting, int $Flags=self::SortAsc):
+	static {
+	/*//
+	@date 2022-02-17
+	@alias self::Sort
+	provide context for select queries.
+	//*/
+
+		return $this->Sort($Sorting, $Flags);
+	}
+
+	public function
+	Group(string|array $Grouping):
+	static {
+	/*//
+	@date 2022-02-17
+	define what groupings should be imposed in this verse.
+	//*/
+
+		$this->MergeValues($this->Groups, $Grouping);
+		return $this;
+	}
+
+	public function
+	GroupBy(string|array $Grouping):
+	static {
+	/*//
+	@date 2022-02-17
+	@alias self::Group
+	provide context for grouping.
+	//*/
+
+		return $this->Group($Grouping);
+	}
+
+	public function
+	Limit(int $Num):
+	static {
+	/*//
+	@date	2022-02-17
+	how many items to limit the result of this verse by.
+	//*/
+
+		$this->Limit = $Num;
+		return $this;
+	}
+
+	public function
+	Offset(int $Num):
+	static {
+	/*//
+	@date 2022-02-17
+	how many items to offset the result of this verse by.
+	//*/
+
+		$this->Offset = $Num;
+		return $this;
+	}
+
+	public function
+	Field(string|array $Field) {
+	/*//
+	@date 2022-02-17
+	define what fields this verse should operate against. some queries (select)
+	will use this as a flat list. others (insert/update) will use it a key value
+	list.
+	//*/
+
+		$this->MergeValues($this->Fields, $Field);
+		return $this;
+	}
+
+	public function
+	Fields(string|array $Fields) {
+	/*//
+	@deprecated 2022-02-17
+	@alias self::Field
+	provide bc.
+	//*/
+
+		return $this->Field($Fields);
+	}
+
+	public function
+	Column(string|array $Column) {
+	/*//
+	@date 2022-02-17
+	@alias self::Field
+	provide context for insert queries.
+	//*/
+
+		return $this->Field($Column);
+	}
+
+	public function
+	Values(string|array $Values) {
+	/*//
+	@date 2022-02-17
+	@alias self::Field
+	provide context for insert queries.
+	//*/
+
+		return $this->Field($Values);
+	}
+
+	public function
+	Set(string|array $Values) {
+	/*//
+	@date 2022-02-17
+	@alias self::Fields
+	provide bc and context for update queries.
+	//*/
+
+		return $this->Fields($Values);
+	}
+
+	public function
+	Charset(?string $Charset):
+	static {
+	/*//
+	@date 2021-08-24
+	set the charset for this verse.
+	//*/
+
+		$this->Charset = $Charset;
+		return $this;
+	}
+
+	public function
+	Collate(?string $Collation):
+	static {
+	/*//
+	@date 2021-08-24
+	set the collation for this verse.
+	//*/
+
+		$this->Collate = $Collation;
+		return $this;
+	}
+
+	public function
+	Engine(?string $Engine):
+	static {
+	/*//
+	@date 2021-08-24
+	set the engine for this verse.
+	//*/
+
+		$this->Engine = $Engine;
+		return $this;
+	}
+
+	public function
+	ForeignKey(string|array $Key) {
+	/*//
+	@date 2021-08-24
+	set the keys for this verse.
+	//*/
+
+		$this->MergeValues($this->ForeignKeys, $Key);
+		return $this;
+	}
+
+	public function
+	Index(string|array $Index) {
+	/*//
+	@date 2021-08-24
+	set the indexing for this verse.
+	//*/
+
+		$this->MergeValues($this->Indexes, $Index);
+		return $this;
+	}
+
+	public function
+	Comment(?string $Text) {
+	/*//
+	@date 2021-08-24
+	set the comment for this table.
+	//*/
+
+		$this->Comment = $Text ?? '';
 		return $this;
 	}
 
@@ -734,281 +1010,6 @@ and execute it against the database.
 
 	////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////
-
-	public function
-	Table(string|array $Table):
-	static {
-	/*//
-	@date 2022-02-17
-	define what tables this verse should muck around with.
-	//*/
-
-		$this->MergeValues($this->Tables, $Table);
-		return $this;
-	}
-
-	public function
-	From(string|array $Table):
-	static {
-	/*//
-	@date 2022-02-17
-	@alias self::Table
-	provide context for select/delete.
-	//*/
-
-		return $this->Table($Table);
-	}
-
-	public function
-	Into(string|array $Table):
-	static {
-	/*//
-	@date 2022-02-17
-	@alias self::Table
-	provide context for update/insert.
-	//*/
-
-		return $this->Table($Table);
-	}
-
-	public function
-	Join(string|array $Table, int $Flags=self::JoinLeft):
-	static {
-	/*//
-	@date 2022-02-17
-	define what tables should be joined into this verse and how they should be
-	joined to the main query.
-	//*/
-
-		$this->MergeFlaggedValues($this->Joins, $Table, $Flags);
-		return $this;
-	}
-
-	public function
-	Where(string|array $Condition, int $Flags=self::WhereAnd):
-	static {
-	/*//
-	@date 2022-02-17
-	define what conditions should be imposed in this verse and how they should
-	chain into eachother. whereception is not currently well supported by the
-	sql compiler yet.
-	//*/
-
-		$this->MergeFlaggedValues($this->Conditions, $Condition, $Flags);
-		return $this;
-	}
-
-	public function
-	Having(string|array $Condition, int $Flags=self::WhereAnd):
-	static {
-	/*//
-	@date 2022-02-17
-	define what conditions should be imposed in this verse and how they should
-	chain into eachother. whereception is not currently well supported by the
-	sql compiler yet.
-	//*/
-
-		$this->MergeFlaggedValues($this->Havings, $Condition, $Flags);
-		return $this;
-	}
-
-	public function
-	Sort(string|array $Sorting, int $Flags=self::SortAsc):
-	static {
-	/*//
-	@date 2022-02-17
-	define what sorts should be imposed in this verse.
-	//*/
-
-		$this->MergeFlaggedValues($this->Sorts, $Sorting, $Flags);
-		return $this;
-	}
-
-	public function
-	OrderBy(string|array $Sorting, int $Flags=self::SortAsc):
-	static {
-	/*//
-	@date 2022-02-17
-	@alias self::Sort
-	provide context for select queries.
-	//*/
-
-		return $this->Sort($Sorting, $Flags);
-	}
-
-	public function
-	Group(string|array $Grouping):
-	static {
-	/*//
-	@date 2022-02-17
-	define what groupings should be imposed in this verse.
-	//*/
-
-		$this->MergeValues($this->Groups, $Grouping);
-		return $this;
-	}
-
-	public function
-	GroupBy(string|array $Grouping):
-	static {
-	/*//
-	@date 2022-02-17
-	@alias self::Group
-	provide context for grouping.
-	//*/
-
-		return $this->Group($Grouping);
-	}
-
-	public function
-	Limit(int $Num):
-	static {
-	/*//
-	@date	2022-02-17
-	how many items to limit the result of this verse by.
-	//*/
-
-		$this->Limit = $Num;
-		return $this;
-	}
-
-	public function
-	Offset(int $Num):
-	static {
-	/*//
-	@date 2022-02-17
-	how many items to offset the result of this verse by.
-	//*/
-
-		$this->Offset = $Num;
-		return $this;
-	}
-
-	public function
-	Field(string|array $Field) {
-	/*//
-	@date 2022-02-17
-	define what fields this verse should operate against. some queries (select)
-	will use this as a flat list. others (insert/update) will use it a key value
-	list.
-	//*/
-
-		$this->MergeValues($this->Fields, $Field);
-		return $this;
-	}
-
-	public function
-	Fields(string|array $Fields) {
-	/*//
-	@deprecated 2022-02-17
-	@alias self::Field
-	provide bc.
-	//*/
-
-		return $this->Field($Fields);
-	}
-
-	public function
-	Column(string|array $Column) {
-	/*//
-	@date 2022-02-17
-	@alias self::Field
-	provide context for insert queries.
-	//*/
-
-		return $this->Field($Column);
-	}
-
-	public function
-	Values(string|array $Values) {
-	/*//
-	@date 2022-02-17
-	@alias self::Field
-	provide context for insert queries.
-	//*/
-
-		return $this->Field($Values);
-	}
-
-	public function
-	Set(string|array $Values) {
-	/*//
-	@date 2022-02-17
-	@alias self::Fields
-	provide bc and context for update queries.
-	//*/
-
-		return $this->Fields($Values);
-	}
-
-	public function
-	Charset(?string $Charset):
-	static {
-	/*//
-	@date 2021-08-24
-	set the charset for this verse.
-	//*/
-
-		$this->Charset = $Charset;
-		return $this;
-	}
-
-	public function
-	Collate(?string $Collation):
-	static {
-	/*//
-	@date 2021-08-24
-	set the collation for this verse.
-	//*/
-
-		$this->Collate = $Collation;
-		return $this;
-	}
-
-	public function
-	Engine(?string $Engine):
-	static {
-	/*//
-	@date 2021-08-24
-	set the engine for this verse.
-	//*/
-
-		$this->Engine = $Engine;
-		return $this;
-	}
-
-	public function
-	ForeignKey(string|array $Key) {
-	/*//
-	@date 2021-08-24
-	set the keys for this verse.
-	//*/
-
-		$this->MergeValues($this->ForeignKeys, $Key);
-		return $this;
-	}
-
-	public function
-	Index(string|array $Index) {
-	/*//
-	@date 2021-08-24
-	set the indexing for this verse.
-	//*/
-
-		$this->MergeValues($this->Indexes, $Index);
-		return $this;
-	}
-
-	public function
-	Comment(string $Text) {
-	/*//
-	@date 2021-08-24
-	set the comment for this table.
-	//*/
-
-		$this->Comment = $Text;
-		return $this;
-	}
 
 	static public function
 	FromMeta(string $ClassName, int $Mode):

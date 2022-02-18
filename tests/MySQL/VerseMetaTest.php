@@ -6,7 +6,6 @@ require_once(sprintf(
 ));
 
 use Nether\Option;
-use Nether\Database;
 use Nether\Database\Verse;
 use Nether\Database\Struct\TableClassInfo;
 
@@ -25,6 +24,8 @@ class ExampleTable1 {
 	#[Nether\Database\Meta\TypeIntBig(Unsigned: TRUE)]
 	#[Nether\Database\Meta\FieldIndex]
 	public string $KeyToIndex;
+
+	////////
 
 	static public function
 	GetPrettyCreateSQL():

@@ -53,7 +53,6 @@ extends PHPUnit\Framework\TestCase {
 	const
 	TestConditionBasic = 'Field1=:Value1';
 
-
 	const
 	TestConditionBasic2 = 'Field2=:Value2';
 
