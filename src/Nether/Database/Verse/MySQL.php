@@ -234,8 +234,14 @@ extends Compiler {
 	generate a CREATE style query.
 	//*/
 
-		$this->QueryString .= sprintf(
-			"CREATE TABLE `%s` %s\n%s\n%s\n%s\n%s",
+		$CharNL = " ";
+		$CharSL = "\n";
+
+		if($this->Verse->Pretty)
+		$CharNL = "\n";
+
+		$this->QueryString = sprintf(
+			"CREATE TABLE `%s` %s{$CharNL}%s{$CharNL}%s{$CharNL}%s{$CharNL}%s",
 			current($this->Verse->GetTables()),
 			$this->GetCreateFieldsString(
 				$this->Verse->GetFields() ?? [],
@@ -531,13 +537,24 @@ extends Compiler {
 		$Value = NULL;
 		$First = TRUE;
 		$Output = '';
+		$CharNL = " ";
+		$CharNLT = " ";
+
+		////////
+
+		if($this->Verse->Pretty) {
+			$CharNL = "\n";
+			$CharNLT = "\n\t";
+		}
+
+		////////
 
 		// generate the list of fields on this table.
 
 		foreach($Sets as $Value) {
 			$Output .= sprintf(
 				'%s%s',
-				(($First)?("(\n\t"):(",\n\t")),
+				(($First)?("({$CharNLT}"):(",{$CharNLT}")),
 				$Value
 			);
 
@@ -551,7 +568,7 @@ extends Compiler {
 			if($Value->PrimaryKey instanceof PrimaryKey) {
 				$Output .= sprintf(
 					'%sPRIMARY KEY (`%s`) USING BTREE',
-					(($First)?("(\n\t"):(",\n\t")),
+					(($First)?("({$CharNLT}"):(",{$CharNLT}")),
 					$Value->Name
 				);
 
@@ -566,7 +583,7 @@ extends Compiler {
 			if($Value->Index instanceof FieldIndex) {
 				$Output .= sprintf(
 					'%sINDEX `%s` (`%s`) USING %s',
-					(($First)?("(\n\t"):(",\n\t")),
+					(($First)?("({$CharNLT}"):(",{$CharNLT}")),
 					$Value->Index->Name,
 					$Value->Name,
 					$Value->Index->Method ?? 'BTREE'
@@ -584,14 +601,14 @@ extends Compiler {
 				if(!array_key_exists($Value->ForeignKey->Name,$Indexes))
 				$Output .= sprintf(
 					'%sINDEX `%s` (`%s`) USING BTREE',
-					(($First)?("(\n\t"):(",\n\t")),
+					(($First)?("({$CharNLT}"):(",{$CharNLT}")),
 					$Value->ForeignKey->Name,
 					$Value->Name
 				);
 
 				$Output .= sprintf(
 					'%sCONSTRAINT `%s` FOREIGN KEY(`%s`) REFERENCES `%s` (`%s`) ON UPDATE %s ON DELETE %s',
-					(($First)?("(\n\t"):(",\n\t")),
+					(($First)?("({$CharNLT}"):(",{$CharNLT}")),
 					$Value->ForeignKey->Name,
 					$Value->Name,
 					$Value->ForeignKey->Table,
@@ -604,7 +621,7 @@ extends Compiler {
 			}
 		}
 
-		return "{$Output}\n)";
+		return "{$Output}{$CharNL})";
 	}
 
 	protected function

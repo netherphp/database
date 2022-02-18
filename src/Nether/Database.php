@@ -480,7 +480,7 @@ will want to use Nether\Database::Get($Alias) instead.
 	}
 
 	public function
-	Query_BuildDataset(&$SQL,&$Argv,&$Dataset) {
+	Query_BuildDataset(&$SQL,$Argv,&$Dataset) {
 	/*//
 	fetch an array which describes all the bound data in this query and
 	relate it to the arguments which were passed to query. expands arrays
@@ -536,7 +536,7 @@ will want to use Nether\Database::Get($Alias) instead.
 	}
 
 	public function
-	Query_ExpandDataset(&$SQL,&$Argv,&$Dataset) {
+	Query_ExpandDataset(&$SQL,$Argv,&$Dataset) {
 	/*//
 	iterate over a dataset to find any arrays that need to be expanded into
 	flat values to match up with any expanded bindings. so if there is a
