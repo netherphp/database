@@ -424,7 +424,7 @@ extends Compiler {
 
 		foreach($Joins as $Join) {
 			$Output .= sprintf(
-				'%s (%s) ',
+				'%s %s ',
 				$this->GetJoinType($Join->Flags),
 				$Join->Query
 			);
