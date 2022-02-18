@@ -86,7 +86,7 @@ extends Compiler {
 		if(($Limit = $this->Verse->GetLimit()) !== 0)
 		$this->QueryString .= $this->GetLimitString($Limit);
 
-		return $this->QueryString;
+		return trim($this->QueryString);
 	}
 
 	protected function
@@ -123,7 +123,7 @@ extends Compiler {
 			)
 		);
 
-		return $this->QueryString;
+		return trim($this->QueryString);
 	}
 
 	protected function
@@ -222,7 +222,7 @@ extends Compiler {
 		if(($Limit = $this->Verse->GetLimit()) !== 0)
 		$this->QueryString .= $this->GetLimitString($Limit);
 
-		return $this->QueryString;
+		return trim($this->QueryString);
 	}
 
 	protected function
@@ -464,7 +464,7 @@ extends Compiler {
 		foreach($Sets as $Field => $Value) {
 			$Output .= sprintf(
 				'%s%s=%s',
-				(($First)?(''):(', ')),
+				(($First)?(''):(',')),
 				$Field,
 				$Value
 			);
