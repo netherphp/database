@@ -5,9 +5,12 @@ require_once(sprintf(
 	dirname(__FILE__)
 ));
 
+use Nether\Option;
 use Nether\Database;
 use Nether\Database\Verse;
 use Nether\Database\Struct\TableClassInfo;
+
+Option::Set('Nether.Database.Verse.ConnectionDefault', NULL);
 
 #[Nether\Database\Meta\TableClass(Name: 'ExampleTable1', Comment: 'Example Table 1')]
 class ExampleTable1 {
@@ -23,6 +26,26 @@ class ExampleTable1 {
 	#[Nether\Database\Meta\FieldIndex]
 	public string $KeyToIndex;
 
+	static public function
+	GetPrettyCreateSQL():
+	string {
+
+		$Query = "CREATE TABLE `ExampleTable1` (\n";
+		$Query .= "\t`ID` BIGINT UNSIGNED AUTO_INCREMENT,\n";
+		$Query .= "\t`OtherID` BIGINT UNSIGNED,\n";
+		$Query .= "\t`KeyToIndex` BIGINT UNSIGNED,\n";
+		$Query .= "\tINDEX `IdxKeyToIndex` (`KeyToIndex`) USING BTREE,\n";
+		$Query .= "\tINDEX `FnkExampleTable1OtherTableOtherID` (`OtherID`) USING BTREE,\n";
+		$Query .= "\tCONSTRAINT `FnkExampleTable1OtherTableOtherID` FOREIGN KEY(`OtherID`) REFERENCES `OtherTable` (`ID`) ON UPDATE CASCADE ON DELETE CASCADE\n";
+		$Query .= ")\n";
+		$Query .= "CHARSET=utf8mb4\n";
+		$Query .= "COLLATE=utf8mb4_general_ci\n";
+		$Query .= "ENGINE=InnoDB\n";
+		$Query .= "COMMENT=\"Example Table 1\"";
+
+		return $Query;
+	}
+
 }
 
 class VerseMetaTest
@@ -33,26 +56,14 @@ extends PHPUnit\Framework\TestCase {
 
 	/** @test */
 	public function
-	TestCreateFromAttribs():
+	TestCreateFromMeta():
 	void {
 
 		$DB = $this->GetDatabaseMock();
 		$Verse = $DB->NewVerse();
-		$Verse->Pretty = TRUE;
-		$Table = new TableClassInfo('ExampleTable1');
+		$QueryCreate1 = ExampleTable1::GetPrettyCreateSQL();
 
-		$QueryCreate1 = "CREATE TABLE `ExampleTable1` (\n";
-		$QueryCreate1 .= "	`ID` BIGINT UNSIGNED AUTO_INCREMENT,\n";
-		$QueryCreate1 .= "	`OtherID` BIGINT UNSIGNED,\n";
-		$QueryCreate1 .= "	`KeyToIndex` BIGINT UNSIGNED,\n";
-		$QueryCreate1 .= "	INDEX `IdxKeyToIndex` (`KeyToIndex`) USING BTREE,\n";
-		$QueryCreate1 .= "	INDEX `FnkExampleTable1OtherTableOtherID` (`OtherID`) USING BTREE,\n";
-		$QueryCreate1 .= "	CONSTRAINT `FnkExampleTable1OtherTableOtherID` FOREIGN KEY(`OtherID`) REFERENCES `OtherTable` (`ID`) ON UPDATE CASCADE ON DELETE CASCADE\n";
-		$QueryCreate1 .= ")\n";
-		$QueryCreate1 .= "CHARSET=utf8mb4\n";
-		$QueryCreate1 .= "COLLATE=utf8mb4_general_ci\n";
-		$QueryCreate1 .= "ENGINE=InnoDB\n";
-		$QueryCreate1 .= "COMMENT=\"Example Table 1\"";
+		$Table = new TableClassInfo('ExampleTable1');
 
 		$Verse
 		->Create($Table->Name)
@@ -61,7 +72,89 @@ extends PHPUnit\Framework\TestCase {
 		->ForeignKey($Table->GetForeignKeyList())
 		->Index($Table->GetIndexList());
 
-		$this->AssertEquals($QueryCreate1, (string)$Verse);
+		$this->AssertEquals($QueryCreate1, (string)$Verse->SetPretty(TRUE));
+
+		return;
+	}
+
+	/** @test */
+	public function
+	TestCreateFromMetaHelper():
+	void {
+
+		$Verse = Verse::FromMetaCreate('ExampleTable1');
+		$QueryCreate1 = ExampleTable1::GetPrettyCreateSQL();
+
+		$this->AssertEquals($QueryCreate1, (string)$Verse->SetPretty(TRUE));
+
+		return;
+	}
+
+	/** @test */
+	public function
+	TestSelectFromMetaHelper():
+	void {
+
+		$Query1 = 'SELECT Field1 FROM ExampleTable1';
+
+		$Verse = (
+			Verse::FromMetaSelect('ExampleTable1')
+			->Column('Field1')
+		);
+
+		$this->AssertEquals($Query1, (string)$Verse);
+
+		return;
+	}
+
+	/** @test */
+	public function
+	TestUpdateFromMetaHelper():
+	void {
+
+		$Query1 = 'UPDATE ExampleTable1 SET Field1=:Value1';
+
+		$Verse = (
+			Verse::FromMetaUpdate('ExampleTable1')
+			->Values(['Field1' => ':Value1'])
+		);
+
+		$this->AssertEquals($Query1, (string)$Verse);
+
+		return;
+	}
+
+	/** @test */
+	public function
+	TestDeleteFromMetaHelper():
+	void {
+
+		$Query1 = 'DELETE FROM ExampleTable1 WHERE (Field1=:Value1) LIMIT 1';
+
+		$Verse = (
+			Verse::FromMetaDelete('ExampleTable1')
+			->Where('Field1=:Value1')
+			->Limit(1)
+		);
+
+		$this->AssertEquals($Query1, (string)$Verse);
+
+		return;
+	}
+
+	/** @test */
+	public function
+	TestInsertFromMetaHelper():
+	void {
+
+		$Query1 = 'INSERT INTO ExampleTable1 (Field1) VALUES (:Value1)';
+
+		$Verse = (
+			Verse::FromMetaInsert('ExampleTable1')
+			->Values(['Field1' => ':Value1'])
+		);
+
+		$this->AssertEquals($Query1, (string)$Verse);
 
 		return;
 	}

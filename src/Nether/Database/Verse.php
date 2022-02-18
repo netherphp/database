@@ -6,6 +6,7 @@ use Nether\Option;
 use Nether\Database;
 use Nether\Database\Result;
 use Nether\Database\Struct\FlaggedQueryValue;
+use Nether\Database\Struct\TableClassInfo;
 
 use Stringable;
 use Exception;
@@ -541,15 +542,17 @@ and execute it against the database.
 	////////////////////////////////////////////////////////////////
 
 	public function
-	Reset():
-	static {
+	GetSQL():
+	string {
 	/*//
 	@date 2022-02-17
-	reset the query properties.
+	fetch the compiled sql query that we have described in this verse.
 	//*/
 
-		$this->ResetQueryProperties();
-		return $this;
+		$Compiler = new ($this->Compiler)($this);
+		$Output = $Compiler->Compile();
+
+		return $Output;
 	}
 
 	public function
@@ -569,19 +572,41 @@ and execute it against the database.
 		);
 	}
 
-
 	public function
-	GetSQL():
-	string {
+	Reset():
+	static {
 	/*//
 	@date 2022-02-17
-	fetch the compiled sql query that we have described in this verse.
+	reset the query properties.
 	//*/
 
-		$Compiler = new ($this->Compiler)($this);
-		$Output = $Compiler->Compile();
+		$this->ResetQueryProperties();
+		return $this;
+	}
 
-		return $Output;
+	////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////
+
+	public function
+	GetPretty():
+	bool {
+	/*//
+	@date 2022-02-17
+	get the pretty flag for this query.
+	//*/
+
+		return $this->Pretty;
+	}
+
+	public function
+	SetPretty(bool $Input):
+	static {
+	/*//
+	@date 2022-02-17
+	//*/
+
+		$this->Pretty = $Input;
+		return $this;
 	}
 
 	////////////////////////////////////////////////////////////////
@@ -871,7 +896,7 @@ and execute it against the database.
 	}
 
 	public function
-	Fields(string|array $Fields) {
+	Field(string|array $Field) {
 	/*//
 	@date 2022-02-17
 	define what fields this verse should operate against. some queries (select)
@@ -879,19 +904,41 @@ and execute it against the database.
 	list.
 	//*/
 
-		$this->MergeValues($this->Fields, $Fields);
+		$this->MergeValues($this->Fields, $Field);
 		return $this;
+	}
+
+	public function
+	Fields(string|array $Fields) {
+	/*//
+	@deprecated 2022-02-17
+	@alias self::Field
+	provide bc.
+	//*/
+
+		return $this->Field($Fields);
+	}
+
+	public function
+	Column(string|array $Column) {
+	/*//
+	@date 2022-02-17
+	@alias self::Field
+	provide context for insert queries.
+	//*/
+
+		return $this->Field($Column);
 	}
 
 	public function
 	Values(string|array $Values) {
 	/*//
 	@date 2022-02-17
-	@alias self::Fields
+	@alias self::Field
 	provide context for insert queries.
 	//*/
 
-		return $this->Fields($Values);
+		return $this->Field($Values);
 	}
 
 	public function
@@ -972,6 +1019,88 @@ and execute it against the database.
 
 		$this->Comment = $Text;
 		return $this;
+	}
+
+	static public function
+	FromClass(string $ClassName, int $Mode):
+	static {
+	/*//
+	@date	2022-02-17
+	//*/
+
+		$Verse = new static;
+		$Table = new TableClassInfo($ClassName);
+
+		match($Mode) {
+			static::ModeSelect => $Verse->Select($Table->Name),
+			static::ModeInsert => $Verse->Insert($Table->Name),
+			static::ModeUpdate => $Verse->Update($Table->Name),
+			static::ModeDelete => $Verse->Delete($Table->Name),
+			static::ModeCreate => $Verse->Create($Table->Name)
+		};
+
+		return $Verse;
+	}
+
+	static public function
+	FromMetaSelect(string $ClassName):
+	static {
+	/*//
+	@date	2022-02-17
+	//*/
+
+		return static::FromClass($ClassName, static::ModeSelect);
+	}
+
+
+	static public function
+	FromMetaInsert(string $ClassName):
+	static {
+	/*//
+	@date	2022-02-17
+	//*/
+
+		return static::FromClass($ClassName, static::ModeInsert);
+	}
+
+	static public function
+	FromMetaUpdate(string $ClassName):
+	static {
+	/*//
+	@date	2022-02-17
+	//*/
+
+		return static::FromClass($ClassName, static::ModeUpdate);
+	}
+
+	static public function
+	FromMetaDelete(string $ClassName):
+	static {
+	/*//
+	@date	2022-02-17
+	//*/
+
+		return static::FromClass($ClassName, static::ModeDelete);
+	}
+
+	static public function
+	FromMetaCreate(string $ClassName):
+	static {
+	/*//
+	@date	2022-02-17
+	//*/
+
+		$Verse = new static;
+		$Table = new TableClassInfo($ClassName);
+
+		$Verse
+		->Create($Table->Name)
+		->Comment($Table->Comment)
+		->Fields($Table->GetFieldList())
+		->Index($Table->GetIndexList())
+		->ForeignKey($Table->GetForeignKeyList());
+
+		return $Verse;
 	}
 
 }

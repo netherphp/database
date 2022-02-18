@@ -18,10 +18,7 @@ $App = new class extends Nether\Console\Client {
 	//*/
 
 		$Class = $this->GetInput(2);
-		$Table = NULL;
 		$SQL = '';
-		$Fields = [];
-		$LF = PHP_EOL;
 
 		////////
 
@@ -35,39 +32,9 @@ $App = new class extends Nether\Console\Client {
 
 		////////
 
-
-		$Table = new TableClassInfo($Class);
-
 		$SQL = (
-			(new Nether\Database\Verse)
-			->Create($Table->Name)
-			->Comment($Table->Comment)
-			->Fields((function($Table){
-				$Fields = [];
-
-				foreach($Table->Fields as $Field)
-				$Fields[$Field->Name] = $Field;
-
-				return $Fields;
-			})($Table))
-			->Index((function($Table){
-				$Fields = [];
-
-				foreach($Table->Fields as $Field)
-				if($Field->Index)
-				$Fields[$Field->Index->Name] = $Field;
-
-				return $Fields;
-			})($Table))
-			->ForeignKey((function($Table){
-				$Fields = [];
-
-				foreach($Table->Fields as $Field)
-				if($Field->ForeignKey)
-				$Fields[$Field->ForeignKey->Name] = $Field;
-
-				return $Fields;
-			})($Table))
+			Nether\Database\Verse::FromMetaCreate($Class)
+			->SetPretty(TRUE)
 		);
 
 		echo $SQL, PHP_EOL;
@@ -82,12 +49,16 @@ $App = new class extends Nether\Console\Client {
 	@date 2021-08-19
 	i want to support a few different syntaxes for inputting class names
 	since php went with backslashes as namespaceoperators. i said it then,
-	and im saying it now. choosing backslashes to avoid extra work to make it
-	actually be good was fucking stupid.
+	and im saying it now. choosing backslashes to avoid extra work rather
+	than make it actually be good was fukken stupid.
 	//*/
+
+		// Some.Class.Name
 
 		if(str_contains($Input,'.'))
 		return str_replace('.','\\',$Input);
+
+		// Some-Class-Name
 
 		if(str_contains($Input,'-'))
 		return str_replace('-','\\',$Input);
