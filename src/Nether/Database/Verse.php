@@ -44,9 +44,9 @@ and execute it against the database.
 
 	const
 	InsertNormal      = 0,
-	InsertIgnore      = 1,
-	InsertUpdate      = 2,
-	InsertReuseUnique = 3;
+	InsertIgnore      = (1 << 0),
+	InsertUpdate      = (1 << 1),
+	InsertReuseUnique = (1 << 2);
 
 	const
 	JoinLeft    = (1 << 0),
