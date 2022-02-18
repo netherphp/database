@@ -628,6 +628,17 @@ and execute it against the database.
 	////////////////////////////////////////////////////////////////
 
 	public function
+	GetDatabase():
+	?Database {
+	/*//
+	@date 2022-02-18
+	get the current mode of the query.
+	//*/
+
+		return $this->Database;
+	}
+
+	public function
 	GetMode():
 	int {
 	/*//
