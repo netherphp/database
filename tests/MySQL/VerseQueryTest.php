@@ -136,8 +136,8 @@ extends PHPUnit\Framework\TestCase {
 		$DB = $this->GetDatabaseMock();
 		$Verse = $DB->NewVerse();
 
-		$QueryJoin1 = "SELECT Field1, Field2, Field3 FROM TableName LEFT JOIN (Table2 ON TableName.Field1=Table2.Field1) WHERE (Field1 IN(:ValueList))";
-		$QueryJoin2 = "SELECT Field1, Field2, Field3 FROM TableName LEFT JOIN (Table2 ON TableName.Field1=Table2.Field1) LEFT JOIN (Table3 ON TableName.Field1=Table3.Field1) WHERE (Field1 IN(:ValueList))";
+		$QueryJoin1 = "SELECT Field1, Field2, Field3 FROM TableName LEFT JOIN Table2 ON TableName.Field1=Table2.Field1 WHERE (Field1 IN(:ValueList))";
+		$QueryJoin2 = "SELECT Field1, Field2, Field3 FROM TableName LEFT JOIN Table2 ON TableName.Field1=Table2.Field1 LEFT JOIN Table3 ON TableName.Field1=Table3.Field1 WHERE (Field1 IN(:ValueList))";
 
 		////////
 
