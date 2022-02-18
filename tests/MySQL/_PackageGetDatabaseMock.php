@@ -18,6 +18,7 @@ trait GetDatabaseMock {
 		// what version of the coda it should use in case some servers have
 		// differences in syntax. this test directory is only testing the
 		// output for mysql.
+
 		$DB
 		->Method('GetDriverName')
 		->Will($this->ReturnValue('mysql'));
@@ -30,6 +31,7 @@ trait GetDatabaseMock {
 		// however one must remember that tests using this mock are not not
 		// claiming their data is 100% safe, only that they compile as
 		// expected when given a specific means of cleaning.
+
 		$DB
 		->Method('Escape')
 		->Will($this->ReturnCallback(function($Input){
