@@ -17,7 +17,7 @@ Option::Define([
 	'Nether.Database.Verse.Compiler'
 	=> 'Nether\\Database\\Verse\\MySQL',
 
-	'Nether.Database.Verse.DefaultConnection'
+	'Nether.Database.Verse.ConnectionDefault'
 	=> 'Default'
 ]);
 
@@ -541,6 +541,18 @@ and execute it against the database.
 	////////////////////////////////////////////////////////////////
 
 	public function
+	Reset():
+	static {
+	/*//
+	@date 2022-02-17
+	reset the query properties.
+	//*/
+
+		$this->ResetQueryProperties();
+		return $this;
+	}
+
+	public function
 	Query(array $Argv=[]):
 	Result {
 	/*//
@@ -566,17 +578,10 @@ and execute it against the database.
 	fetch the compiled sql query that we have described in this verse.
 	//*/
 
-		$SQL = new ($this->Compiler)($this);
-		$String = $SQL->Get();
+		$Compiler = new ($this->Compiler)($this);
+		$Output = $Compiler->Compile();
 
-		if($this->Pretty)
-		$String = preg_replace(
-			'/ (FROM|INTO|WHERE|AND|OR|LIMIT|OFFSET|ORDER|GROUP|LEFT|RIGHT|NATURAL|INNER|VALUES)/',
-			"\n\\1",
-			$String
-		);
-
-		return $String;
+		return $Output;
 	}
 
 	////////////////////////////////////////////////////////////////

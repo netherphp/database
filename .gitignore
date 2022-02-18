@@ -1,3 +1,5 @@
 # bof
+/.phpunit.cache
 /vendor
+/coverage
 # eof

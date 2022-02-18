@@ -18,6 +18,9 @@ class TableClassInfo {
 	public array
 	$Fields = [];
 
+	public array
+	$Indexes = [];
+
 	public string
 	$PrimaryKey;
 
@@ -78,19 +81,58 @@ class TableClassInfo {
 			$Attrib->Inst = $Attrib->NewInstance();
 
 			// find the table fields.
-			foreach($Attribs as $Attrib)
-			if($Attrib->Inst instanceof Meta\TableField) {
-				$this->Fields[$Name] = $Attrib->Inst->Learn($this,$Prop,$Attribs);
+			foreach($Attribs as $Attrib) {
+				if($Attrib->Inst instanceof Meta\TableField) {
+					$this->Fields[$Name] = $Attrib->Inst->Learn($this,$Prop,$Attribs);
 
-				if($this->Fields[$Name]->PrimaryKey) {
-					$this->PrimaryKey = $this->Fields[$Name]->Name;
-					$this->ObjectKey = $Name;
+					if($this->Fields[$Name]->PrimaryKey) {
+						$this->PrimaryKey = $this->Fields[$Name]->Name;
+						$this->ObjectKey = $Name;
+					}
+				}
+
+				elseif($Attrib->Inst instanceof Meta\FieldIndex) {
+					$this->Indexes[$Name] = $this->Fields[$Name];
 				}
 			}
 
 		}
 
 		return;
+	}
+
+	public function
+	GetFieldList():
+	array {
+
+		$Fields = [];
+		$Field = NULL;
+
+		foreach($this->Fields as $Field)
+		$Fields[$Field->Name] = $Field;
+
+		return $Fields;
+	}
+
+	public function
+	GetIndexList():
+	array{
+
+		return $this->Indexes;
+	}
+
+	public function
+	GetForeignKeyList():
+	array {
+
+		$Fields = [];
+		$Field = NULL;
+
+		foreach($this->Fields as $Field)
+		if($Field->ForeignKey)
+		$Fields[$Field->ForeignKey->Name] = $Field;
+
+		return $Fields;
 	}
 
 }

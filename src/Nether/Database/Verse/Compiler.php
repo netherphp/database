@@ -41,7 +41,7 @@ provide the base api for the query compiling system.
 	////////////////////////////////////////////////////////////////
 
 	public function
-	Get():
+	Compile():
 	string {
 	/*//
 	@date 2022-02-17
@@ -54,7 +54,7 @@ provide the base api for the query compiling system.
 
 		////////
 
-		return match($this->Verse->GetMode()) {
+		$Output = match($Mode) {
 			Verse::ModeSelect => $this->GenerateSelectQuery(),
 			Verse::ModeInsert => $this->GenerateInsertQuery(),
 			Verse::ModeUpdate => $this->GenerateUpdateQuery(),
@@ -62,6 +62,17 @@ provide the base api for the query compiling system.
 			Verse::ModeCreate => $this->GenerateCreateQuery(),
 			default           => 'SELECT 0;'
 		};
+
+		////////
+
+		if($this->Verse->Pretty)
+		$Output = preg_replace(
+			'/ (FROM|INTO|WHERE|AND|OR|LIMIT|OFFSET|ORDER|GROUP|LEFT|RIGHT|NATURAL|INNER|VALUES)/',
+			"\n\\1",
+			$Output
+		);
+
+		return $Output;
 	}
 
 	////////////////////////////////////////////////////////////////

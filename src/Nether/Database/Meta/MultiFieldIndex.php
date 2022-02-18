@@ -5,7 +5,7 @@ namespace Nether\Database\Meta;
 use Attribute;
 
 #[Attribute(Attribute::TARGET_PROPERTY)]
-class FieldIndex {
+class MultiFieldIndex {
 /*//
 @date 2021-08-20
 //*/
