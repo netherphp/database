@@ -47,20 +47,12 @@ provide the base api for the query compiling system.
 	@date 2022-02-17
 	//*/
 
-		$Mode = $this->Verse->GetMode();
-
-		if($Mode < Verse::ModeSelect || $Mode > Verse::ModeCreate)
-		throw new Exception('invalid query mode');
-
-		////////
-
-		$Output = match($Mode) {
+		$Output = match($this->Verse->GetMode()) {
 			Verse::ModeSelect => $this->GenerateSelectQuery(),
 			Verse::ModeInsert => $this->GenerateInsertQuery(),
 			Verse::ModeUpdate => $this->GenerateUpdateQuery(),
 			Verse::ModeDelete => $this->GenerateDeleteQuery(),
-			Verse::ModeCreate => $this->GenerateCreateQuery(),
-			default           => 'SELECT 0;'
+			Verse::ModeCreate => $this->GenerateCreateQuery()
 		};
 
 		////////

@@ -588,17 +588,6 @@ and execute it against the database.
 	////////////////////////////////////////////////////////////////
 
 	public function
-	GetPretty():
-	bool {
-	/*//
-	@date 2022-02-17
-	get the pretty flag for this query.
-	//*/
-
-		return $this->Pretty;
-	}
-
-	public function
 	SetPretty(bool $Input):
 	static {
 	/*//
@@ -1022,7 +1011,7 @@ and execute it against the database.
 	}
 
 	static public function
-	FromClass(string $ClassName, int $Mode):
+	FromMeta(string $ClassName, int $Mode):
 	static {
 	/*//
 	@date	2022-02-17
@@ -1049,7 +1038,7 @@ and execute it against the database.
 	@date	2022-02-17
 	//*/
 
-		return static::FromClass($ClassName, static::ModeSelect);
+		return static::FromMeta($ClassName, static::ModeSelect);
 	}
 
 
@@ -1060,7 +1049,7 @@ and execute it against the database.
 	@date	2022-02-17
 	//*/
 
-		return static::FromClass($ClassName, static::ModeInsert);
+		return static::FromMeta($ClassName, static::ModeInsert);
 	}
 
 	static public function
@@ -1070,7 +1059,7 @@ and execute it against the database.
 	@date	2022-02-17
 	//*/
 
-		return static::FromClass($ClassName, static::ModeUpdate);
+		return static::FromMeta($ClassName, static::ModeUpdate);
 	}
 
 	static public function
@@ -1080,7 +1069,7 @@ and execute it against the database.
 	@date	2022-02-17
 	//*/
 
-		return static::FromClass($ClassName, static::ModeDelete);
+		return static::FromMeta($ClassName, static::ModeDelete);
 	}
 
 	static public function
@@ -1090,7 +1079,7 @@ and execute it against the database.
 	@date	2022-02-17
 	//*/
 
-		$Verse = new static;
+		$Verse = static::FromMeta($ClassName, static::ModeCreate);
 		$Table = new TableClassInfo($ClassName);
 
 		$Verse

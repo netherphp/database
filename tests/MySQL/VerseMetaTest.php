@@ -92,6 +92,23 @@ extends PHPUnit\Framework\TestCase {
 
 	/** @test */
 	public function
+	TestSelectFromBasicMetaHelper():
+	void {
+
+		$Query1 = 'SELECT Field1 FROM ExampleTable1';
+
+		$Verse = (
+			Verse::FromMeta('ExampleTable1', Verse::ModeSelect)
+			->Column('Field1')
+		);
+
+		$this->AssertEquals($Query1, (string)$Verse);
+
+		return;
+	}
+
+	/** @test */
+	public function
 	TestSelectFromMetaHelper():
 	void {
 
