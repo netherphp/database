@@ -29,3 +29,20 @@ supported by that server.
 * MySQL / MariaDB (PDO Driver: 'mysql')
 * See [Verse SQL Generator](https://github.com/netherphp/database/wiki/Verse-SQL-Generator) for examples.
 
+
+## Command Line Interface
+
+This library also sets up a `netherdb` command in `vendor/bin` to help get
+various tasks done.
+
+* See [NetherDB Command Line](https://github.com/netherphp/database/wiki/NetherDB-Command-Line) for examples.
+
+
+## Additional Libraries
+
+To do its work Nether Database will also include the following NetherPHP libraries. There is no danger of your application suddenly becoming a "NetherPHP" application though, these are all utility which of course are there for you to use as well, since they will be.
+
+* netherphp/option (configuration management)
+* netherphp/console (cli library)
+* netherphp/object (prototyping)
+
