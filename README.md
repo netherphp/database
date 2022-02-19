@@ -40,7 +40,7 @@ various tasks done.
 
 ## Additional Libraries
 
-To do its work Nether Database will also include the following NetherPHP libraries. There is no danger of your application suddenly becoming a "NetherPHP" application though, these are all utility which of course are there for you to use as well, since they will be.
+To do its work Nether Database will also include the following NetherPHP libraries. There is no danger of your application suddenly becoming a "NetherPHP" application though. These are all utility which are there for you to use as well, if desired, as they will be about anyway.
 
 * netherphp/option (configuration management)
 * netherphp/console (cli library)
