@@ -1,11 +1,16 @@
-Nether Database
-=============================================================================
+# Nether Database
 [![nether.io](https://img.shields.io/badge/nether-database-C661D2.svg)](http://nether.io/database/)
 [![Packagist](https://img.shields.io/packagist/v/netherphp/database.svg)](https://packagist.org/packages/netherphp/database)
 [![Packagist](https://img.shields.io/packagist/dt/netherphp/database.svg)](https://packagist.org/packages/netherphp/database)
 
-A lower-level database connection and query library. Provides a simple API
-for connecting, querying, and digesting the results from a database server.
+A lower-level database connection and query library. Provides a simple API for connecting, querying, and digesting the results from a database server.
+
+
+## Requirements
+
+* PHP 8.1+
+* PDO
+
 
 ## Supported Servers
 
