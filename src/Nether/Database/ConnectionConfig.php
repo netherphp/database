@@ -55,13 +55,12 @@ about it after using it some.
 
 		////////
 
-		if(Option::Get(Database::OptDatabaseConnections) !== NULL)
-		return;
-
 		$Data = json_decode(
 			file_get_contents($Filename),
 			TRUE
 		);
+
+		// @todo 2022-02-19 schema check
 
 		Option::Set(
 			Database::OptDatabaseConnections,

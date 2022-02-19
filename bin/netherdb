@@ -77,6 +77,8 @@ extends Nether\Console\Client {
 		echo $SQL;
 		static::Messages('', '', '-- SQL END', '');
 
+		////////
+
 		if(!$SQL->HasDatabase())
 		return 0;
 
