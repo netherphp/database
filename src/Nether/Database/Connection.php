@@ -1,81 +1,79 @@
 <?php
 
-namespace
-Nether\Database;
+namespace Nether\Database;
 
-use
-\Nether as Nether;
+use Nether;
 
-////////////////
-////////////////
-
-class
-Connection {
+class Connection {
 /*//
+@date 2022-02-18
 this class defines the configuration values required to connect to the various
 database servers you may setup in your site config.
 //*/
 
-	public
-	$Type = null;
+	public string
+	$Type = '';
 	/*//
-	@type string
 	the database server type we are connecting to. it should be a type PDO
 	understands as one of its available drivers.
 	//*/
 
-	public
-	$Hostname = null;
+	public string
+	$Hostname = '';
 	/*//
-	@type string
 	the hostname of the server we are connecting to.
 	//*/
 
-	public
-	$Database = null;
+	public string
+	$Database = '';
 	/*//
-	@type string
 	the database name for the database connection.
 	//*/
 
-	public
-	$Username = null;
+	public string
+	$Username = '';
 	/*//
-	@type string
 	the username required for the database connection.
 	//*/
 
-	public
-	$Password = null;
+	public string
+	$Password = '';
 	/*//
-	@type string
 	the password required for the database connection.
 	//*/
 
-	public
-	$Charmap = 'utf8';
+	public string
+	$Charset = 'utf8';
 	/*//
-	@type string
 	the character encoding for the connection.
 	//*/
 
-	////////////////////////////////
-	////////////////////////////////
+	////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////
 
 	public function
-	__construct($Opt) {
+	__Construct(array|object $Raw) {
 	/*//
-	@argv object|array
+	@date 2022-02-18
 	//*/
 
-		$Opt = new Nether\Object\Mapped($Opt,[
-			'Type'     => NULL,
-			'Hostname' => NULL,
-			'Username' => NULL,
-			'Password' => NULL,
-			'Database' => NULL,
-			'Charset'  => 'utf8'
-		],[ 'DefaultKeysOnly'=>TRUE ]);
+		$Prop = NULL;
+		$Val = NULL;
+
+		$Opt = new Nether\Object\Mapped(
+			$Raw,
+			[
+				'Type'     => '',
+				'Hostname' => '',
+				'Username' => '',
+				'Password' => '',
+				'Database' => '',
+				'Charset'  => 'utf8'
+			],
+			[
+				'DefaultKeysOnly' => TRUE
+			]
+		);
 
 		foreach($Opt as $Prop => $Val)
 		$this->{$Prop} = $Val;
@@ -84,21 +82,21 @@ database servers you may setup in your site config.
 	}
 
 	public function
-	__toString() {
+	__ToString():
+	string {
 	/*//
+	@date 2022-02-18
 	when used in a string context dump out the pdo connection string.
 	//*/
 
 		return $this->GetDSN();
 	}
 
-	////////////////////////////////
-	////////////////////////////////
-
 	public function
-	GetDSN() {
+	GetDSN():
+	string {
 	/*//
-	@type string
+	@date 2022-02-18
 	get the connection dsn string for this database connection.
 	//*/
 
