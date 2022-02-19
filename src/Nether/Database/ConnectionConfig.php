@@ -2,7 +2,10 @@
 
 namespace Nether\Database;
 
-use Nether;
+use Nether\Database\Error;
+
+use Nether\Option;
+use Nether\Database;
 
 class ConnectionConfig
 extends Connection {
@@ -35,6 +38,35 @@ about it after using it some.
 			'Password' => $Password,
 			'Charset'  => $Charset
 		]);
+
+		return;
+	}
+
+	public static function
+	LoadFromJSON(string $Filename):
+	void {
+	/*//
+	@date 2022-02-19
+	populate the configuration from a json file.
+	//*/
+
+		if(!file_exists($Filename))
+		throw new Error\ConfigFileNotFound($Filename);
+
+		////////
+
+		if(Option::Get(Database::OptDatabaseConnections) !== NULL)
+		return;
+
+		$Data = json_decode(
+			file_get_contents($Filename),
+			TRUE
+		);
+
+		Option::Set(
+			Database::OptDatabaseConnections,
+			$Data
+		);
 
 		return;
 	}

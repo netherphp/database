@@ -3,6 +3,7 @@
 namespace Nether;
 
 use Nether;
+use Nether\Database\Error;
 
 use Nether\Option;
 use Nether\Database\Verse;
@@ -17,7 +18,7 @@ use Stringable;
 ///////////////////////////////////////////////////////////////////////////////
 
 Option::Define([
-	'Nether.Database.Connections' => [],
+	'Nether.Database.Connections' => NULL,
 	'Nether.Database.LogQueries'  => FALSE
 ]);
 
@@ -329,6 +330,9 @@ class Database {
 		$Config = Option::Get(static::OptDatabaseConnections);
 
 		// complain if not found.
+
+		if(!is_array($Config))
+		throw new Nether\Database\Error\InvalidConfig($Alias);
 
 		if(!array_key_exists($Alias, $Config))
 		throw new Nether\Database\Error\InvalidConfig($Alias);

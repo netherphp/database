@@ -2,13 +2,24 @@
 
 require('vendor/autoload.php');
 
-use Nether\Database\Struct\TableClassInfo;
+new class
+extends Nether\Console\Client {
 
-$App = new class extends Nether\Console\Client {
+	public function
+	__Construct() {
+		parent::__Construct();
+		$this->Run();
+		return;
+	}
 
 	#[Nether\Console\Meta\Subcommand('sql-create')]
-	#[Nether\Console\Meta\Error(1,'no class specified')]
-	#[Nether\Console\Meta\Error(2,'class not found')]
+	#[Nether\Console\Meta\Info('Generate the SQL to CREATE this table from the Table Class Annotations. If no database is specified it will only print the SQL to console.')]
+	#[Nether\Console\Meta\SubcommandArg('fqcn', TRUE, 'The full namespace and class path as your application knows the class.')]
+	#[Nether\Console\Meta\SubcommandOption('--db', TRUE, 'Alias of the DB config to connect and execute this query on.')]
+	#[Nether\Console\Meta\Error(1, 'no class specified')]
+	#[Nether\Console\Meta\Error(2, 'class not found')]
+	#[Nether\Console\Meta\Error(3, 'query failed')]
+	#[Nether\Console\Meta\Error(4, 'database connect failed')]
 	public function
 	HandleSqlCreate() {
 	/*//
@@ -18,32 +29,67 @@ $App = new class extends Nether\Console\Client {
 	//*/
 
 		$Class = $this->GetInput(2);
-		$SQL = '';
+		$DBConfig = $this->GetOption('conf') ?? 'netherdb.json';
+		$DBAlias = $this->GetOption('db') ?? NULL;
+		$SQL = NULL;
 
 		////////
 
 		if(!$Class)
-		$this->Quit(1);
+		$this->EndOfLine(1);
 
 		$Class = static::TranslateClassName($Class);
 
 		if(!class_exists($Class))
-		$this->Quit(2);
+		$this->EndOfLine(2);
 
 		////////
 
 		try {
-			$SQL = (
-				Nether\Database\Verse::FromMetaCreate($Class)
-				->SetPretty(TRUE)
-			);
+			if($DBConfig && $DBAlias) {
+				static::Messages("Connecting to {$DBAlias}...", '');
+				Nether\Database\ConnectionConfig::LoadFromJSON($DBConfig);
+
+				$SQL = (
+					Nether\Database::Get($DBAlias)
+					->NewVerseCreate($Class)
+					->SetPretty(TRUE)
+				);
+			}
+
+			else {
+				$SQL = (
+					Nether\Database\Verse::FromMetaCreate($Class)
+					->SetPretty(TRUE)
+				);
+			}
 		}
 
 		catch(Throwable $Err) {
-			throw $Err;
+			static::Messages(
+				$Err->GetMessage()
+			);
+
+			$this->EndOfLine(4);
 		}
 
-		echo $SQL, PHP_EOL;
+		static::Messages('-- SQL BEGIN', '');
+		echo $SQL;
+		static::Messages('', '', '-- SQL END', '');
+
+		if(!$SQL->HasDatabase())
+		return 0;
+
+		if($this->PromptEquals("Execute on {$DBAlias}?", '(y/n):', 'y')) {
+			$Result = $SQL->Query();
+
+			if(!$Result->IsOK()) {
+				static::Message("> {$Result->GetError()}");
+				$this->EndOfLine(3);
+			}
+
+			static::Message("> OK");
+		}
 
 		return;
 	}
@@ -73,5 +119,3 @@ $App = new class extends Nether\Console\Client {
 	}
 
 };
-
-$App->Run();

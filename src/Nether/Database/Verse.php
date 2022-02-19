@@ -657,6 +657,16 @@ and execute it against the database.
 	}
 
 	public function
+	HasDatabase():
+	bool {
+	/*//
+	@date 2022-02-19
+	//*/
+
+		return ($this->Database instanceof Database);
+	}
+
+	public function
 	GetMode():
 	int {
 	/*//
