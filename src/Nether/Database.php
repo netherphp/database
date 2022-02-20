@@ -202,6 +202,16 @@ class Database {
 	////////////////////////////////////////////////////////////////
 
 	public function
+	GetAlias():
+	string {
+	/*//
+	@date 2022-02-20
+	//*/
+
+		return $this->Alias;
+	}
+
+	public function
 	GetDriver():
 	PDO {
 	/*//

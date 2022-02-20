@@ -1,5 +1,8 @@
 <?php
 
+use Nether\Database;
+use Nether\Database\Verse;
+
 require('vendor/autoload.php');
 
 new class
@@ -22,6 +25,7 @@ extends Nether\Console\Client {
 	#[Nether\Console\Meta\Error(2, 'class not found')]
 	#[Nether\Console\Meta\Error(3, 'query failed')]
 	#[Nether\Console\Meta\Error(4, 'database connect failed')]
+	#[Nether\Console\Meta\Error(5, 'execution cancelled')]
 	public function
 	HandleSqlCreate() {
 	/*//
@@ -36,6 +40,7 @@ extends Nether\Console\Client {
 		$AutoYes = $this->GetOption('y') ?? FALSE;
 		$AutoDropTable = $this->GetOption('drop') ?? FALSE;
 		$SQL = NULL;
+		$PreSQL = NULL;
 
 		////////
 
@@ -50,70 +55,154 @@ extends Nether\Console\Client {
 		////////
 
 		try {
-			if($DBConfig && $DBAlias) {
-				static::Messages("Connecting to {$DBAlias}...", '');
-				Nether\Database\ConnectionConfig::LoadFromJSON($DBConfig);
-
-				$SQL = (
-					Nether\Database::Get($DBAlias)
-					->NewVerseCreate($Class)
-					->SetPretty(TRUE)
-				);
-			}
-
-			else {
-				$SQL = (
-					Nether\Database\Verse::FromMetaCreate($Class)
-					->SetPretty(TRUE)
-				);
-			}
+			$SQL = $this->NewVerseCreate(
+				$DBConfig,
+				$DBAlias,
+				$Class
+			);
 		}
 
 		catch(Throwable $Err) {
-			static::Messages(
-				$Err->GetMessage()
-			);
-
+			static::Messages($Err->GetMessage());
 			$this->EndOfLine(4);
 		}
 
-		static::Messages('-- SQL BEGIN', '');
-
 		if($AutoDropTable) {
-			if($SQL->HasDatabase()) echo
-				$SQL->GetDatabase()->NewVerseDropTable($Class),
-				';',
-				PHP_EOL;
+			if($SQL->HasDatabase())
+			$PreSQL = $SQL->GetDatabase()->NewVerseDropTable($Class);
 
-
-			else echo
-				Nether\Database\verse::FromMetaDropTable($Class),
-				';',
-				PHP_EOL;
-
-			echo PHP_EOL;
+			else
+			$PreSQL = Nether\Database\Verse::FromMetaDropTable($Class);
 		}
 
-		echo $SQL;
-		static::Messages('', '', '-- SQL END', '');
-
-		////////
+		$this->PrintVerse([
+			$PreSQL,
+			$SQL
+		]);
 
 		if(!$SQL->HasDatabase())
 		return 0;
 
-		if($AutoYes || $this->PromptEquals("Execute on {$DBAlias}?", '(y/n):', 'y')) {
+		$Result = $this->ConfirmAndExecuteVerse(
+			[ $PreSQL, $SQL ],
+			$AutoYes
+		);
+
+		if($Result === FALSE)
+		$this->EndOfLine(3);
+
+		return 0;
+	}
+
+	protected function
+	NewVerseCreate(string $DBConfig, string $DBAlias, string $Class):
+	Verse {
+
+		if(!$DBConfig || !$DBAlias)
+		return (
+			Nether\Database\Verse::FromMetaCreate($Class)
+			->SetPretty(TRUE)
+		);
+
+		static::Messages("Connecting to {$DBAlias}...", '');
+		Nether\Database\ConnectionConfig::LoadFromJSON($DBConfig);
+
+		return (
+			Nether\Database::Get($DBAlias)
+			->NewVerseCreate($Class)
+			->SetPretty(TRUE)
+		);
+	}
+
+	protected function
+	PrintVerse(Verse|array $Queries):
+	void {
+	/*//
+	@date 2022-02-20
+	//*/
+
+		$Query = NULL;
+
+		////////
+
+		if($Queries instanceof Verse)
+		$Queries = [ $Queries ];
+
+		////////
+
+		static::Messages('-- SQL BEGIN', '');
+
+		foreach($Queries as $Query) {
+			if(!$Query)
+			continue;
+
+			echo $Query->GetSQL(), ";", PHP_EOL, PHP_EOL;
+		}
+
+		static::Messages('-- SQL END', '');
+
+		return;
+	}
+
+	protected function
+	ConfirmAndExecuteVerse(Verse|array $Queries, bool $Force=FALSE):
+	?bool {
+	/*//
+	@date 2022-02-20
+	//*/
+
+		$Confirm = TRUE;
+		$Database = NULL;
+
+		////////
+
+		if($Queries instanceof Verse)
+		$Queries = [ $Queries ];
+
+		if(!count($Queries))
+		return FALSE;
+
+		foreach($Queries as $SQL)
+		if($SQL instanceof Verse)
+		if($SQL->HasDatabase())
+		$Database = $SQL->GetDatabase();
+
+		if(!$Database)
+		return FALSE;
+
+		////////
+
+		if(!$Force)
+		$Confirm = $this->PromptEquals(
+			"Execute on {$Database->GetAlias()}?",
+			'(y/n):',
+			'y'
+		);
+
+		if(!$Confirm)
+		return NULL;
+
+		////////
+
+		foreach($Queries as $SQL) {
+			if(!$SQL)
+			continue;
+
 			$Result = $SQL->Query();
 
 			if(!$Result->IsOK()) {
 				static::Message("> {$Result->GetError()}");
-				$this->EndOfLine(3);
+				return FALSE;
 			}
-
-			static::Message("> OK");
 		}
 
-		return;
+		static::Message(sprintf(
+			'> OK (%d %s)',
+			Nether\Database::$QueryCount,
+			(Nether\Database::$QueryCount === 1 ? 'query' : 'queries')
+		));
+
+		return TRUE;
 	}
 
 	static public function
