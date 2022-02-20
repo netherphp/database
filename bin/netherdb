@@ -16,6 +16,8 @@ extends Nether\Console\Client {
 	#[Nether\Console\Meta\Info('Generate the SQL to CREATE this table from the Table Class Annotations. If no database is specified it will only print the SQL to console.')]
 	#[Nether\Console\Meta\SubcommandArg('fqcn', TRUE, 'The full namespace and class path as your application knows the class.')]
 	#[Nether\Console\Meta\SubcommandOption('--db', TRUE, 'Alias of the DB config to connect and execute this query on.')]
+	#[Nether\Console\Meta\SubcommandOption('--drop', FALSE, 'Prepend a DROP TABLE to the query.')]
+	#[Nether\Console\Meta\SubcommandOption('-y', FALSE, 'Auto confirm prompts.')]
 	#[Nether\Console\Meta\Error(1, 'no class specified')]
 	#[Nether\Console\Meta\Error(2, 'class not found')]
 	#[Nether\Console\Meta\Error(3, 'query failed')]
@@ -32,6 +34,7 @@ extends Nether\Console\Client {
 		$DBConfig = $this->GetOption('conf') ?? 'netherdb.json';
 		$DBAlias = $this->GetOption('db') ?? NULL;
 		$AutoYes = $this->GetOption('y') ?? FALSE;
+		$AutoDropTable = $this->GetOption('drop') ?? FALSE;
 		$SQL = NULL;
 
 		////////
@@ -75,6 +78,22 @@ extends Nether\Console\Client {
 		}
 
 		static::Messages('-- SQL BEGIN', '');
+
+		if($AutoDropTable) {
+			if($SQL->HasDatabase()) echo
+				$SQL->GetDatabase()->NewVerseDropTable($Class),
+				';',
+				PHP_EOL;
+
+
+			else echo
+				Nether\Database\verse::FromMetaDropTable($Class),
+				';',
+				PHP_EOL;
+
+			echo PHP_EOL;
+		}
+
 		echo $SQL;
 		static::Messages('', '', '-- SQL END', '');
 
