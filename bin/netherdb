@@ -31,6 +31,7 @@ extends Nether\Console\Client {
 		$Class = $this->GetInput(2);
 		$DBConfig = $this->GetOption('conf') ?? 'netherdb.json';
 		$DBAlias = $this->GetOption('db') ?? NULL;
+		$AutoYes = $this->GetOption('y') ?? FALSE;
 		$SQL = NULL;
 
 		////////
@@ -82,7 +83,7 @@ extends Nether\Console\Client {
 		if(!$SQL->HasDatabase())
 		return 0;
 
-		if($this->PromptEquals("Execute on {$DBAlias}?", '(y/n):', 'y')) {
+		if($AutoYes || $this->PromptEquals("Execute on {$DBAlias}?", '(y/n):', 'y')) {
 			$Result = $SQL->Query();
 
 			if(!$Result->IsOK()) {
