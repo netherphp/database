@@ -48,11 +48,12 @@ provide the base api for the query compiling system.
 	//*/
 
 		$Output = match($this->Verse->GetMode()) {
-			Verse::ModeSelect => $this->GenerateSelectQuery(),
-			Verse::ModeInsert => $this->GenerateInsertQuery(),
-			Verse::ModeUpdate => $this->GenerateUpdateQuery(),
-			Verse::ModeDelete => $this->GenerateDeleteQuery(),
-			Verse::ModeCreate => $this->GenerateCreateQuery()
+			Verse::ModeSelect    => $this->GenerateSelectQuery(),
+			Verse::ModeInsert    => $this->GenerateInsertQuery(),
+			Verse::ModeUpdate    => $this->GenerateUpdateQuery(),
+			Verse::ModeDelete    => $this->GenerateDeleteQuery(),
+			Verse::ModeCreate    => $this->GenerateCreateQuery(),
+			Verse::ModeDropTable => $this->GenerateDropTableQuery()
 		};
 
 		////////
@@ -88,6 +89,10 @@ provide the base api for the query compiling system.
 
 	abstract protected function
 	GenerateCreateQuery():
+	string;
+
+	abstract protected function
+	GenerateDropTableQuery():
 	string;
 
 }

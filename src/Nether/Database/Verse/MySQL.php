@@ -284,6 +284,23 @@ extends Compiler {
 		return trim($this->QueryString);
 	}
 
+	protected function
+	GenerateDropTableQuery():
+	string {
+	/*//
+	@implements Compiler
+	@date	2022-02-19
+	generate a DROP TABLE style query.
+	//*/
+
+		$this->QueryString = sprintf(
+			'DROP TABLE IF EXISTS `%s`',
+			$this->Verse->GetTables()[0]
+		);
+
+		return $this->QueryString;
+	}
+
 	////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////
 

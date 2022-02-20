@@ -305,6 +305,17 @@ class Database {
 	}
 
 	public function
+	NewVerseDropTable(string $ClassName):
+	Verse {
+	/*//
+	@date 2022-02-18
+	//*/
+
+		$this->Verse = Verse::FromMetaDropTable($ClassName, $this);
+		return $this->Verse;
+	}
+
+	public function
 	IsReused():
 	bool {
 	/*//

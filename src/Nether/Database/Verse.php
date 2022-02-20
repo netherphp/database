@@ -37,11 +37,12 @@ and execute it against the database.
 	////////////////////////////////////////////////////////////////
 
 	const
-	ModeSelect = 1,
-	ModeInsert = 2,
-	ModeUpdate = 3,
-	ModeDelete = 4,
-	ModeCreate = 5;
+	ModeSelect    = 1,
+	ModeInsert    = 2,
+	ModeUpdate    = 3,
+	ModeDelete    = 4,
+	ModeCreate    = 5,
+	ModeDropTable = 6;
 
 	const
 	InsertNormal      = 0,
@@ -351,7 +352,24 @@ and execute it against the database.
 		if($Reset)
 		$this->ResetQueryProperties();
 
-		$this->Tables = [$Arg];
+		$this->Tables = [ $Arg ];
+		return $this;
+	}
+
+	public function
+	DropTable(string $Arg, bool $Reset=TRUE):
+	static {
+	/*//
+	@date 2022-02-19
+	begin a new verse in the style of DROP TABLE, defining what table to drop.
+	//*/
+
+		$this->Mode = static::ModeDropTable;
+
+		if($Reset)
+		$this->ResetQueryProperties();
+
+		$this->Tables = [ $Arg ];
 		return $this;
 	}
 
@@ -1188,6 +1206,24 @@ and execute it against the database.
 		->Fields($Table->GetFieldList())
 		->Index($Table->GetIndexList())
 		->ForeignKey($Table->GetForeignKeyList());
+
+		return $Verse;
+	}
+
+	static public function
+	FromMetaDropTable(string $ClassName, ?Database $DB=NULL):
+	static {
+	/*//
+	@date	2022-02-17
+	//*/
+
+		$Verse = new static($DB);
+		$Table = new TableClassInfo($ClassName);
+
+		////////
+
+		$Verse
+		->DropTable($Table->Name);
 
 		return $Verse;
 	}
