@@ -4,9 +4,12 @@ namespace Nether\Database\Meta;
 
 use Attribute;
 use Nether\Database\Struct\TableClassInfo;
+use Nether\Database\Meta\Interface\TableIndex;
+use Nether\Database\Meta\Interface\FieldAttribute;
 
 #[Attribute(Attribute::TARGET_PROPERTY)]
-class FieldIndex {
+class FieldIndex
+implements FieldAttribute, TableIndex {
 /*//
 @date 2021-08-20
 //*/
@@ -14,16 +17,16 @@ class FieldIndex {
 	public ?string
 	$Name;
 
-	public ?string
-	$Type;
+	public bool
+	$Unique;
 
 	public ?string
 	$Method;
 
 	public function
 	__Construct(
+		bool $Unique=FALSE,
 		?string $Name=NULL,
-		?string $Type=NULL,
 		?string $Method=NULL
 	) {
 	/*//
@@ -31,7 +34,7 @@ class FieldIndex {
 	//*/
 
 		$this->Name = $Name;
-		$this->Type = $Type;
+		$this->Unique = $Unique;
 		$this->Method = $Method;
 
 		return;
@@ -44,8 +47,18 @@ class FieldIndex {
 	@date 2021-08-24
 	//*/
 
+		$Prefix = 'Idx';
+
+		if($this->Unique)
+		$Prefix = 'Unq';
+
 		if(!$this->Name)
-		$this->Name = "Idx{$Field->Name}";
+		$this->Name = sprintf(
+			'%s%s%s',
+			$Prefix,
+			$Table->Name,
+			$Field->Name
+		);
 
 		return $this;
 	}

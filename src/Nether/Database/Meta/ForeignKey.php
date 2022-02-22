@@ -5,9 +5,11 @@ namespace Nether\Database\Meta;
 use Attribute;
 use Nether\Database\Meta\TableField;
 use Nether\Database\Struct\TableClassInfo;
+use Nether\Database\Meta\Interface\FieldAttribute;
 
 #[Attribute(Attribute::TARGET_PROPERTY)]
-class ForeignKey {
+class ForeignKey
+implements FieldAttribute {
 /*//
 @date 2021-08-20
 //*/

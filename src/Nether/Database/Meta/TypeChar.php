@@ -3,6 +3,7 @@
 namespace Nether\Database\Meta;
 
 use Attribute;
+use Nether\Database\Meta\Interface\FieldAttribute;
 
 #[Attribute(Attribute::TARGET_PROPERTY)]
 class TypeChar
@@ -31,16 +32,6 @@ extends TableField {
 		$this->Size = $Size;
 		$this->Variable = $Variable;
 		return;
-	}
-
-	public function
-	__ToString():
-	string {
-	/*//
-	@date 2021-08-19
-	//*/
-
-		return $this->GetFieldDef();
 	}
 
 	public function

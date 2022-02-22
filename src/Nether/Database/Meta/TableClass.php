@@ -3,9 +3,12 @@
 namespace Nether\Database\Meta;
 
 use Attribute;
+use Nether\Database\Meta\Interface\TableDefinition;
+use Nether\Database\Struct\TableClassInfo;
 
 #[Attribute(Attribute::TARGET_CLASS)]
-class TableClass {
+class TableClass
+implements TableDefinition {
 /*//
 @date 2021-08-20
 //*/
@@ -46,6 +49,13 @@ class TableClass {
 		$this->Comment = $Comment;
 
 		return;
+	}
+
+	public function
+	Learn(TableClassInfo $Table):
+	static {
+
+		return $this;
 	}
 
 }

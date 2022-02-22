@@ -12,6 +12,7 @@ use Nether\Database\Struct\TableClassInfo;
 Option::Set('Nether.Database.Verse.ConnectionDefault', NULL);
 
 #[Nether\Database\Meta\TableClass(Name: 'ExampleTable1', Comment: 'Example Table 1')]
+#[Nether\Database\Meta\MultiFieldIndex(Fields: [ 'ParentID', 'ChildID' ], Unique: TRUE)]
 class ExampleTable1 {
 
 	#[Nether\Database\Meta\TypeIntBig(Unsigned: TRUE, AutoInc: TRUE)]
@@ -25,6 +26,13 @@ class ExampleTable1 {
 	#[Nether\Database\Meta\FieldIndex]
 	public string $KeyToIndex;
 
+	#[Nether\Database\Meta\TypeIntBig(Unsigned: TRUE)]
+	public int $ParentID;
+
+	#[Nether\Database\Meta\TypeIntBig(Unsigned: TRUE)]
+	public int $ChildID;
+
+
 	////////
 
 	static public function
@@ -35,7 +43,10 @@ class ExampleTable1 {
 		$Query .= "\t`ID` BIGINT UNSIGNED AUTO_INCREMENT,\n";
 		$Query .= "\t`OtherID` BIGINT UNSIGNED,\n";
 		$Query .= "\t`KeyToIndex` BIGINT UNSIGNED,\n";
-		$Query .= "\tINDEX `IdxKeyToIndex` (`KeyToIndex`) USING BTREE,\n";
+		$Query .= "\t`ParentID` BIGINT UNSIGNED,\n";
+		$Query .= "\t`ChildID` BIGINT UNSIGNED,\n";
+		$Query .= "\tINDEX `IdxExampleTable1KeyToIndex` (`KeyToIndex`) USING BTREE,\n";
+		$Query .= "\tUNIQUE `UnqExampleTable1ParentIDChildID` (`ParentID`,`ChildID`),\n";
 		$Query .= "\tINDEX `FnkExampleTable1OtherTableOtherID` (`OtherID`) USING BTREE,\n";
 		$Query .= "\tCONSTRAINT `FnkExampleTable1OtherTableOtherID` FOREIGN KEY(`OtherID`) REFERENCES `OtherTable` (`ID`) ON UPDATE CASCADE ON DELETE CASCADE\n";
 		$Query .= ")\n";

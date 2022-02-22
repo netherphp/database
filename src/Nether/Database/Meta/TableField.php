@@ -2,15 +2,20 @@
 
 namespace Nether\Database\Meta;
 
-use Nether;
+use Nether\Database\Meta\Interface\FieldAttribute;
+use Nether\Database\Meta\Interface\FieldDefinition;
 use Nether\Database\Struct\TableClassInfo;
-use ReflectionProperty;
+use Nether\Object\Meta\PropertyOrigin;
+
 use Stringable;
+use ReflectionProperty;
 
 abstract class TableField
-implements Stringable {
+implements Stringable, FieldDefinition {
 /*//
 @date 2021-08-20
+this is the base type for all of the fields. all of the types will extend
+this and supply the needed sugar.
 //*/
 
 	public ?string
@@ -31,6 +36,9 @@ implements Stringable {
 	public ?PrimaryKey
 	$PrimaryKey = NULL;
 
+	////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////
+
 	public function
 	__Construct(
 		?string $Name=NULL,
@@ -47,6 +55,19 @@ implements Stringable {
 
 		return;
 	}
+
+	public function
+	__ToString():
+	string {
+	/*//
+	@date 2022-02-21
+	//*/
+
+		return $this->GetFieldDef();
+	}
+
+	////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////
 
 	public function
 	Learn(TableClassInfo $Table, ReflectionProperty $Prop, ?array $Attribs=NULL):
@@ -68,26 +89,22 @@ implements Stringable {
 
 		if($Attribs !== NULL)
 		foreach($Attribs as $Attrib) {
-			if(!property_exists($Attrib,'Inst'))
+			if(!property_exists($Attrib, 'Inst'))
 			continue;
 
-			// support nether object's origin meta.
-
-			if($Attrib->Inst instanceof Nether\Object\Meta\PropertyOrigin)
+			if($Attrib->Inst instanceof PropertyOrigin)
 			$this->Name = $Attrib->Inst->Name;
 
-			// note if this is a simple field index.
+			if($Attrib->Inst instanceof Interface\FieldAttribute) {
+				if($Attrib->Inst instanceof FieldIndex)
+				$this->Index = $Attrib->Inst->Learn($Table, $this);
 
-			elseif($Attrib->Inst instanceof FieldIndex)
-			$this->Index = $Attrib->Inst->Learn($Table, $this);
+				if($Attrib->Inst instanceof ForeignKey)
+				$this->ForeignKey = $Attrib->Inst->Learn($Table, $this);
 
-			// note if this is a foreign key.
-
-			elseif($Attrib->Inst instanceof ForeignKey)
-			$this->ForeignKey = $Attrib->Inst->Learn($Table, $this);
-
-			elseif($Attrib->Inst instanceof PrimaryKey)
-			$this->PrimaryKey = $Attrib->Inst->Learn($Table, $this);
+				if($Attrib->Inst instanceof PrimaryKey)
+				$this->PrimaryKey = $Attrib->Inst->Learn($Table, $this);
+			}
 		}
 
 		return $this;
@@ -96,6 +113,13 @@ implements Stringable {
 	public function
 	GetFieldDef():
 	string {
+	/*//
+	@date 2022-02-21
+	this default implementation generates the context that all of the sql
+	types share. extensions of this class can thusly generate the start of
+	the field definition, and then concat the results of this parent method
+	onto the end of that to be done.
+	//*/
 
 		$Output = '';
 
@@ -119,12 +143,5 @@ implements Stringable {
 
 		return ltrim($Output);
 	}
-
-	////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////
-
-	abstract public function
-	__ToString():
-	string;
 
 }

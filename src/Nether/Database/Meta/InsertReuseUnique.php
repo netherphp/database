@@ -3,7 +3,7 @@
 namespace Nether\Database\Meta;
 
 use Attribute;
-use Nether\Database\Meta\TableField;
+use Nether\Database\Meta\Interface\TableAttribute;
 use Nether\Database\Struct\TableClassInfo;
 
 #[Attribute(Attribute::TARGET_CLASS)]
@@ -25,7 +25,7 @@ to return the old row instead of inserting or updating the old.
 	}
 
 	public function
-	Learn(TableClassInfo $Table, TableField $Field):
+	Learn(TableClassInfo $Table):
 	static {
 	/*//
 	@date 2021-08-24

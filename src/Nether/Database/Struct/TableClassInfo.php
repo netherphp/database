@@ -52,7 +52,7 @@ class TableClassInfo {
 			if($Inst instanceof Meta\TableClass)
 			$this->HandleTableClass($Class, $Inst);
 
-			elseif($Inst instanceof Meta\TableAttribute)
+			elseif($Inst instanceof Meta\Interface\TableAttribute)
 			$this->HandleTableAttribute($Class, $Inst);
 		}
 
@@ -88,7 +88,7 @@ class TableClassInfo {
 
 			// find the table fields.
 			foreach($Attribs as $Attrib) {
-				if($Attrib->Inst instanceof Meta\TableField) {
+				if($Attrib->Inst instanceof Meta\Interface\FieldDefinition) {
 					$this->Fields[$Name] = $Attrib->Inst->Learn($this,$Prop,$Attribs);
 
 					if($this->Fields[$Name]->PrimaryKey) {
@@ -97,7 +97,11 @@ class TableClassInfo {
 					}
 				}
 
-				elseif($Attrib->Inst instanceof Meta\FieldIndex) {
+				if($Attrib->Inst instanceof Meta\Interface\FieldAttribute) {
+					if(!array_key_exists($Name, $this->Fields))
+					throw new Exception('must annotate a FieldDefinition prior to a FieldAttribute.');
+
+					if($Attrib->Inst instanceof Meta\Interface\TableIndex)
 					$this->Indexes[$Name] = $this->Fields[$Name];
 				}
 			}
@@ -108,10 +112,15 @@ class TableClassInfo {
 	}
 
 	protected function
-	HandleTableAttribute(ReflectionClass $Class, Meta\TableAttribute $Inst):
+	HandleTableAttribute(ReflectionClass $Class, Meta\Interface\TableAttribute $Inst):
 	void {
 
-		$this->Attributes[] = $Inst;
+		if($Inst instanceof Meta\Interface\TableIndex)
+		$this->Indexes[$Inst->Name] = $Inst->Learn($this);
+
+		else
+		$this->Attributes[$Inst->Name] = $Inst->Learn($this);
+
 		return;
 	}
 

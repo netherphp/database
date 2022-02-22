@@ -95,7 +95,7 @@ extends Nether\Console\Client {
 	}
 
 	protected function
-	NewVerseCreate(string $DBConfig, string $DBAlias, string $Class):
+	NewVerseCreate(?string $DBConfig, ?string $DBAlias, string $Class):
 	Verse {
 
 		if(!$DBConfig || !$DBAlias)

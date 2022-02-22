@@ -6,6 +6,7 @@ use Nether\Database\Verse;
 use Nether\Database\Verse\Compiler;
 use Nether\Database\Meta\TableField;
 use Nether\Database\Meta\FieldIndex;
+use Nether\Database\Meta\MultiFieldIndex;
 use Nether\Database\Meta\ForeignKey;
 use Nether\Database\Meta\PrimaryKey;
 
@@ -615,17 +616,51 @@ extends Compiler {
 		// generate the list of indexes on this table.
 
 		foreach($Indexes as $Value) {
-			if($Value instanceof TableField)
-			if($Value->Index instanceof FieldIndex) {
+
+			if($Value instanceof TableField) {
+				if($Value->Index instanceof FieldIndex) {
+					if($Value->Index->Unique)
+					$Output .= sprintf(
+						'%sUNIQUE `%s` (`%s`)',
+						(($First)?("({$CharNLT}"):(",{$CharNLT}")),
+						$Value->Index->Name,
+						$Value->Name
+					);
+
+					else
+					$Output .= sprintf(
+						'%sINDEX `%s` (`%s`) USING %s',
+						(($First)?("({$CharNLT}"):(",{$CharNLT}")),
+						$Value->Index->Name,
+						$Value->Name,
+						($Value->Index->Method ?? 'BTREE')
+					);
+
+					$First = FALSE;
+					continue;
+				}
+			}
+
+			if($Value instanceof MultiFieldIndex) {
+				if($Value->Unique)
+				$Output .= sprintf(
+					'%sUNIQUE `%s` (`%s`)',
+					(($First)?("({$CharNLT}"):(",{$CharNLT}")),
+					$Value->Name,
+					join('`,`', $Value->Fields)
+				);
+
+				else
 				$Output .= sprintf(
 					'%sINDEX `%s` (`%s`) USING %s',
 					(($First)?("({$CharNLT}"):(",{$CharNLT}")),
-					$Value->Index->Name,
 					$Value->Name,
-					$Value->Index->Method ?? 'BTREE'
+					join('`,`', $Value->Fields),
+					($Value->Method ?? 'BTREE')
 				);
 
 				$First = FALSE;
+				continue;
 			}
 		}
 

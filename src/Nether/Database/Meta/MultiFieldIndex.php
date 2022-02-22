@@ -2,44 +2,77 @@
 
 namespace Nether\Database\Meta;
 
-use Attribute;
+use Nether\Database\Struct\TableClassInfo;
+use Nether\Database\Meta\Interface\TableAttribute;
+use Nether\Database\Meta\Interface\TableIndex;
 
-#[Attribute(Attribute::TARGET_PROPERTY)]
-class MultiFieldIndex {
-/*//
-@date 2021-08-20
-//*/
+use Attribute;
+use Exception;
+
+#[Attribute(Attribute::TARGET_CLASS)]
+class MultiFieldIndex
+implements TableAttribute, TableIndex {
+
+	public array
+	$Fields;
 
 	public ?string
 	$Name;
 
+	public bool
+	$Unique;
+
 	public ?string
-	$Type;
+	$Method;
 
 	public function
 	__Construct(
+		array $Fields,
+		bool $Unique=NULL,
 		?string $Name=NULL,
-		?string $Type=NULL
+		?string $Method=NULL
 	) {
 	/*//
 	@date 2021-08-20
 	//*/
 
+		$this->Fields = $Fields;
+		$this->Unique = $Unique;
+
 		$this->Name = $Name;
-		$this->Type = $Type;
+		$this->Method = $Method;
+
+		if(is_array($this->Fields))
+		$this->Fields = array_filter(
+			$this->Fields,
+			(fn($Val)=> is_string($Val))
+		);
+
+		if(!count($this->Fields))
+		throw new Exception('Fields is empty');
 
 		return;
 	}
 
 	public function
-	Learn(TableField $Field):
+	Learn(TableClassInfo $Table):
 	static {
 	/*//
 	@date 2021-08-24
 	//*/
 
+		$Prefix = 'Idx';
+
+		if($this->Unique)
+		$Prefix = 'Unq';
+
 		if(!$this->Name)
-		$this->Name = "Idx{$Field->Name}";
+		$this->Name = sprintf(
+			'%s%s%s',
+			$Prefix,
+			$Table->Name,
+			join('', $this->Fields)
+		);
 
 		return $this;
 	}
