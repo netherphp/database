@@ -139,7 +139,7 @@ extends Nether\Console\Client {
 			echo $Query->GetSQL(), ";", PHP_EOL, PHP_EOL;
 		}
 
-		static::Messages('-- SQL END', '');
+		static::Messages('-- SQL END');
 
 		return;
 	}
@@ -172,12 +172,14 @@ extends Nether\Console\Client {
 
 		////////
 
-		if(!$Force)
-		$Confirm = $this->PromptEquals(
-			"Execute on {$Database->GetAlias()}?",
-			'(y/n):',
-			'y'
-		);
+		if(!$Force) {
+			static::Message('');
+			$Confirm = $this->PromptEquals(
+				"Execute on {$Database->GetAlias()}?",
+				'(y/n):',
+				'y'
+			);
+		}
 
 		if(!$Confirm)
 		return NULL;
