@@ -119,7 +119,7 @@ class TableClassInfo {
 		$this->Indexes[$Inst->Name] = $Inst->Learn($this);
 
 		else
-		$this->Attributes[$Inst->Name] = $Inst->Learn($this);
+		$this->Attributes[] = $Inst->Learn($this);
 
 		return;
 	}
