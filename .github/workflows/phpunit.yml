@@ -32,8 +32,6 @@ jobs:
         run: |
           composer install
           phpunit tests --bootstrap vendor/autoload.php --coverage-clover ./coverage.xml
-          php tests/timed.php 1 100000
-          php tests/timed.php 2 100000
       - name: Push to Codecov Probably
         if: ${{ matrix.php-versions == '8.1' && matrix.operating-system == 'ubuntu-latest' }}
         uses: codecov/codecov-action@v3
