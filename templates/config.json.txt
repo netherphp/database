@@ -1,0 +1,9 @@
+{
+	"Default": {
+		"Type": "mysql",
+		"Hostname": "{{DatabaseHost}}",
+		"Database": "{{DatabaseName}}",
+		"Username": "{{DatabaseUser}}",
+		"Password": "{{DatabasePass}}"
+	}
+}

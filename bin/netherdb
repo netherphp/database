@@ -27,7 +27,8 @@ extends Nether\Console\Client {
 	#[Nether\Console\Meta\Error(4, 'database connect failed')]
 	#[Nether\Console\Meta\Error(5, 'execution cancelled')]
 	public function
-	HandleSqlCreate() {
+	HandleSqlCreate():
+	int {
 	/*//
 	@date 2021-08-19
 	read the class attributes and generate the sql required to create this
@@ -96,6 +97,48 @@ extends Nether\Console\Client {
 
 		return 0;
 	}
+
+	////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////
+
+	#[Nether\Console\Meta\Subcommand]
+	#[Nether\Console\Meta\SubcommandArg('filename', Text: 'The location to install new config.')]
+	#[Nether\Console\Meta\SubcommandOption('--force', FALSE, 'Force overwrite of existing file.')]
+	#[Nether\Console\Meta\Error(1, 'unable to locate config template')]
+	#[Nether\Console\Meta\Error(2, 'output file already exists (--force to overwrite)')]
+	public function
+	HandleConfigNew():
+	int {
+
+		$Outfile = $this->GetInput(2);
+		$Force = $this->GetOption('Force');
+		$Path = sprintf(
+			'%s/templates/config.json.txt',
+			dirname(__FILE__, 2)
+		);
+
+		////////
+
+		if(!file_exists($Path))
+		$this->EndOfLine(1);
+
+		if(file_exists($Outfile) && !$Force)
+		$this->EndOfLine(2);
+
+		////////
+
+		static::Message(sprintf(
+			'Config Template: %s => %s',
+			basename($Path),
+			$Outfile
+		));
+
+		copy($Path, $Outfile);
+		return 0;
+	}
+
+	////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////
 
 	protected function
 	NewVerseCreate(?string $DBConfig, ?string $DBAlias, string $Class):
