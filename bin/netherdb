@@ -5,22 +5,15 @@ use Nether\Database\Verse;
 
 require('vendor/autoload.php');
 
-new class
+class App
 extends Nether\Console\Client {
 
-	public function
-	__Construct() {
-		parent::__Construct();
-		$this->Run();
-		return;
-	}
-
-	#[Nether\Console\Meta\Subcommand('sql-create')]
+	#[Nether\Console\Meta\Command('sql-create')]
 	#[Nether\Console\Meta\Info('Generate the SQL to CREATE this table from the Table Class Annotations. If no database is specified it will only print the SQL to console.')]
-	#[Nether\Console\Meta\SubcommandArg('fqcn', TRUE, 'The full namespace and class path as your application knows the class.')]
-	#[Nether\Console\Meta\SubcommandOption('--db', TRUE, 'Alias of the DB config to connect and execute this query on.')]
-	#[Nether\Console\Meta\SubcommandOption('--drop', FALSE, 'Prepend a DROP TABLE to the query.')]
-	#[Nether\Console\Meta\SubcommandOption('-y', FALSE, 'Auto confirm prompts.')]
+	#[Nether\Console\Meta\Arg('fqcn', 'The full namespace and class path as your application knows the class.')]
+	#[Nether\Console\Meta\Value('--db', 'Alias of the DB config to connect and execute this query on.')]
+	#[Nether\Console\Meta\Toggle('--drop', 'Prepend a DROP TABLE to the query.')]
+	#[Nether\Console\Meta\Toggle('-y', 'Auto confirm prompts.')]
 	#[Nether\Console\Meta\Error(1, 'no class specified')]
 	#[Nether\Console\Meta\Error(2, 'class not found')]
 	#[Nether\Console\Meta\Error(3, 'query failed')]
@@ -49,12 +42,12 @@ extends Nether\Console\Client {
 		$DBAlias = 'Default';
 
 		if(!$Class)
-		$this->EndOfLine(1);
+		$this->Quit(1);
 
 		$Class = static::TranslateClassName($Class);
 
 		if(!class_exists($Class))
-		$this->EndOfLine(2);
+		$this->Quit(2);
 
 		////////
 
@@ -67,8 +60,8 @@ extends Nether\Console\Client {
 		}
 
 		catch(Throwable $Err) {
-			static::Messages($Err->GetMessage());
-			$this->EndOfLine(4);
+			$this->PrintLn($Err->GetMessage());
+			$this->Quit(4);
 		}
 
 		if($AutoDropTable) {
@@ -93,7 +86,7 @@ extends Nether\Console\Client {
 		);
 
 		if($Result === FALSE)
-		$this->EndOfLine(3);
+		$this->Quit(3);
 
 		return 0;
 	}
@@ -101,9 +94,10 @@ extends Nether\Console\Client {
 	////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////
 
-	#[Nether\Console\Meta\Subcommand]
-	#[Nether\Console\Meta\SubcommandArg('filename', Text: 'The location to install new config.')]
-	#[Nether\Console\Meta\SubcommandOption('--force', FALSE, 'Force overwrite of existing file.')]
+	#[Nether\Console\Meta\Command('config-new')]
+	#[Nether\Console\Meta\Info('Generate a new config JSON at location.')]
+	#[Nether\Console\Meta\Arg('filename', 'The location to install new config.')]
+	#[Nether\Console\Meta\Toggle('--force', 'Force overwrite of existing file.')]
 	#[Nether\Console\Meta\Error(1, 'unable to locate config template')]
 	#[Nether\Console\Meta\Error(2, 'output file already exists (--force to overwrite)')]
 	public function
@@ -120,14 +114,14 @@ extends Nether\Console\Client {
 		////////
 
 		if(!file_exists($Path))
-		$this->EndOfLine(1);
+		$this->Quit(1);
 
 		if(file_exists($Outfile) && !$Force)
-		$this->EndOfLine(2);
+		$this->Quit(2);
 
 		////////
 
-		static::Message(sprintf(
+		$this->PrintLn(sprintf(
 			'Config Template: %s => %s',
 			basename($Path),
 			$Outfile
@@ -150,7 +144,7 @@ extends Nether\Console\Client {
 			->SetPretty(TRUE)
 		);
 
-		static::Messages("Connecting to {$DBAlias}...", '');
+		$this->PrintLn("Connecting to {$DBAlias}...", '');
 		Nether\Database\ConnectionConfig::LoadFromJSON($DBConfig);
 
 		return (
@@ -176,7 +170,7 @@ extends Nether\Console\Client {
 
 		////////
 
-		static::Messages('-- SQL BEGIN', '');
+		$this->PrintLn('-- SQL BEGIN', '');
 
 		foreach($Queries as $Query) {
 			if(!$Query)
@@ -185,7 +179,7 @@ extends Nether\Console\Client {
 			echo $Query->GetSQL(), ";", PHP_EOL, PHP_EOL;
 		}
 
-		static::Messages('-- SQL END');
+		$this->PrintLn('-- SQL END');
 
 		return;
 	}
@@ -219,7 +213,7 @@ extends Nether\Console\Client {
 		////////
 
 		if(!$Force) {
-			static::Message('');
+			$this->PrintLn('');
 			$Confirm = $this->PromptEquals(
 				"Execute on {$Database->GetAlias()}?",
 				'(y/n):',
@@ -239,12 +233,12 @@ extends Nether\Console\Client {
 			$Result = $SQL->Query();
 
 			if(!$Result->IsOK()) {
-				static::Message("> {$Result->GetError()}");
+				$this->PrintLn("> {$Result->GetError()}");
 				return FALSE;
 			}
 		}
 
-		static::Message(sprintf(
+		$this->PrintLn(sprintf(
 			'> OK (%d %s)',
 			Nether\Database::$QueryCount,
 			(Nether\Database::$QueryCount === 1 ? 'query' : 'queries')
@@ -278,3 +272,5 @@ extends Nether\Console\Client {
 	}
 
 };
+
+(new App)->Run();
