@@ -16,9 +16,8 @@
 	},
 	"require":{
 		"php": ">=8.1.0",
-		"netherphp/object": "^4.1",
-		"netherphp/option": "^1.0",
-		"netherphp/console": "^4.0"
+		"netherphp/object": "dev-redux",
+		"netherphp/console": "dev-redux"
 	},
 	"require-dev": {
 		"netherphp/standards": "^0.2.5",
