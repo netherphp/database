@@ -28,7 +28,7 @@ extends Nether\Console\Client {
 	table in the database server.
 	//*/
 
-		$Class = $this->GetInput(2);
+		$Class = $this->GetInput(1);
 		$DBConfig = $this->GetOption('conf') ?? NULL;
 		$DBAlias = $this->GetOption('db') ?? NULL;
 		$AutoYes = $this->GetOption('y') ?? FALSE;
@@ -104,7 +104,7 @@ extends Nether\Console\Client {
 	HandleConfigNew():
 	int {
 
-		$Outfile = $this->GetInput(2);
+		$Outfile = $this->GetInput(1);
 		$Force = $this->GetOption('Force');
 		$Path = sprintf(
 			'%s/templates/config.json.txt',
