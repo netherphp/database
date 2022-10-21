@@ -165,4 +165,31 @@ class TableClassInfo {
 		return $this->Attributes;
 	}
 
+	////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////
+
+	public function
+	GetAliasedTable(string $Alias):
+	string {
+
+		return "{$this->Name} {$Alias}";
+	}
+
+	public function
+	GetPrefixedKey(string $Alias):
+	string {
+
+		return "{$Alias}.{$this->PrimaryKey}";
+	}
+
+	////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////
+
+	static public function
+	GetPrefixedField(string $Alias, string $Field):
+	string {
+
+		return "{$Alias}.{$Field}";
+	}
+
 }
