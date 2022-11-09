@@ -28,6 +28,8 @@ extends Nether\Console\Client {
 	table in the database server.
 	//*/
 
+		$Env = $this->GetOption('env') ?? NULL;
+		$EnvFile = sprintf('%s/env.lock', getcwd());
 		$Class = $this->GetInput(1);
 		$DBConfig = $this->GetOption('conf') ?? NULL;
 		$DBAlias = $this->GetOption('db') ?? NULL;
@@ -36,10 +38,46 @@ extends Nether\Console\Client {
 		$SQL = NULL;
 		$PreSQL = NULL;
 
-		////////
+		// if no env was passed via cli then attempt to read it from an
+		// atlantis env config file. lacking that default to dev.
+
+		if(!$Env) {
+			if(file_exists($EnvFile))
+			$Env = trim(file_get_contents($EnvFile)) ?: NULL;
+
+			if(!$Env)
+			$Env = 'dev';
+		}
+
+		// if we were given or found our current env but a database
+		// config file was not given try to guess a path using one common
+		// to atlantis configurations.
+
+		if($Env && !$DBConfig) {
+			$DBConfig = sprintf('conf/env/%s/netherdb.json', $Env);
+
+			if(!file_exists($DBConfig))
+			$DBConfig = NULL;
+		}
+
+		// if we have a config file path but it actually points to a
+		// directory instead of a json file assume that we will find
+		// a netherdb.json within.
+
+		if($DBConfig && is_dir($DBConfig)) {
+			$DBConfig .= sprintf('%snetherdb.json', DIRECTORY_SEPARATOR);
+
+			if(!file_exists($DBConfig))
+			$DBConfig = NULL;
+		}
+
+		// if we have a config file but were not given the name of a
+		// connection to use then assume the default connection.
 
 		if($DBConfig && !$DBAlias)
 		$DBAlias = 'Default';
+
+		////////
 
 		if(!$Class)
 		$this->Quit(1);

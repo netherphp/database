@@ -8,7 +8,7 @@ use Nether\Object\Datastore;
 class Library {
 
 	static public function
-	Init(string $Path, string $Env, ...$Argv):
+	Init(string $Path, string $Env, Datastore $Config, ...$Argv):
 	void {
 
 		$Filename = sprintf(
