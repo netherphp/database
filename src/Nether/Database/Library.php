@@ -13,8 +13,7 @@ class Library {
 
 		$Filename = sprintf(
 			'%s/conf/env/%s/netherdb.json',
-			$Path,
-			$Env
+			$Path, $Env
 		);
 
 		if(file_exists($Filename) && is_readable($Filename))
