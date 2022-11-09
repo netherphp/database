@@ -22,15 +22,20 @@ extends TableField {
 	////////////////////////////////////////////////////////////////
 
 	public function
-	__Construct(?string $Name=NULL, int $Size=256, bool $Variable=FALSE) {
+	__Construct(?string $Name=NULL, int $Size=256, bool $Variable=FALSE, bool $Nullable=TRUE, mixed $Default=FALSE) {
 	/*//
 	@date 2021-08-19
 	//*/
 
-		parent::__Construct($Name);
+		parent::__Construct(
+			Name: $Name,
+			Nullable: $Nullable,
+			Default: $Default
+		);
 
 		$this->Size = $Size;
 		$this->Variable = $Variable;
+
 		return;
 	}
 
