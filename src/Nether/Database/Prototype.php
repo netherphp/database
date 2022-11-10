@@ -178,14 +178,14 @@ extends Nether\Object\Prototype {
 
 		////////
 
-		return new static((array)$Input);
+		return static::GetByID($Result->GetInsertID());
 	}
 
 	////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////
 
 	static public function
-	Find(iterable $Input):
+	Find(array $Input):
 	Struct\PrototypeFindResult {
 
 		$Output = new Struct\PrototypeFindResult;
@@ -194,6 +194,7 @@ extends Nether\Object\Prototype {
 		$SQL = NULL;
 		$Result = NULL;
 		$Found = NULL;
+		$Row = NULL;
 
 		$Opt = [
 			'Page'  => 1,
@@ -203,7 +204,7 @@ extends Nether\Object\Prototype {
 
 		////////
 
-		$Opt = array_merge($Opt, $Input);
+		$Opt = new Datastore(array_merge($Opt, $Input));
 		static::FindExtendOptions($Opt);
 
 		////////
@@ -219,7 +220,9 @@ extends Nether\Object\Prototype {
 			->Limit($Opt['Limit'])
 		);
 
-		$Result = $SQL->Query($Opt);
+		static::FindExtendFilters($SQL, $Opt);
+
+		$Result = $SQL->Query($Opt->GetData());
 
 		if(!$Result->IsOK())
 		throw new Exception($Result->GetError());
@@ -236,7 +239,7 @@ extends Nether\Object\Prototype {
 		->Limit(0)
 		->Offset(0);
 
-		$Found = $SQL->Query($Opt);
+		$Found = $SQL->Query($Opt->GetData());
 
 		if(!$Found->IsOK())
 		throw new Exception($Found->GetError());
@@ -260,7 +263,7 @@ extends Nether\Object\Prototype {
 	}
 
 	static public function
-	FindExtendOptions(array &$Input):
+	FindExtendOptions(Datastore $Input):
 	void {
 
 		// $Input->SomeFilterName ??= NULL;
@@ -269,7 +272,7 @@ extends Nether\Object\Prototype {
 	}
 
 	static public function
-	FindExtendFilters(Verse $SQL, array $Input):
+	FindExtendFilters(Verse $SQL, Datastore $Input):
 	void {
 
 		// if($Input['SomeProperty'] !== NULL)
