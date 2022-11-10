@@ -162,6 +162,9 @@ extends Nether\Object\Prototype {
 		$Table = static::GetTableInfo();
 		$Fields = static::GetTableInsertMapFrom($Input);
 
+		if($Input instanceof Datastore)
+		$Input = $Input->GetData();
+
 		$SQL = (
 			(Nether\Database::Get())
 			->NewVerse()
@@ -190,26 +193,28 @@ extends Nether\Object\Prototype {
 
 		$Output = new Struct\PrototypeFindResult;
 		$Main = static::GetTableInfo();
+		$PKField = $Main->GetPrefixedKey('Main');
 
 		$SQL = NULL;
 		$Result = NULL;
 		$Found = NULL;
 		$Row = NULL;
 
-		$Opt = [
-			'Page'  => 1,
+		////////
+
+		$Opt = new Datastore([
+			'Sort'  => NULL,
 			'Limit' => 0,
+			'Page'  => 1,
 			'Debug' => FALSE
-		];
+		]);
+
+		$Opt->MergeRight($Input);
 
 		////////
 
-		$Opt = new Datastore(array_merge($Opt, $Input));
-		static::FindExtendOptions($Opt);
-
-		////////
-
-		// compile and execute the query.
+		// begin compiling a standard select statement supplying all of the
+		// information needed for paginated results.
 
 		$SQL = (
 			(Nether\Database::Get())
@@ -220,7 +225,29 @@ extends Nether\Object\Prototype {
 			->Limit($Opt['Limit'])
 		);
 
+		// allow extension classes to register options and supply
+		// additional filters using those options to the query.
+
+		static::FindExtendOptions($Opt);
 		static::FindExtendFilters($SQL, $Opt);
+
+		// before checking if an extension class wants to add sorting
+		// we will supply the default implementations for sorting by this
+		// table primary key. it is optimal here as we have already asked
+		// for the table private info.
+
+		match($Opt['Sort']) {
+			'pk-az'
+			=> $SQL->Sort($PKField, $SQL::SortAsc),
+
+			'pk-za'
+			=> $SQL->Sort($PKField, $SQL::SortDesc),
+
+			default
+			=> static::FindExtendSorts($SQL, $Opt)
+		};
+
+		// ship the query off and see what we get back.
 
 		$Result = $SQL->Query($Opt->GetData());
 
@@ -233,11 +260,12 @@ extends Nether\Object\Prototype {
 		////////
 
 		// recompile and re-execute the query in count mode.
+		// people claim this is better than calc found rows.
 
 		$SQL
 		->Fields('COUNT(*) AS Total', TRUE)
-		->Limit(0)
-		->Offset(0);
+		->Offset(0)
+		->Limit(0);
 
 		$Found = $SQL->Query($Opt->GetData());
 
@@ -248,13 +276,14 @@ extends Nether\Object\Prototype {
 
 		////////
 
-		// finalise the output object.
+		// finalise the output object with information from the query and
+		// result set for pagination.
 
 		$Output->Page = $Opt['Page'];
 		$Output->Limit = $Opt['Limit'];
 
 		if($Opt['Limit'])
-		$Output->PageCount = floor($Output->Total / $Output->Limit);
+		$Output->PageCount = ceil($Output->Total / $Output->Limit);
 
 		if($Opt['Debug'])
 		$Output->Result = $Result;
@@ -262,7 +291,7 @@ extends Nether\Object\Prototype {
 		return $Output;
 	}
 
-	static public function
+	static protected function
 	FindExtendOptions(Datastore $Input):
 	void {
 
@@ -271,12 +300,25 @@ extends Nether\Object\Prototype {
 		return;
 	}
 
-	static public function
+	static protected function
 	FindExtendFilters(Verse $SQL, Datastore $Input):
 	void {
 
 		// if($Input['SomeProperty'] !== NULL)
 		// $SQL->Where('SomeProperty=:SomeProperty')
+
+		return;
+	}
+
+	static protected function
+	FindExtendSorts(Verse $SQL, Datastore $Input):
+	void {
+
+		// switch($Input['Sort']) {
+		//	case 'whatever':
+		//		$SQL->Sort('...');
+		//	break;
+		// }
 
 		return;
 	}
