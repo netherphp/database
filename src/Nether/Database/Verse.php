@@ -45,6 +45,10 @@ and execute it against the database.
 	ModeDropTable = 6;
 
 	const
+	SelectNormal    = 0,
+	SelectCalcFound = 1;
+
+	const
 	InsertNormal      = 0,
 	InsertIgnore      = (1 << 0),
 	InsertUpdate      = (1 << 1),
@@ -524,7 +528,7 @@ and execute it against the database.
 	}
 
 	public function
-	Field(string|array $Field) {
+	Field(string|array $Field, bool $Reset=FALSE) {
 	/*//
 	@date 2022-02-17
 	define what fields this verse should operate against. some queries (select)
@@ -532,17 +536,23 @@ and execute it against the database.
 	list.
 	//*/
 
+		if($Reset)
+		$this->Fields = [];
+
 		$this->MergeValues($this->Fields, $Field);
 		return $this;
 	}
 
 	public function
-	Fields(string|array $Fields) {
+	Fields(string|array $Fields, bool $Reset=FALSE) {
 	/*//
 	@deprecated 2022-02-17
 	@alias self::Field
 	provide bc.
 	//*/
+
+		if($Reset)
+		$this->Fields = [];
 
 		return $this->Field($Fields);
 	}

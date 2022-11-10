@@ -162,17 +162,14 @@ extends Compiler {
 		$Sorts = NULL;
 		$Limit = NULL;
 		$Offset = NULL;
-
-		$Joins = NULL;
-		$Conds = NULL;
-		$Groups = NULL;
-		$Havings = NULL;
-		$Sorts = NULL;
-		$Limit = NULL;
-		$Offset = NULL;
+		$Flags = $this->Verse->GetFlags();
 
 		$this->QueryString = sprintf(
-			'SELECT %s FROM %s ',
+			'SELECT %s%s FROM %s ',
+			(
+				(($Flags & Verse::SelectCalcFound) === Verse::SelectCalcFound)
+				? 'SQL_CALC_FOUND_ROWS ' : ''
+			),
 			implode(', ', $this->Verse->GetFields()),
 			implode(', ', $this->Verse->GetTables())
 		);
