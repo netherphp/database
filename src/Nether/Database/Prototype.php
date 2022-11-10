@@ -4,6 +4,8 @@ namespace Nether\Database;
 use Nether;
 
 use Exception;
+use Nether\Object\Datastore;
+use Nether\Database\Verse;
 
 class Prototype
 extends Nether\Object\Prototype {
@@ -177,6 +179,103 @@ extends Nether\Object\Prototype {
 		////////
 
 		return new static((array)$Input);
+	}
+
+	////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////
+
+	static public function
+	Find(iterable $Input):
+	Struct\PrototypeFindResult {
+
+		$Output = new Struct\PrototypeFindResult;
+		$Main = static::GetTableInfo();
+
+		$SQL = NULL;
+		$Result = NULL;
+		$Found = NULL;
+
+		$Opt = [
+			'Page'  => 1,
+			'Limit' => 0,
+			'Debug' => FALSE
+		];
+
+		////////
+
+		$Opt = array_merge($Opt, $Input);
+		static::FindExtendOptions($Opt);
+
+		////////
+
+		// compile and execute the query.
+
+		$SQL = (
+			(Nether\Database::Get())
+			->NewVerse()
+			->Select($Main->GetAliasedTable('Main'))
+			->Fields("Main.*")
+			->Offset(($Opt['Page'] - 1) * $Opt['Limit'])
+			->Limit($Opt['Limit'])
+		);
+
+		$Result = $SQL->Query($Opt);
+
+		if(!$Result->IsOK())
+		throw new Exception($Result->GetError());
+
+		while($Row = $Result->Next())
+		$Output->Push(new static($Row));
+
+		////////
+
+		// recompile and re-execute the query in count mode.
+
+		$SQL
+		->Fields('COUNT(*) AS Total', TRUE)
+		->Limit(0)
+		->Offset(0);
+
+		$Found = $SQL->Query($Opt);
+
+		if(!$Found->IsOK())
+		throw new Exception($Found->GetError());
+
+		$Output->Total = $Found->Next()->Total;
+
+		////////
+
+		// finalise the output object.
+
+		$Output->Page = $Opt['Page'];
+		$Output->Limit = $Opt['Limit'];
+
+		if($Opt['Limit'])
+		$Output->PageCount = floor($Output->Total / $Output->Limit);
+
+		if($Opt['Debug'])
+		$Output->Result = $Result;
+
+		return $Output;
+	}
+
+	static public function
+	FindExtendOptions(array &$Input):
+	void {
+
+		// $Input->SomeFilterName ??= NULL;
+
+		return;
+	}
+
+	static public function
+	FindExtendFilters(Verse $SQL, array $Input):
+	void {
+
+		// if($Input['SomeProperty'] !== NULL)
+		// $SQL->Where('SomeProperty=:SomeProperty')
+
+		return;
 	}
 
 	////////////////////////////////////////////////////////////////
