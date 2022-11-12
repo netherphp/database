@@ -40,7 +40,7 @@ class TableClassInfo {
 		throw new Exception("{$ClassName} not found",1);
 
 		$Class = new ReflectionClass($ClassName);
-		$Attribs = $Class->GetAttributes();
+		$Attribs = $this->DigForAttributes($Class);
 		$Attrib = NULL;
 		$Inst = NULL;
 
@@ -122,6 +122,44 @@ class TableClassInfo {
 		$this->Attributes[] = $Inst->Learn($this);
 
 		return;
+	}
+
+	public function
+	DigForAttributes(ReflectionClass $Class):
+	array {
+
+		$Output = [];
+		$Found = NULL;
+		$Stop = FALSE;
+		$AName = NULL;
+
+		while($Class) {
+			$Found = $Class->GetAttributes();
+
+			foreach($Found as $Attr) {
+				$AName = $Attr->GetName();
+
+				// if this is a database attribute we do want to make
+				// note of it.
+
+				if(str_starts_with($AName, 'Nether\\Database\\Meta'))
+				$Output[] = $Attr;
+
+				// if this was a table class definition attribute then
+				// we want to stop searching parent classes when we
+				// finish with this one.
+
+				if($AName === Meta\TableClass::class)
+				$Stop = TRUE;
+			}
+
+			if($Stop)
+			break;
+
+			$Class = $Class->GetParentClass();
+		}
+
+		return $Output;
 	}
 
 	public function
