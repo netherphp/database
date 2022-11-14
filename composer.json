@@ -17,7 +17,8 @@
 	"require":{
 		"php": ">=8.1.0",
 		"netherphp/object": "dev-redux",
-		"netherphp/console": "dev-redux"
+		"netherphp/console": "dev-redux",
+		"netherphp/common": "dev-master"
 	},
 	"require-dev": {
 		"netherphp/standards": "^0.2.5",
