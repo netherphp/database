@@ -4,6 +4,8 @@ namespace Nether\Database;
 use Nether;
 
 use Exception;
+use Nether\Database\Meta\InsertReuseUnique;
+use Nether\Database\Meta\InsertUpdate;
 use Nether\Object\Datastore;
 use Nether\Database\Verse;
 
@@ -161,6 +163,17 @@ extends Nether\Object\Prototype {
 
 		$Table = static::GetTableInfo();
 		$Fields = static::GetTableInsertMapFrom($Input);
+		$Flags = 0;
+
+		////////
+
+		if($Table->HasAttribute(InsertReuseUnique::class))
+		$Flags |= Verse::InsertReuseUnique;
+
+		if($Table->HasAttribute(InsertUpdate::class))
+		$Flags |= Verse::InsertUpdate;
+
+		////////
 
 		if($Input instanceof Datastore)
 		$Input = $Input->GetData();
@@ -168,7 +181,8 @@ extends Nether\Object\Prototype {
 		$SQL = (
 			(Nether\Database::Get())
 			->NewVerse()
-			->Insert($Table->Name)
+			->Insert($Table->Name, $Flags)
+			->PrimaryKey($Table->PrimaryKey)
 			->Fields($Fields)
 		);
 

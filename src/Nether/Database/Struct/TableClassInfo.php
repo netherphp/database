@@ -203,6 +203,19 @@ class TableClassInfo {
 		return $this->Attributes;
 	}
 
+	public function
+	HasAttribute(string $Type):
+	bool {
+
+		$Attr = NULL;
+
+		foreach($this->Attributes as $Attr)
+		if($Attr::class === $Type)
+		return TRUE;
+
+		return FALSE;
+	}
+
 	////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////
 

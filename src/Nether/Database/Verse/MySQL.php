@@ -103,7 +103,7 @@ extends Compiler {
 
 		$Table = current($this->Verse->GetTables());
 		$Flags = $this->Verse->GetFlags();
-		$Fields = join(',', array_keys($this->Verse->GetFields()));
+		$Fields = '`'.join('`,`', array_keys($this->Verse->GetFields())).'`';
 		$Values = join(',', array_values($this->Verse->GetFields()));
 		$Ignore = (($Flags & Verse::InsertIgnore) === Verse::InsertIgnore);
 		$Update = (($Flags & Verse::InsertUpdate) === Verse::InsertUpdate);
@@ -503,7 +503,7 @@ extends Compiler {
 
 		foreach($Sets as $Field => $Value) {
 			$Output .= sprintf(
-				'%s%s=%s',
+				'%s`%s`=%s',
 				(($First)?(''):(',')),
 				$Field,
 				$Value
