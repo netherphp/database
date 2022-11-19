@@ -118,10 +118,14 @@ extends Nether\Console\Client {
 		if(!$SQL->HasDatabase())
 		return 0;
 
+		$SQL->GetDatabase()->Query('SET FOREIGN_KEY_CHECKS=0;');
+
 		$Result = $this->ConfirmAndExecuteVerse(
 			[ $PreSQL, $SQL ],
 			$AutoYes
 		);
+
+		$SQL->GetDatabase()->Query('SET FOREIGN_KEY_CHECKS=1;');
 
 		if($Result === FALSE)
 		$this->Quit(3);
