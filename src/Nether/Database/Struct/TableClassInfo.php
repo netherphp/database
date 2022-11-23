@@ -223,14 +223,14 @@ class TableClassInfo {
 	GetAliasedTable(string $Alias):
 	string {
 
-		return "{$this->Name} {$Alias}";
+		return "`{$this->Name}` `{$Alias}`";
 	}
 
 	public function
 	GetPrefixedKey(string $Alias):
 	string {
 
-		return "{$Alias}.{$this->PrimaryKey}";
+		return "`{$Alias}`.`{$this->PrimaryKey}`";
 	}
 
 	////////////////////////////////////////////////////////////////

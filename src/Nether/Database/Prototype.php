@@ -286,6 +286,7 @@ extends Nether\Object\Prototype {
 		if(!$Found->IsOK())
 		throw new Exception($Found->GetError());
 
+		if($Found->GetCount() !== 0)
 		$Output->Total = $Found->Next()->Total;
 
 		////////
