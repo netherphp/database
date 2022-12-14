@@ -1,23 +1,32 @@
 <?php
 
 namespace Nether\Database;
-use Nether;
+
+use Nether\Common;
 
 use Nether\Object\Datastore;
 
-class Library {
+class Library
+extends Common\Library {
 
-	static public function
-	Init(string $Path, string $Env, Datastore $Config, ...$Argv):
+	public function
+	OnLoad(...$Argv):
+	void {
+
+		return;
+	}
+
+	public function
+	OnPrepare(...$Argv):
 	void {
 
 		$Filename = sprintf(
 			'%s/conf/env/%s/netherdb.json',
-			$Path, $Env
+			$Argv['Path'], $Argv['Env']
 		);
 
 		if(file_exists($Filename) && is_readable($Filename))
-		Nether\Database\ConnectionConfig::LoadFromJSON($Filename);
+		ConnectionConfig::LoadFromJSON($Filename);
 
 		return;
 	}
