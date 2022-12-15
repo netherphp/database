@@ -4,8 +4,59 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f500461b2cac18b2374d254f1555ee69",
+    "content-hash": "d4d4b4c9b03207ebdde7089254162109",
     "packages": [
+        {
+            "name": "netherphp/common",
+            "version": "v5.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/netherphp/common.git",
+                "reference": "2581c6bec9b8309bf0e7ae1e5e1dccc088639af6"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/netherphp/common/zipball/2581c6bec9b8309bf0e7ae1e5e1dccc088639af6",
+                "reference": "2581c6bec9b8309bf0e7ae1e5e1dccc088639af6",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.1"
+            },
+            "require-dev": {
+                "dealerdirect/phpcodesniffer-composer-installer": "^0.7.2",
+                "netherphp/standards": ">=0.1.9",
+                "phpunit/phpunit": "^9.5"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Nether\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-2-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Bob Majdak Jr",
+                    "email": "bmajdak@php.net",
+                    "homepage": "http://pegasusgate.net/+bob",
+                    "role": "developer"
+                }
+            ],
+            "description": "Things that were found useful and needed everywhere.",
+            "keywords": [
+                "php",
+                "utilities"
+            ],
+            "support": {
+                "issues": "https://github.com/netherphp/common/issues",
+                "source": "https://github.com/netherphp/common/tree/v5.0.0"
+            },
+            "time": "2022-12-15T21:55:30+00:00"
+        },
         {
             "name": "netherphp/console",
             "version": "dev-redux",
@@ -2042,5 +2093,5 @@
         "php": ">=8.1.0"
     },
     "platform-dev": [],
-    "plugin-api-version": "2.2.0"
+    "plugin-api-version": "2.3.0"
 }
