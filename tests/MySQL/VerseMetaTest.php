@@ -141,7 +141,7 @@ extends PHPUnit\Framework\TestCase {
 	TestUpdateFromMetaHelper():
 	void {
 
-		$Query1 = 'UPDATE ExampleTable1 SET Field1=:Value1';
+		$Query1 = 'UPDATE ExampleTable1 SET `Field1`=:Value1';
 
 		$Verse = (
 			Verse::FromMetaUpdate('ExampleTable1')
@@ -176,7 +176,7 @@ extends PHPUnit\Framework\TestCase {
 	TestInsertFromMetaHelper():
 	void {
 
-		$Query1 = 'INSERT INTO ExampleTable1 (Field1) VALUES (:Value1)';
+		$Query1 = 'INSERT INTO ExampleTable1 (`Field1`) VALUES (:Value1)';
 
 		$Verse = (
 			Verse::FromMetaInsert('ExampleTable1')

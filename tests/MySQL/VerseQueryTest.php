@@ -317,9 +317,9 @@ extends PHPUnit\Framework\TestCase {
 		$DB = $this->GetDatabaseMock();
 		$Verse = $DB->NewVerse();
 
-		$QueryInsertNormal = "INSERT INTO TableName (Field1,Field2,Field3) VALUES (:Value1,:Value2,:Value3)";
-		$QueryInsertIgnore = "INSERT IGNORE INTO TableName (Field1,Field2,Field3) VALUES (:Value1,:Value2,:Value3)";
-		$QueryOnDupliateKeyUpdate = "ON DUPLICATE KEY UPDATE Field1=:Value1,Field2=:Value2,Field3=:Value3";
+		$QueryInsertNormal = "INSERT INTO TableName (`Field1`,`Field2`,`Field3`) VALUES (:Value1,:Value2,:Value3)";
+		$QueryInsertIgnore = "INSERT IGNORE INTO TableName (`Field1`,`Field2`,`Field3`) VALUES (:Value1,:Value2,:Value3)";
+		$QueryOnDupliateKeyUpdate = "ON DUPLICATE KEY UPDATE `Field1`=:Value1,`Field2`=:Value2,`Field3`=:Value3";
 
 		$QueryInsertNormalUpdate = "{$QueryInsertNormal} {$QueryOnDupliateKeyUpdate}";
 		$QueryInsertIgnoreUpdate = "{$QueryInsertIgnore} {$QueryOnDupliateKeyUpdate}";
@@ -407,8 +407,8 @@ extends PHPUnit\Framework\TestCase {
 		$DB = $this->GetDatabaseMock();
 		$Verse = $DB->NewVerse();
 
-		$QuerySimple = 'UPDATE TableName SET Field1=:Value1,Field2=:Value2,Field3=:Value3';
-		$QueryCondition = 'UPDATE TableName SET Field1=:Value1,Field2=:Value2,Field3=:Value3 WHERE (Field1=:Value1)';
+		$QuerySimple = 'UPDATE TableName SET `Field1`=:Value1,`Field2`=:Value2,`Field3`=:Value3';
+		$QueryCondition = 'UPDATE TableName SET `Field1`=:Value1,`Field2`=:Value2,`Field3`=:Value3 WHERE (Field1=:Value1)';
 
 		$Query = (
 			$Verse
