@@ -6,7 +6,7 @@ trait GetDatabaseMock {
 	GetDatabaseMock() {
 
 		$DB = $this
-		->GetMockBuilder('Nether\Database')
+		->GetMockBuilder('Nether\Database\Manager')
 		->SetMethods([
 			'GetDriverName',
 			'Escape'
@@ -35,7 +35,7 @@ trait GetDatabaseMock {
 		$DB
 		->Method('Escape')
 		->Will($this->ReturnCallback(function($Input){
-			return sprintf("'%s'",addslashes($Input));
+			return sprintf("'%s'", addslashes($Input));
 		}));
 
 		return $DB;

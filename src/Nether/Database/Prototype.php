@@ -12,6 +12,12 @@ use Nether\Database\Verse;
 class Prototype
 extends Nether\Object\Prototype {
 
+	static public string
+	$DBA = 'Default';
+
+	////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////
+
 	public function
 	Drop():
 	static {
@@ -21,10 +27,10 @@ extends Nether\Object\Prototype {
 	//*/
 
 		$Table = static::GetTableInfo();
+		$DBM = new Manager;
 
 		$SQL = (
-			(Nether\Database::Get())
-			->NewVerse()
+			($DBM->NewVerse(static::$DBA))
 			->Delete($Table->Name)
 			->Where("{$Table->PrimaryKey}=:ID")
 			->Limit(1)
@@ -54,14 +60,14 @@ extends Nether\Object\Prototype {
 
 		$Table = static::GetTableInfo();
 		$Fields = static::GetTableInsertMapFrom($Dataset);
+		$DBM = new Manager;
 		$Key = NULL;
 		$Val = NULL;
 
 		////////
 
 		$SQL = (
-			(Nether\Database::Get())
-			->NewVerse()
+			($DBM->NewVerse(static::$DBA))
 			->Update($Table->Name)
 			->Set($Fields)
 			->Where("{$Table->PrimaryKey}=:PrimaryKeyID")
@@ -100,6 +106,7 @@ extends Nether\Object\Prototype {
 	//*/
 
 		$Table = static::GetTableInfo();
+		$DBM = new Manager;
 
 		if(!array_key_exists($Field, $Table->Fields))
 		throw new Exception("{$Field} not found on {$Table->Name}");
@@ -107,8 +114,7 @@ extends Nether\Object\Prototype {
 		////////
 
 		$SQL = (
-			(Nether\Database::Get())
-			->NewVerse()
+			($DBM->NewVerse(static::$DBA))
 			->Select($Table->Name)
 			->Fields('*')
 			->Where("{$Field}=:FieldValue")
@@ -163,6 +169,7 @@ extends Nether\Object\Prototype {
 
 		$Table = static::GetTableInfo();
 		$Fields = static::GetTableInsertMapFrom($Input);
+		$DBM = new Manager;
 		$Flags = 0;
 
 		////////
@@ -179,8 +186,7 @@ extends Nether\Object\Prototype {
 		$Input = $Input->GetData();
 
 		$SQL = (
-			(Nether\Database::Get())
-			->NewVerse()
+			($DBM->NewVerse(static::$DBA))
 			->Insert($Table->Name, $Flags)
 			->PrimaryKey($Table->PrimaryKey)
 			->Fields($Fields)
@@ -206,6 +212,7 @@ extends Nether\Object\Prototype {
 	Struct\PrototypeFindResult {
 
 		$Output = new Struct\PrototypeFindResult;
+		$DBM = new Manager;
 		$Main = static::GetTableInfo();
 		$PKField = $Main->GetPrefixedKey('Main');
 
@@ -231,8 +238,7 @@ extends Nether\Object\Prototype {
 		// information needed for paginated results.
 
 		$SQL = (
-			(Nether\Database::Get())
-			->NewVerse()
+			($DBM->NewVerse(static::$DBA))
 			->Select($Main->GetAliasedTable('Main'))
 			->Fields("Main.*")
 			->Offset(($Opt['Page'] - 1) * $Opt['Limit'])

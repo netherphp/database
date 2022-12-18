@@ -9,7 +9,7 @@ use Nether\Option;
 use Nether\Database\Verse;
 use Nether\Database\Struct\TableClassInfo;
 
-Option::Set('Nether.Database.Verse.ConnectionDefault', NULL);
+//Option::Set('Nether.Database.Verse.ConnectionDefault', NULL);
 
 #[Nether\Database\Meta\TableClass(Name: 'ExampleTable1', Comment: 'Example Table 1')]
 #[Nether\Database\Meta\MultiFieldIndex(Fields: [ 'ParentID', 'ChildID' ], Unique: TRUE)]

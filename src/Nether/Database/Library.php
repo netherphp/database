@@ -3,11 +3,16 @@
 namespace Nether\Database;
 
 use Nether\Common;
-
-use Nether\Object\Datastore;
+use Nether\Database;
 
 class Library
 extends Common\Library {
+
+	const
+	ConfConnections = 'Nether.Database.Connections';
+
+	////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////
 
 	public function
 	OnLoad(...$Argv):
@@ -20,13 +25,10 @@ extends Common\Library {
 	OnPrepare(...$Argv):
 	void {
 
-		$Filename = sprintf(
-			'%s/conf/env/%s/netherdb.json',
-			$Argv['Path'], $Argv['Env']
-		);
+		$CTX = NULL;
 
-		if(file_exists($Filename) && is_readable($Filename))
-		ConnectionConfig::LoadFromJSON($Filename);
+		foreach(Manager::GetConnections() as $CTX)
+		$CTX->Connect();
 
 		return;
 	}

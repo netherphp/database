@@ -5,12 +5,14 @@ use \Nether;
 
 use \Exception;
 
-class InvalidConfig
+class InvalidConnection
 extends Exception {
 
 	public function
 	__Construct($Alias) {
-		parent::__Construct("The configuration for {$Alias} is invalid.");
+
+		parent::__Construct("No configured connection for {$Alias}");
+
 		return;
 	}
 

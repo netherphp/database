@@ -14,6 +14,7 @@ use Exception;
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
+/*
 Option::Define([
 	'Nether.Database.Verse.Compiler'
 	=> 'Nether\\Database\\Verse\\MySQL',
@@ -21,6 +22,7 @@ Option::Define([
 	'Nether.Database.Verse.ConnectionDefault'
 	=> NULL
 ]);
+*/
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -84,7 +86,7 @@ and execute it against the database.
 	name of the class to construct compilers out of.
 	//*/
 
-	public ?Database
+	public Connection
 	$Database;
 	/*//
 	@date 2022-02-17
@@ -240,7 +242,7 @@ and execute it against the database.
 	////////////////////////////////////////////////////////////////
 
 	public function
-	__Construct(?Database $Database=NULL, ?string $Compiler=NULL) {
+	__Construct(Connection $Database=NULL, ?string $Compiler=NULL) {
 	/*//
 	@date 2020-11-24
 	//*/
@@ -675,7 +677,7 @@ and execute it against the database.
 
 	public function
 	GetDatabase():
-	?Database {
+	?Connection {
 	/*//
 	@date 2022-02-18
 	get the current mode of the query.
@@ -963,7 +965,10 @@ and execute it against the database.
 	get the default compiler.
 	//*/
 
-		return Option::Get(self::OptVerseCompiler);
+		// todo 2022-12-18
+		// it needs to determine this from the connection type.
+
+		return 'Nether\\Database\\Verse\\MySQL';
 	}
 
 	protected function
@@ -974,7 +979,7 @@ and execute it against the database.
 	try to connect to the default database connection if configured.
 	//*/
 
-		$Default = Option::Get(self::OptConnectionDefault);
+		$Default = 'Default';
 
 		if(!is_string($Default))
 		return NULL;

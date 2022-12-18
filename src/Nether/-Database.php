@@ -365,7 +365,14 @@ class Database {
 
 		// else convert basic array into connection object.
 
-		return new Connection($Config[$Alias]);
+		return new Connection(
+			$Config[$Alias]['Type'],
+			$Config[$Alias]['Hostname'],
+			$Config[$Alias]['Database'],
+			$Config[$Alias]['Username'],
+			$Config[$Alias]['Password'],
+			$Config[$Alias]['Charset'] ?? 'utf8'
+		);
 	}
 
 	////////////////////////////////
