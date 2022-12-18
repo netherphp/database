@@ -144,12 +144,23 @@ extends PHPUnit\Framework\TestCase {
 
 		$Verse
 		->Select('TestTable T')
-		->Join('OtherTable O')
+		->Join('OtherTable O ON T.ID=O.TID')
 		->Fields([ 'F1', 'F2' ])
 		->Where('F1=:V1');
 
 		$this->AssertEquals(
-			'SELECT `F1`,`F2` FROM TestTable T JOIN OtherTable O WHERE (F1=:V1)'
+			'SELECT `F1`,`F2` FROM TestTable T LEFT JOIN OtherTable O ON T.ID=O.TID WHERE (F1=:V1)',
+			(string)$Verse
+		);
+
+		////////
+
+		$Verse
+		->Join('AnotherTable A ON T.ID=A.TID');
+
+		$this->AssertEquals(
+			'SELECT `F1`,`F2` FROM TestTable T LEFT JOIN OtherTable O ON T.ID=O.TID LEFT JOIN AnotherTable A ON T.ID=A.TID WHERE (F1=:V1)',
+			(string)$Verse
 		);
 
 		return;
