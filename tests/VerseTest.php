@@ -135,4 +135,24 @@ extends PHPUnit\Framework\TestCase {
 		return;
 	}
 
+	/** @test */
+	public function
+	TestJoinedQuery():
+	void {
+
+		$Verse = static::NewVerseBasic();
+
+		$Verse
+		->Select('TestTable T')
+		->Join('OtherTable O')
+		->Fields([ 'F1', 'F2' ])
+		->Where('F1=:V1');
+
+		$this->AssertEquals(
+			'SELECT `F1`,`F2` FROM TestTable T JOIN OtherTable O WHERE (F1=:V1)'
+		);
+
+		return;
+	}
+
 }
