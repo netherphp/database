@@ -2,7 +2,7 @@
 
 namespace Nether\Database;
 
-use Nether\Option;
+//use Nether\Option;
 use Nether\Database;
 use Nether\Database\Result;
 use Nether\Database\Struct\FlaggedQueryValue;
