@@ -155,6 +155,9 @@ extends Compiler {
 	generate a SELECT style query.
 	//*/
 
+		$Flags = NULL;
+		$Fields = NULL;
+		$Tables = NULL;
 		$Joins = NULL;
 		$Conds = NULL;
 		$Groups = NULL;
@@ -162,17 +165,19 @@ extends Compiler {
 		$Sorts = NULL;
 		$Limit = NULL;
 		$Offset = NULL;
-		$Flags = $this->Verse->GetFlags();
 
-		$this->QueryString = sprintf(
-			'SELECT %s%s FROM %s ',
-			(
-				(($Flags & Verse::SelectCalcFound) === Verse::SelectCalcFound)
-				? 'SQL_CALC_FOUND_ROWS ' : ''
-			),
-			sprintf('`%s`', implode('`,`', $this->Verse->GetFields())),
-			implode(', ', $this->Verse->GetTables())
-		);
+		////////
+
+		$this->QueryString = 'SELECT ';
+
+		if($Flags = $this->Verse->GetFlags())
+		$this->QueryString .= $this->GetSelectFlagString($Flags);
+
+		if($Fields = $this->Verse->GetFields())
+		$this->QueryString .= $this->GetSelectFieldString($Fields);
+
+		if($Tables = $this->Verse->GetTables())
+		$this->QueryString .= $this->GetSelectFromString($Tables);
 
 		if($Joins = $this->Verse->GetJoins())
 		$this->QueryString .= $this->GetJoinString($Joins);
@@ -559,6 +564,59 @@ extends Compiler {
 		);
 
 		return $Output;
+	}
+
+	protected function
+	GetSelectFlagString(int $Flags):
+	string {
+	/*//
+	@date 2022-12-18
+	//*/
+
+		$Output = '';
+
+		if(($Flags & Verse::SelectCalcFound) === Verse::SelectCalcFound)
+		$Output .= 'SQL_CALC_FOUND_ROWS ';
+
+		return $Output;
+	}
+
+	protected function
+	GetSelectFromString(array $Tables):
+	string {
+	/*//
+	@date 2022-12-18
+	//*/
+
+		$Output = implode(',', $Tables);
+
+		return "FROM {$Output} ";
+	}
+
+	protected function
+	GetSelectFieldString(array $Fields):
+	string {
+	/*//
+	@date 2022-12-18
+	//*/
+
+		// the goal here is to protect fields from tripping over
+		// reserved words but also allowing for having specified
+		// advanced field stuff which becomes your problem.
+
+		$Output = '';
+		$Field = NULL;
+
+		foreach($Fields as $Field) {
+			if(preg_match('/^[a-zA-Z0-9]+$/', $Field))
+			$Output .= "`{$Field}`,";
+			else
+			$Output .= "{$Field},";
+		}
+
+		$Output = trim($Output, ',');
+
+		return "{$Output} ";
 	}
 
 	protected function
