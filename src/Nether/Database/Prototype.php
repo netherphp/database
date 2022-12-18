@@ -121,7 +121,7 @@ extends Nether\Object\Prototype {
 			->Limit(1)
 		);
 
-		echo $SQL;
+		//echo $SQL;
 
 		$Result = $SQL->Query([
 			':FieldValue' => $Value
