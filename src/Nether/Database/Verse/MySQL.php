@@ -170,7 +170,7 @@ extends Compiler {
 				(($Flags & Verse::SelectCalcFound) === Verse::SelectCalcFound)
 				? 'SQL_CALC_FOUND_ROWS ' : ''
 			),
-			implode(', ', $this->Verse->GetFields()),
+			sprintf('`%s`', implode('`,`', $this->Verse->GetFields())),
 			implode(', ', $this->Verse->GetTables())
 		);
 

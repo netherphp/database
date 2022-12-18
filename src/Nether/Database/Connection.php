@@ -73,12 +73,13 @@ class Connection {
 	array {
 
 		return [
-			'Type'     => $this->Type,
-			'Hostname' => $this->Hostname,
-			'Database' => $this->Database,
-			'Username' => Common\Values::DebugProtectValue($this->Username),
-			'Password' => Common\Values::DebugProtectValue($this->Password),
-			'Charset'  => $this->Charset
+			'Type'        => $this->Type,
+			'Hostname'    => $this->Hostname,
+			'Database'    => $this->Database,
+			'Username'    => Common\Values::DebugProtectValue($this->Username),
+			'Password'    => Common\Values::DebugProtectValue($this->Password),
+			'Charset'     => $this->Charset,
+			'IsConnected' => $this->IsConnected()
 		];
 	}
 
@@ -182,8 +183,8 @@ class Connection {
 
 		// convert to an object if not an object.
 
-		if(!is_object($Argv))
-		$Argv = (object)$Argv;
+		if(!is_array($Argv))
+		$Argv = (array)$Argv;
 
 		// handle if we gave it an object that implements stringable.
 		// mostly for use with Verse but you could send your own object
@@ -229,7 +230,7 @@ class Connection {
 	}
 
 	public function
-	Query_BuildDataset(string $SQL, object $Argv, array &$Dataset):
+	Query_BuildDataset(string $SQL, array $Argv, array &$Dataset):
 	void {
 	/*//
 	@modifies $Dataset
@@ -257,11 +258,11 @@ class Connection {
 			// make sure all the bindings were prefixed with the colon
 			// if not already.
 
-			if(property_exists($Argv, $Binding))
-			$Dataset[$Param] = $Argv->{$Binding};
+			if(array_key_exists($Binding, $Argv))
+			$Dataset[$Param] = $Argv[$Binding];
 
-			elseif(property_exists($Argv, $Param))
-			$Dataset[$Param] = $Argv->{$Param};
+			elseif(array_key_exists($Param, $Argv))
+			$Dataset[$Param] = $Argv[$Param];
 
 			// if an expanded binding was found, find the common argument
 			// that it should match with for data expansion later.
@@ -270,11 +271,11 @@ class Connection {
 				$Key = preg_replace('/__(.+?)__\d+/', '\\1', $Binding);
 				$Param = ":{$Key}";
 
-				if(!array_key_exists($Param, $Dataset) && property_exists($Argv, $Key))
-				$Dataset[$Param] = $Argv->{$Key};
+				if(!array_key_exists($Param, $Dataset) && array_key_exists($Key, $Argv))
+				$Dataset[$Param] = $Argv[$Key];
 
-				elseif(!array_key_exists($Param, $Dataset) && property_exists($Argv, $Param))
-				$Dataset[$Param] = $Argv->{$Param};
+				elseif(!array_key_exists($Param, $Dataset) && array_key_exists($Param, $Argv))
+				$Dataset[$Param] = $Argv[$Param];
 			}
 
 		}
@@ -291,7 +292,7 @@ class Connection {
 	}
 
 	public function
-	Query_ExpandDataset(string &$SQL, object $Argv, array &$Dataset):
+	Query_ExpandDataset(string &$SQL, array $Argv, array &$Dataset):
 	void {
 	/*//
 	@modifies $SQL
