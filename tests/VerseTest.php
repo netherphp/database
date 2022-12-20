@@ -166,4 +166,228 @@ extends PHPUnit\Framework\TestCase {
 		return;
 	}
 
+	/** @test */
+	public function
+	TestSortedQuery():
+	void {
+
+		$Verse = static::NewVerseBasic();
+
+		$Verse
+		->Select('TableName')
+		->Fields('*')
+		->Sort('Field1');
+
+		$this->AssertEquals(
+			'SELECT * FROM TableName ORDER BY Field1 ASC',
+			(string)$Verse
+		);
+
+		$Verse
+		->Sort('Field2', $Verse::SortDesc);
+
+		$this->AssertEquals(
+			'SELECT * FROM TableName ORDER BY Field1 ASC, Field2 DESC',
+			(string)$Verse
+		);
+
+		return;
+	}
+
+	/** @test */
+	public function
+	TestGroupedQuery():
+	void {
+
+		$Verse = static::NewVerseBasic();
+
+		$Verse
+		->Select('TableName')
+		->Fields('*')
+		->Group('Field1');
+
+		$this->AssertEquals(
+			'SELECT * FROM TableName GROUP BY Field1',
+			(string)$Verse
+		);
+
+		$Verse->Group('Field2');
+
+		$this->AssertEquals(
+			'SELECT * FROM TableName GROUP BY Field1, Field2',
+			(string)$Verse
+		);
+
+		return;
+	}
+
+
+	/** @test */
+	public function
+	TestGroupedHavingQuery():
+	void {
+
+		$Verse = static::NewVerseBasic();
+
+		$Verse
+		->Select('TableName')
+		->Fields('*')
+		->Having('Field1=:Value1');
+
+		$this->AssertEquals(
+			'SELECT * FROM TableName HAVING (Field1=:Value1)',
+			(string)$Verse
+		);
+
+		$Verse->Having('Field2=:Value2');
+
+		$this->AssertEquals(
+			'SELECT * FROM TableName HAVING (Field1=:Value1) AND (Field2=:Value2)',
+			(string)$Verse
+		);
+
+		return;
+	}
+
+	/** @test */
+	public function
+	TestLimitedQuery():
+	void {
+
+		$Verse = static::NewVerseBasic();
+
+		$Verse
+		->Select('TableName')
+		->Fields('*')
+		->Limit(10);
+
+		$this->AssertEquals(
+			'SELECT * FROM TableName LIMIT 10',
+			(string)$Verse
+		);
+
+		$Verse->Offset(20);
+
+		$this->AssertEquals(
+			'SELECT * FROM TableName LIMIT 10 OFFSET 20',
+			(string)$Verse
+		);
+
+		return;
+	}
+
+	/** @test */
+	public function
+	TestNamedBuildingOverwriting():
+	void {
+
+		$Verse = static::NewVerseBasic();
+
+		$Verse
+		->Select('TableName')
+		->Fields('*');
+
+		////////
+
+		$Verse->Where([ 'TestCond'=> 'Field1=:Value1' ]);
+
+		$this->AssertEquals(
+			'SELECT * FROM TableName WHERE (Field1=:Value1)',
+			(string)$Verse
+		);
+
+		////////
+
+		$Verse->Where([ 'TestCond'=> 'Field2=:Value2' ]);
+
+		$this->AssertEquals(
+			'SELECT * FROM TableName WHERE (Field2=:Value2)',
+			(string)$Verse
+		);
+
+		////////
+
+		$Verse->Sort([ 'TestSort'=> 'Field1' ]);
+
+		$this->AssertEquals(
+			'SELECT * FROM TableName WHERE (Field2=:Value2) ORDER BY Field1 ASC',
+			(string)$Verse
+		);
+
+		////////
+
+		$Verse->Sort([ 'TestSort'=> 'Field2' ]);
+
+		$this->AssertEquals(
+			'SELECT * FROM TableName WHERE (Field2=:Value2) ORDER BY Field2 ASC',
+			(string)$Verse
+		);
+
+		return;
+	}
+
+	/** @test */
+	public function
+	TestInsertQuery():
+	void {
+
+		$Verse = static::NewVerseBasic();
+
+		$Verse
+		->Insert('TableName')
+		->Fields([ 'Field1'=> ':Value1', 'Field2'=> ':Value2' ]);
+
+		$this->AssertEquals(
+			'INSERT INTO TableName (`Field1`,`Field2`) VALUES (:Value1,:Value2)',
+			(string)$Verse
+		);
+
+		return;
+	}
+
+	/** @test */
+	public function
+	TestUpdateQuery():
+	void {
+
+		$Verse = static::NewVerseBasic();
+
+		$Verse
+		->Update('TableName')
+		->Fields([ 'Field1'=> ':Value1', 'Field2'=> ':Value2' ]);
+
+		$this->AssertEquals(
+			'UPDATE TableName SET `Field1`=:Value1,`Field2`=:Value2',
+			(string)$Verse
+		);
+
+		$Verse->Where('Field0=:Cond0');
+
+		$this->AssertEquals(
+			'UPDATE TableName SET `Field1`=:Value1,`Field2`=:Value2 WHERE (Field0=:Cond0)',
+			(string)$Verse
+		);
+
+		return;
+	}
+
+	/** @test */
+	public function
+	TestDeleteQuery():
+	void {
+
+		$Verse = static::NewVerseBasic();
+
+		$Verse
+		->Delete('TableName')
+		->Where('Field1=:Value1');
+
+		$this->AssertEquals(
+			'DELETE FROM TableName WHERE (Field1=:Value1)',
+			(string)$Verse
+		);
+
+		return;
+	}
+
 }
