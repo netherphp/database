@@ -239,6 +239,8 @@ extends PHPUnit\Framework\TestCase {
 			(string)$Verse
 		);
 
+		////////
+
 		$Verse->Having('Field2=:Value2');
 
 		$this->AssertEquals(
@@ -384,6 +386,23 @@ extends PHPUnit\Framework\TestCase {
 
 		$this->AssertEquals(
 			'DELETE FROM TableName WHERE (Field1=:Value1)',
+			(string)$Verse
+		);
+
+		return;
+	}
+
+	/** @test */
+	public function
+	TestDropTableQuery():
+	void {
+
+		$Verse = static::NewVerseBasic();
+
+		$Verse->DropTable('TableName');
+
+		$this->AssertEquals(
+			'DROP TABLE IF EXISTS `TableName`',
 			(string)$Verse
 		);
 

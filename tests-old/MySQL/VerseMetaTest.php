@@ -11,8 +11,8 @@ use Nether\Database\Struct\TableClassInfo;
 
 //Option::Set('Nether.Database.Verse.ConnectionDefault', NULL);
 
-#[Nether\Database\Meta\TableClass(Name: 'ExampleTable1', Comment: 'Example Table 1')]
-#[Nether\Database\Meta\MultiFieldIndex(Fields: [ 'ParentID', 'ChildID' ], Unique: TRUE)]
+#[Meta\TableClass(Name: 'ExampleTable1', Comment: 'Example Table 1')]
+#[Meta\MultiFieldIndex(Fields: [ 'ParentID', 'ChildID' ], Unique: TRUE)]
 class ExampleTable1 {
 
 	#[Nether\Database\Meta\TypeIntBig(Unsigned: TRUE, AutoInc: TRUE)]

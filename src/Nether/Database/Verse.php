@@ -973,7 +973,7 @@ and execute it against the database.
 
 	protected function
 	GetDefaultConnection():
-	?Database {
+	?Connection {
 	/*//
 	@date 2022-02-17
 	try to connect to the default database connection if configured.
@@ -984,12 +984,13 @@ and execute it against the database.
 		if(!is_string($Default))
 		return NULL;
 
-		$Database = Database::Get($Default);
+		$DBM = new Manager;
+		$DB = $DBM->Get($Default);
 
-		if(!($Database instanceof Database))
+		if(!($DB instanceof Connection))
 		return NULL;
 
-		return $Database;
+		return $DB;
 	}
 
 	protected function
