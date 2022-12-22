@@ -7,6 +7,8 @@ use Nether;
 
 use Nether\Object\Datastore;
 
+new Nether\Database\Library;
+
 class VerseTest
 extends PHPUnit\Framework\TestCase {
 
@@ -52,10 +54,14 @@ extends PHPUnit\Framework\TestCase {
 
 		$Verse = static::NewVerseBasic();
 
+		$this->AssertTrue($Verse->HasDatabase());
+
 		$Verse
 		->Select('TestTable')
-		->Fields([ 'Field1', 'Field2' ])
+		->Fields('Field0')
 		->Where('Field1=:Value1');
+
+		$Verse->Fields([ 'Field1', 'Field2' ], TRUE);
 
 		$this->AssertEquals(
 			'SELECT `Field1`,`Field2` FROM TestTable WHERE (Field1=:Value1)',
@@ -68,6 +74,14 @@ extends PHPUnit\Framework\TestCase {
 
 		$this->AssertEquals(
 			'SELECT `Field1`,`Field2` FROM TestTable WHERE (Field1=:Value1) AND (Field2=:Value2)',
+			(string)$Verse
+		);
+
+		////////
+
+		$Verse->Table('OtherTable', TRUE);
+		$this->AssertEquals(
+			'SELECT `Field1`,`Field2` FROM OtherTable WHERE (Field1=:Value1) AND (Field2=:Value2)',
 			(string)$Verse
 		);
 
@@ -221,7 +235,6 @@ extends PHPUnit\Framework\TestCase {
 		return;
 	}
 
-
 	/** @test */
 	public function
 	TestGroupedHavingQuery():
@@ -337,7 +350,7 @@ extends PHPUnit\Framework\TestCase {
 
 		$Verse
 		->Insert('TableName')
-		->Fields([ 'Field1'=> ':Value1', 'Field2'=> ':Value2' ]);
+		->Values([ 'Field1'=> ':Value1', 'Field2'=> ':Value2' ]);
 
 		$this->AssertEquals(
 			'INSERT INTO TableName (`Field1`,`Field2`) VALUES (:Value1,:Value2)',

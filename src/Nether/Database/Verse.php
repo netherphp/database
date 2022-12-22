@@ -2,27 +2,12 @@
 
 namespace Nether\Database;
 
-//use Nether\Option;
-use Nether\Database;
 use Nether\Database\Result;
 use Nether\Database\Struct\FlaggedQueryValue;
 use Nether\Database\Struct\TableClassInfo;
 
 use Stringable;
 use Exception;
-
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-
-/*
-Option::Define([
-	'Nether.Database.Verse.Compiler'
-	=> 'Nether\\Database\\Verse\\MySQL',
-
-	'Nether.Database.Verse.ConnectionDefault'
-	=> NULL
-]);
-*/
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -379,41 +364,23 @@ and execute it against the database.
 		return $this;
 	}
 
+	////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////
 
 	public function
-	Table(string|array $Table):
+	Table(string|array $Table, bool $Reset=FALSE):
 	static {
 	/*//
 	@date 2022-02-17
 	define what tables this verse should muck around with.
 	//*/
 
+
+		if($Reset)
+		$this->Tables = [];
+
 		$this->MergeValues($this->Tables, $Table);
 		return $this;
-	}
-
-	public function
-	From(string|array $Table):
-	static {
-	/*//
-	@date 2022-02-17
-	@alias self::Table
-	provide context for select/delete.
-	//*/
-
-		return $this->Table($Table);
-	}
-
-	public function
-	Into(string|array $Table):
-	static {
-	/*//
-	@date 2022-02-17
-	@alias self::Table
-	provide context for update/insert.
-	//*/
-
-		return $this->Table($Table);
 	}
 
 	public function
@@ -470,18 +437,6 @@ and execute it against the database.
 	}
 
 	public function
-	OrderBy(string|array $Sorting, int $Flags=self::SortAsc):
-	static {
-	/*//
-	@date 2022-02-17
-	@alias self::Sort
-	provide context for select queries.
-	//*/
-
-		return $this->Sort($Sorting, $Flags);
-	}
-
-	public function
 	Group(string|array $Grouping):
 	static {
 	/*//
@@ -491,18 +446,6 @@ and execute it against the database.
 
 		$this->MergeValues($this->Groups, $Grouping);
 		return $this;
-	}
-
-	public function
-	GroupBy(string|array $Grouping):
-	static {
-	/*//
-	@date 2022-02-17
-	@alias self::Group
-	provide context for grouping.
-	//*/
-
-		return $this->Group($Grouping);
 	}
 
 	public function
@@ -530,22 +473,6 @@ and execute it against the database.
 	}
 
 	public function
-	Field(string|array $Field, bool $Reset=FALSE) {
-	/*//
-	@date 2022-02-17
-	define what fields this verse should operate against. some queries (select)
-	will use this as a flat list. others (insert/update) will use it a key value
-	list.
-	//*/
-
-		if($Reset)
-		$this->Fields = [];
-
-		$this->MergeValues($this->Fields, $Field);
-		return $this;
-	}
-
-	public function
 	Fields(string|array $Fields, bool $Reset=FALSE) {
 	/*//
 	@deprecated 2022-02-17
@@ -556,18 +483,8 @@ and execute it against the database.
 		if($Reset)
 		$this->Fields = [];
 
-		return $this->Field($Fields);
-	}
-
-	public function
-	Column(string|array $Column) {
-	/*//
-	@date 2022-02-17
-	@alias self::Field
-	provide context for insert queries.
-	//*/
-
-		return $this->Field($Column);
+		$this->MergeValues($this->Fields, $Fields);
+		return $this;
 	}
 
 	public function
@@ -576,17 +493,6 @@ and execute it against the database.
 	@date 2022-02-17
 	@alias self::Field
 	provide context for insert queries.
-	//*/
-
-		return $this->Field($Values);
-	}
-
-	public function
-	Set(string|array $Values) {
-	/*//
-	@date 2022-02-17
-	@alias self::Fields
-	provide bc and context for update queries.
 	//*/
 
 		return $this->Fields($Values);
@@ -979,7 +885,7 @@ and execute it against the database.
 	try to connect to the default database connection if configured.
 	//*/
 
-		$Default = 'Default';
+		$Default = Library::Get(Library::ConfDefaultConnection);
 
 		if(!is_string($Default))
 		return NULL;
