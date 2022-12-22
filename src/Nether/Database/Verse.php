@@ -693,7 +693,7 @@ and execute it against the database.
 	@date 2022-02-19
 	//*/
 
-		return ($this->Database instanceof Database);
+		return ($this->Database instanceof Connection);
 	}
 
 	public function
@@ -1097,7 +1097,7 @@ and execute it against the database.
 	////////////////////////////////////////////////////////////////
 
 	static public function
-	FromMeta(string $ClassName, int $Mode, ?Database $DB=NULL):
+	FromMeta(string $ClassName, int $Mode, ?Connection $DB=NULL):
 	static {
 	/*//
 	@date	2022-02-17
@@ -1114,7 +1114,7 @@ and execute it against the database.
 	}
 
 	static public function
-	FromMetaSelect(string $ClassName, ?Database $DB=NULL):
+	FromMetaSelect(string $ClassName, ?Connection $DB=NULL):
 	static {
 	/*//
 	@date	2022-02-17
@@ -1133,7 +1133,7 @@ and execute it against the database.
 	}
 
 	static public function
-	FromMetaInsert(string $ClassName, ?Database $DB=NULL):
+	FromMetaInsert(string $ClassName, ?Connection $DB=NULL):
 	static {
 	/*//
 	@date	2022-02-17
@@ -1169,7 +1169,7 @@ and execute it against the database.
 	}
 
 	static public function
-	FromMetaUpdate(string $ClassName, ?Database $DB=NULL):
+	FromMetaUpdate(string $ClassName, ?Connection $DB=NULL):
 	static {
 	/*//
 	@date	2022-02-17
@@ -1188,7 +1188,7 @@ and execute it against the database.
 	}
 
 	static public function
-	FromMetaDelete(string $ClassName, ?Database $DB=NULL):
+	FromMetaDelete(string $ClassName, ?Connection $DB=NULL):
 	static {
 	/*//
 	@date	2022-02-17
@@ -1207,7 +1207,7 @@ and execute it against the database.
 	}
 
 	static public function
-	FromMetaCreate(string $ClassName, ?Database $DB=NULL):
+	FromMetaCreate(string $ClassName, ?Connection $DB=NULL):
 	static {
 	/*//
 	@date	2022-02-17
@@ -1227,7 +1227,7 @@ and execute it against the database.
 	}
 
 	static public function
-	FromMetaDropTable(string $ClassName, ?Database $DB=NULL):
+	FromMetaDropTable(string $ClassName, ?Connection $DB=NULL):
 	static {
 	/*//
 	@date	2022-02-17

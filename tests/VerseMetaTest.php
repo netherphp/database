@@ -58,6 +58,16 @@ class ExampleTable1 {
 
 }
 
+#[Meta\TableClass(Name: 'ExampleTable2')]
+#[Meta\InsertIgnore]
+class ExampleTable2 {
+
+	public int $ID1;
+
+	public int $ID2;
+
+}
+
 ////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////
 
@@ -106,11 +116,7 @@ extends PHPUnit\Framework\TestCase {
 
 		$Verse = Verse::FromMetaCreate('Nether\Database\ExampleTable1');
 		$Verse->Pretty = TRUE;
-
-		$this->AssertEquals(
-			ExampleTable1::GetPrettyCreateSQL(),
-			(string)$Verse
-		);
+		$this->AssertEquals(ExampleTable1::GetPrettyCreateSQL(), (string)$Verse);
 
 		return;
 	}

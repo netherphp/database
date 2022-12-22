@@ -5,6 +5,7 @@ namespace Nether\Database;
 use PHPUnit;
 use Nether;
 
+use Throwable;
 use Nether\Object\Datastore;
 
 class ManagerTest
@@ -37,11 +38,14 @@ extends PHPUnit\Framework\TestCase {
 
 		$DBM = new Manager;
 		$this->AssertFalse($DBM->Exists('Default'));
+		$this->AssertInstanceOf(Datastore::class, Manager::GetConnections());
+		$this->AssertEquals(0, Manager::GetConnections()->Count());
 
 		// giving it a config we should be able to have a connection.
 
 		$DBM = new Manager(static::GetConfigBasic());
 		$this->AssertTrue($DBM->Exists('Default'));
+		$this->AssertEquals(1, Manager::GetConnections()->Count());
 
 		// connections have been preconfigured so we should still
 		// be able to find one.
@@ -62,6 +66,55 @@ extends PHPUnit\Framework\TestCase {
 
 		$Verse = $DB->NewVerse();
 		$this->AssertTrue($Verse instanceof Verse);
+
+		return;
+	}
+
+	/** @test */
+	public function
+	TestUndefinedConnection():
+	void {
+
+		$DBM = new Manager;
+		$Exceptional = FALSE;
+		$Err = NULL;
+
+		////////
+
+		try {
+			$DB = $DBM->Get('Captain Jean-Luc Picard of the USS Enterprise.');
+		}
+
+		catch(Throwable $Err) {
+			$this->AssertInstanceOf(
+				Error\InvalidConnection::class,
+				$Err
+			);
+
+			$Exceptional = TRUE;
+		}
+
+		$this->AssertTrue($Exceptional);
+
+		////////
+
+		$Exceptional = FALSE;
+		$Err = NULL;
+
+		try {
+			$DB = $DBM->NewVerse('And His Mom.');
+		}
+
+		catch(Throwable $Err) {
+			$this->AssertInstanceOf(
+				Error\InvalidConnection::class,
+				$Err
+			);
+
+			$Exceptional = TRUE;
+		}
+
+		$this->AssertTrue($Exceptional);
 
 		return;
 	}

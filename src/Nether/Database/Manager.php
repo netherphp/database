@@ -39,9 +39,6 @@ class Manager {
 		$Item = NULL;
 		$Alias = NULL;
 
-		if(!$Defined)
-		return;
-
 		if(is_array($Defined)) {
 			foreach($Defined as $Alias => $Item) {
 				if($Item instanceof Connection)
