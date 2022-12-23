@@ -227,7 +227,7 @@ and execute it against the database.
 	////////////////////////////////////////////////////////////////
 
 	public function
-	__Construct(Connection $Database=NULL, ?string $Compiler=NULL) {
+	__Construct(?Connection $Database=NULL, ?string $Compiler=NULL) {
 	/*//
 	@date 2020-11-24
 	//*/
@@ -983,11 +983,11 @@ and execute it against the database.
 
 		if(is_array($Addl))
 		foreach($Addl as $Key => $Query) {
-			if(is_numeric($Key))
-			$Pool[] = new FlaggedQueryValue($Flags, $Query);
+			if(is_string($Key))
+			$Pool[$Key] = new FlaggedQueryValue($Flags, $Query);
 
 			else
-			$Pool[$Key] = new FlaggedQueryValue($Flags, $Query);
+			$Pool[] = new FlaggedQueryValue($Flags, $Query);
 		}
 
 		else

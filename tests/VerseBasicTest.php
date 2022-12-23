@@ -5,9 +5,14 @@ namespace Nether\Database;
 use PHPUnit;
 use Nether;
 
+use Throwable;
 use Nether\Object\Datastore;
 
+////////
+
 new Nether\Database\Library;
+
+////////
 
 class VerseTest
 extends PHPUnit\Framework\TestCase {
@@ -561,6 +566,46 @@ extends PHPUnit\Framework\TestCase {
 		$this->AssertEquals('utf8mb4_general_ci', $Verse->GetCollate());
 		$this->AssertEquals('InnoDB', $Verse->GetEngine());
 		$this->AssertEquals('', $Verse->GetComment());
+
+		return;
+	}
+
+	/** @test */
+	public function
+	TestDefaultConnection():
+	void {
+
+		$Verse = NULL;
+		$Exceptional = FALSE;
+
+		////////
+
+		Library::Set(Library::ConfDefaultConnection, NULL);
+		$Verse = new Verse;
+
+		$this->AssertNull($Verse->GetDatabase());
+
+		////////
+
+		try {
+			Library::Set(Library::ConfDefaultConnection, 'Smeefault');
+			$Verse = new Verse;
+			$this->AssertNull($Verse->GetDatabase());
+		}
+
+		catch(Throwable $Err) {
+			$this->AssertInstanceOf(Error\InvalidConnection::class, $Err);
+			$Exceptional = TRUE;
+		}
+
+		$this->AssertTrue($Exceptional);
+
+		////////
+
+		Library::Set(Library::ConfDefaultConnection, 'Default');
+		$Verse = new Verse;
+
+		$this->AssertInstanceOf(Connection::class, $Verse->GetDatabase());
 
 		return;
 	}
