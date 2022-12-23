@@ -71,7 +71,7 @@ and execute it against the database.
 	name of the class to construct compilers out of.
 	//*/
 
-	public Connection
+	public ?Connection
 	$Database;
 	/*//
 	@date 2022-02-17
@@ -828,10 +828,9 @@ and execute it against the database.
 		if($this->Database === NULL)
 		throw new Exception('No database connection available.');
 
-		return (
-			($this->Database)
-			->Query($this, $Argv)
-		);
+		$Result = $this->Database->Query($this, $Argv);
+
+		return $Result;
 	}
 
 	public function

@@ -468,4 +468,38 @@ extends PHPUnit\Framework\TestCase {
 		return;
 	}
 
+	/** @test */
+	public function
+	TestQuery():
+	void {
+
+		$RXM = $this
+		->GetMockBuilder('Nether\\Database\\Result')
+		->DisableOriginalConstructor()
+		->GetMock();
+
+		$CXM = $this
+		->GetMockBuilder('Nether\\Database\\Connection')
+		->DisableOriginalConstructor()
+		->GetMock();
+
+		$CXM
+		->Method('Query')
+		->Will($this->ReturnValue($RXM));
+
+		////////
+
+		$Verse = static::NewVerseBasic();
+		$Verse->Database = $CXM;
+		$Verse->Select('Table');
+		$Verse->Fields('Field1');
+
+		$Result = $Verse->Query([ ':Value1' => 'Yee' ]);
+
+		$this->AssertEquals($RXM, $Result);
+
+		return;
+	}
+
+
 }

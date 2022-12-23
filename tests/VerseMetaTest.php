@@ -115,7 +115,7 @@ extends PHPUnit\Framework\TestCase {
 	void {
 
 		$Verse = Verse::FromMetaCreate('Nether\Database\ExampleTable1');
-		$Verse->Pretty = TRUE;
+		$Verse->SetPretty(TRUE);
 		$this->AssertEquals(ExampleTable1::GetPrettyCreateSQL(), (string)$Verse);
 
 		return;
