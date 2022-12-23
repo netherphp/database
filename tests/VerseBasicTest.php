@@ -55,6 +55,10 @@ extends PHPUnit\Framework\TestCase {
 		$Verse = static::NewVerseBasic();
 
 		$this->AssertTrue($Verse->HasDatabase());
+		$this->AssertInstanceOf(
+			Connection::class,
+			$Verse->GetDatabase()
+		);
 
 		$Verse
 		->Select('TestTable')
