@@ -501,5 +501,68 @@ extends PHPUnit\Framework\TestCase {
 		return;
 	}
 
+	/** @test */
+	public function
+	TestReset():
+	void {
+
+		$Verse = static::NewVerseBasic();
+
+		$Verse
+		->Select('yees ye')
+		->Join('yaas ya ON ye.id=ya.id')
+		->Fields([ 'omg', 'wtf', 'bbq' ])
+		->Where('bbq=42')
+		->Having('omg=123')
+		->Sort('wtf', $Verse::SortDesc)
+		->Group('wat')
+		->Limit(69)
+		->Offset(70)
+		->PrimaryKey('id')
+		->Charset('emoji')
+		->Collate('ijome')
+		->Engine('NopeItsElectric')
+		->ForeignKey([ 'fore', 'ign', 'key' ])
+		->Index([ 'in', 'dex', 'es' ])
+		->Comment('ayy lmao');
+
+		$this->AssertCount(1, $Verse->GetTables());
+		$this->AssertCount(3, $Verse->GetFields());
+		$this->AssertCount(1, $Verse->GetJoins());
+		$this->AssertCount(1, $Verse->GetConditions());
+		$this->AssertCount(1, $Verse->GetHavings());
+		$this->AssertCount(1, $Verse->GetSorts());
+		$this->AssertCount(1, $Verse->GetGroups());
+		$this->AssertCount(3, $Verse->GetForeignKeys());
+		$this->AssertCount(3, $Verse->GetIndexes());
+		$this->AssertEquals(69, $Verse->GetLimit());
+		$this->AssertEquals(70, $Verse->GetOffset());
+		$this->AssertEquals('id', $Verse->GetPrimaryKey());
+		$this->AssertEquals('emoji', $Verse->GetCharset());
+		$this->AssertEquals('ijome', $Verse->GetCollate());
+		$this->AssertEquals('NopeItsElectric', $Verse->GetEngine());
+		$this->AssertEquals('ayy lmao', $Verse->GetComment());
+
+		$Verse->Reset();
+
+		$this->AssertCount(0, $Verse->GetTables());
+		$this->AssertCount(0, $Verse->GetFields());
+		$this->AssertCount(0, $Verse->GetJoins());
+		$this->AssertCount(0, $Verse->GetConditions());
+		$this->AssertCount(0, $Verse->GetHavings());
+		$this->AssertCount(0, $Verse->GetSorts());
+		$this->AssertCount(0, $Verse->GetGroups());
+		$this->AssertCount(0, $Verse->GetForeignKeys());
+		$this->AssertCount(0, $Verse->GetIndexes());
+		$this->AssertEquals(0, $Verse->GetLimit());
+		$this->AssertEquals(0, $Verse->GetOffset());
+		$this->AssertEquals(NULL, $Verse->GetPrimaryKey());
+		$this->AssertEquals('utf8mb4', $Verse->GetCharset());
+		$this->AssertEquals('utf8mb4_general_ci', $Verse->GetCollate());
+		$this->AssertEquals('InnoDB', $Verse->GetEngine());
+		$this->AssertEquals('', $Verse->GetComment());
+
+		return;
+	}
 
 }

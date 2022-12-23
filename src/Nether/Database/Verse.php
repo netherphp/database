@@ -910,8 +910,8 @@ and execute it against the database.
 		// move the charset, collate, engine defaults into the compiler
 		// somehow so engines can set reasonable defaults themselves.
 
-		$this->Fields = [];
 		$this->Tables = [];
+		$this->Fields = [];
 		$this->Joins = [];
 		$this->Conditions = [];
 		$this->Havings = [];
