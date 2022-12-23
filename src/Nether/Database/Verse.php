@@ -174,7 +174,7 @@ and execute it against the database.
 	how many rows to offset this query by.
 	//*/
 
-	protected string
+	protected ?string
 	$PrimaryKey;
 	/*//
 	@date 2022-02-18
@@ -725,13 +725,13 @@ and execute it against the database.
 
 	public function
 	GetPrimaryKey():
-	string {
+	?string {
 	/*//
 	@date 2022-02-17
 	get the primary key for this table.
 	//*/
 
-		return $this->PrimaryKey;
+		return $this->PrimaryKey ?: NULL;
 	}
 
 	public function
@@ -920,7 +920,7 @@ and execute it against the database.
 		$this->Groups = [];
 		$this->Limit = 0;
 		$this->Offset = 0;
-		$this->PrimaryKey = '';
+		$this->PrimaryKey = NULL;
 		$this->Charset = 'utf8mb4';
 		$this->Collate = 'utf8mb4_general_ci';
 		$this->Engine = 'InnoDB';

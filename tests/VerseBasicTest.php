@@ -426,4 +426,46 @@ extends PHPUnit\Framework\TestCase {
 		return;
 	}
 
+	/** @test */
+	public function
+	TestCreateQuery():
+	void {
+
+		$Verse = static::NewVerseBasic();
+
+		$Verse
+		->Create('NewTable')
+		->Fields([ 'Field1 BIGINT UNSIGNED', 'Field2 VARCHAR(36)' ])
+		->Charset('OMG')
+		->Collate('WTF')
+		->Engine('BBQ');
+
+		$this->AssertEquals(
+			'CREATE TABLE `NewTable` ( Field1 BIGINT UNSIGNED, Field2 VARCHAR(36) ) CHARSET=OMG COLLATE=WTF ENGINE=BBQ',
+			(string)$Verse
+		);
+
+		return;
+	}
+
+	/** @test */
+	public function
+	TestPrimaryKey():
+	void {
+
+		// i do not specifically remember the use case where i wanted this
+		// it does not really make too much sense for most general things
+		// but i know if i remove it i'll have a bad day at work.
+
+		$Verse = static::NewVerseBasic();
+
+		$this->AssertNull($Verse->GetPrimaryKey());
+
+		$Verse->PrimaryKey('What');
+
+		$this->AssertEquals('What', $Verse->GetPrimaryKey());
+
+		return;
+	}
+
 }
