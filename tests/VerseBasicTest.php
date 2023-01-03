@@ -357,6 +357,13 @@ extends PHPUnit\Framework\TestCase {
 			(string)$Verse
 		);
 
+		$Verse->Join([ 'TestJoin3' ], $Verse::JoinNatural);
+
+		$this->AssertEquals(
+			'SELECT * FROM TableName NATURAL JOIN TestJoin2 NATURAL JOIN TestJoin3 WHERE (Field2=:Value2) ORDER BY Field2 ASC',
+			(string)$Verse
+		);
+
 		return;
 	}
 
