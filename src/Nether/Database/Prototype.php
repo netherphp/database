@@ -69,7 +69,7 @@ extends Nether\Object\Prototype {
 		$SQL = (
 			($DBM->NewVerse(static::$DBA))
 			->Update($Table->Name)
-			->Set($Fields)
+			->Values($Fields)
 			->Where("{$Table->PrimaryKey}=:PrimaryKeyID")
 			->Limit(1)
 		);

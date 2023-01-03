@@ -347,6 +347,16 @@ extends PHPUnit\Framework\TestCase {
 			(string)$Verse
 		);
 
+		////////
+
+		$Verse->Join([ 'Test1'=> 'TestJoin1' ]);
+		$Verse->Join([ 'Test1'=> 'TestJoin2' ], $Verse::JoinNatural);
+
+		$this->AssertEquals(
+			'SELECT * FROM TableName NATURAL JOIN TestJoin2 WHERE (Field2=:Value2) ORDER BY Field2 ASC',
+			(string)$Verse
+		);
+
 		return;
 	}
 
@@ -582,10 +592,24 @@ extends PHPUnit\Framework\TestCase {
 
 		Library::Set(Library::ConfDefaultConnection, NULL);
 		$Verse = new Verse;
+		$Verse->Select('TestTable')->Fields('*');
 
 		$this->AssertNull($Verse->GetDatabase());
 
+		try {
+			$Verse->Query();
+		}
+
+		catch(Throwable $Err) {
+			$this->AssertInstanceOf(Error\NoConnectionAvailable::class, $Err);
+			$Exceptional = TRUE;
+		}
+
+		$this->AssertTrue($Exceptional);
+
 		////////
+
+		$Exceptional = FALSE;
 
 		try {
 			Library::Set(Library::ConfDefaultConnection, 'Smeefault');

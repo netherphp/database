@@ -826,7 +826,7 @@ and execute it against the database.
 	//*/
 
 		if($this->Database === NULL)
-		throw new Exception('No database connection available.');
+		throw new Error\NoConnectionAvailable;
 
 		$Result = $this->Database->Query($this, $Argv);
 
@@ -892,8 +892,8 @@ and execute it against the database.
 		$DBM = new Manager;
 		$DB = $DBM->Get($Default);
 
-		if(!($DB instanceof Connection))
-		return NULL;
+		// in this instance manager will be throwing an exception
+		// if it was invalid.
 
 		return $DB;
 	}
@@ -1000,23 +1000,6 @@ and execute it against the database.
 
 	////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////
-
-	static public function
-	FromMeta(string $ClassName, int $Mode, ?Connection $DB=NULL):
-	static {
-	/*//
-	@date	2022-02-17
-	//*/
-
-		return match($Mode) {
-			static::ModeSelect => static::FromMetaSelect($ClassName, $DB),
-			static::ModeInsert => static::FromMetaInsert($ClassName, $DB),
-			static::ModeUpdate => static::FromMetaUpdate($ClassName, $DB),
-			static::ModeDelete => static::FromMetaDelete($ClassName, $DB),
-			static::ModeCreate => static::FromMetaCreate($ClassName, $DB),
-			default            => static::FromMetaSelect($ClassName, $DB)
-		};
-	}
 
 	static public function
 	FromMetaSelect(string $ClassName, ?Connection $DB=NULL):

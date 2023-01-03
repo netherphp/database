@@ -60,10 +60,14 @@ class ExampleTable1 {
 
 #[Meta\TableClass(Name: 'ExampleTable2')]
 #[Meta\InsertIgnore]
+#[Meta\InsertReuseUnique]
+#[Meta\InsertUpdate]
 class ExampleTable2 {
 
+	#[Meta\TypeIntBig(Unsigned: TRUE)]
 	public int $ID1;
 
+	#[Meta\TypeIntBig(Unsigned: TRUE)]
 	public int $ID2;
 
 }
@@ -114,7 +118,7 @@ extends PHPUnit\Framework\TestCase {
 	TestCreateTableFromMeta():
 	void {
 
-		$Verse = Verse::FromMetaCreate('Nether\Database\ExampleTable1');
+		$Verse = Verse::FromMetaCreate('Nether\\Database\\ExampleTable1');
 		$Verse->SetPretty(TRUE);
 		$this->AssertEquals(ExampleTable1::GetPrettyCreateSQL(), (string)$Verse);
 
@@ -196,6 +200,22 @@ extends PHPUnit\Framework\TestCase {
 			'DROP TABLE IF EXISTS `ExampleTable1`',
 			(string)$Verse
 		);
+
+		return;
+	}
+
+	/** @test */
+	public function
+	TestInsertFlags():
+	void {
+
+		$Verse = Verse::FromMetaInsert('Nether\\Database\\ExampleTable2');
+
+		$Flags = $Verse->GetFlags();
+
+		$this->AssertGreaterThan(0, $Flags & Verse::InsertIgnore);
+		$this->AssertGreaterThan(0, $Flags & Verse::InsertReuseUnique);
+		$this->AssertGreaterThan(0, $Flags & Verse::InsertUpdate);
 
 		return;
 	}
