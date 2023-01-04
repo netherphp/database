@@ -1,7 +1,7 @@
 # Nether Database
-[![nether.io](https://img.shields.io/badge/nether-database-C661D2.svg)](http://nether.io/database/)
-[![Packagist](https://img.shields.io/packagist/v/netherphp/database.svg)](https://packagist.org/packages/netherphp/database)
-[![Packagist](https://img.shields.io/packagist/dt/netherphp/database.svg)](https://packagist.org/packages/netherphp/database)
+[![Packagist](https://img.shields.io/packagist/v/netherphp/database.svg?style=for-the-badge)](https://packagist.org/packages/netherphp/database)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/netherphp/database/phpunit.yml?style=for-the-badge)](https://github.com/netherphp/database/actions)
+[![codecov](https://img.shields.io/codecov/c/gh/netherphp/database?style=for-the-badge&token=VQC48XNBS2)](https://codecov.io/gh/netherphp/database)
 
 A lower-level database connection and query library. Provides a simple API for connecting, querying, and digesting the results from a database server.
 
