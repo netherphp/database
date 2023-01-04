@@ -8,6 +8,16 @@ require('vendor/autoload.php');
 class App
 extends Nether\Console\Client {
 
+	protected function
+	OnReady():
+	void {
+
+		if(class_exists('Nether\\Atlantis\\Engine'))
+		$Atlantis = new Nether\Atlantis\Engine(getcwd());
+
+		return;
+	}
+
 	#[Nether\Console\Meta\Command('sql-create')]
 	#[Nether\Console\Meta\Info('Generate the SQL to CREATE this table from the Table Class Annotations. If no database is specified it will only print the SQL to console.')]
 	#[Nether\Console\Meta\Arg('fqcn', 'The full namespace and class path as your application knows the class.')]
@@ -28,56 +38,17 @@ extends Nether\Console\Client {
 	table in the database server.
 	//*/
 
-		$Env = $this->GetOption('env') ?? NULL;
-		$EnvFile = sprintf('%s/env.lock', getcwd());
 		$Class = $this->GetInput(1);
-		$DBConfig = $this->GetOption('conf') ?? NULL;
-		$DBAlias = $this->GetOption('db') ?? NULL;
+		$DBAlias = $this->GetOption('db') ?? 'Default';
 		$AutoYes = $this->GetOption('y') ?? FALSE;
 		$AutoDropTable = $this->GetOption('drop') ?? FALSE;
+
 		$SQL = NULL;
 		$PreSQL = NULL;
+		$FKSQL1 = NULL;
+		$FKSQL2 = NULL;
 
-		// if no env was passed via cli then attempt to read it from an
-		// atlantis env config file. lacking that default to dev.
-
-		if(!$Env) {
-			if(file_exists($EnvFile))
-			$Env = trim(file_get_contents($EnvFile)) ?: NULL;
-
-			if(!$Env)
-			$Env = 'dev';
-		}
-
-		// if we were given or found our current env but a database
-		// config file was not given try to guess a path using one common
-		// to atlantis configurations.
-
-		if($Env && !$DBConfig) {
-			$DBConfig = sprintf('conf/env/%s/netherdb.json', $Env);
-
-			if(!file_exists($DBConfig))
-			$DBConfig = NULL;
-		}
-
-		// if we have a config file path but it actually points to a
-		// directory instead of a json file assume that we will find
-		// a netherdb.json within.
-
-		if($DBConfig && is_dir($DBConfig)) {
-			$DBConfig .= sprintf('%snetherdb.json', DIRECTORY_SEPARATOR);
-
-			if(!file_exists($DBConfig))
-			$DBConfig = NULL;
-		}
-
-		// if we have a config file but were not given the name of a
-		// connection to use then assume the default connection.
-
-		if($DBConfig && !$DBAlias)
-		$DBAlias = 'Default';
-
-		////////
+		// handle the basics of making sure we have a class to inspect.
 
 		if(!$Class)
 		$this->Quit(1);
@@ -87,14 +58,10 @@ extends Nether\Console\Client {
 		if(!class_exists($Class))
 		$this->Quit(2);
 
-		////////
+		// generate create table.
 
 		try {
-			$SQL = $this->NewVerseCreate(
-				$DBConfig,
-				$DBAlias,
-				$Class
-			);
+			$SQL = $this->NewVerseCreate($DBAlias, $Class);
 		}
 
 		catch(Throwable $Err) {
@@ -102,30 +69,44 @@ extends Nether\Console\Client {
 			$this->Quit(4);
 		}
 
-		if($AutoDropTable) {
-			if($SQL->HasDatabase())
-			$PreSQL = $SQL->GetDatabase()->NewVerseDropTable($Class);
+		// generate drop table.
 
-			else
-			$PreSQL = Nether\Database\Verse::FromMetaDropTable($Class);
+		if($AutoDropTable) {
+			$PreSQL = match(TRUE) {
+				$SQL->HasDatabase()
+				=> $this->NewVerseDropTable($DBAlias, $Class),
+
+				default
+				=> Nether\Database\Verse::FromMetaDropTable($Class)
+			};
+
+			$FKSQL1 = 'SET FOREIGN_KEY_CHECKS=0;';
+			$FKSQL2 = 'SET FOREIGN_KEY_CHECKS=1;';
 		}
 
-		$this->PrintVerse([
-			$PreSQL,
-			$SQL
-		]);
+		////////
+
+		// show the queries we intend to run.
+
+		$this->PrintVerse([ $PreSQL, $SQL ]);
+
+		// if we have no database however there is nothing to do.
 
 		if(!$SQL->HasDatabase())
 		return 0;
 
-		$SQL->GetDatabase()->Query('SET FOREIGN_KEY_CHECKS=0;');
+		// execute the queries on the current database.
+
+		if($FKSQL1)
+		$SQL->GetDatabase()->Query($FKSQL1);
 
 		$Result = $this->ConfirmAndExecuteVerse(
 			[ $PreSQL, $SQL ],
 			$AutoYes
 		);
 
-		$SQL->GetDatabase()->Query('SET FOREIGN_KEY_CHECKS=1;');
+		if($FKSQL2)
+		$SQL->GetDatabase()->Query($FKSQL2);
 
 		if($Result === FALSE)
 		$this->Quit(3);
@@ -136,64 +117,30 @@ extends Nether\Console\Client {
 	////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////
 
-	#[Nether\Console\Meta\Command('config-new')]
-	#[Nether\Console\Meta\Info('Generate a new config JSON at location.')]
-	#[Nether\Console\Meta\Arg('filename', 'The location to install new config.')]
-	#[Nether\Console\Meta\Toggle('--force', 'Force overwrite of existing file.')]
-	#[Nether\Console\Meta\Error(1, 'unable to locate config template')]
-	#[Nether\Console\Meta\Error(2, 'output file already exists (--force to overwrite)')]
-	public function
-	HandleConfigNew():
-	int {
-
-		$Outfile = $this->GetInput(1);
-		$Force = $this->GetOption('Force');
-		$Path = sprintf(
-			'%s/templates/config.json.txt',
-			dirname(__FILE__, 2)
-		);
-
-		////////
-
-		if(!file_exists($Path))
-		$this->Quit(1);
-
-		if(file_exists($Outfile) && !$Force)
-		$this->Quit(2);
-
-		////////
-
-		$this->PrintLn(sprintf(
-			'Config Template: %s => %s',
-			basename($Path),
-			$Outfile
-		));
-
-		copy($Path, $Outfile);
-		return 0;
-	}
-
-	////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////
-
 	protected function
-	NewVerseCreate(?string $DBConfig, ?string $DBAlias, string $Class):
+	NewVerseCreate(string $DBAlias, string $Class):
 	Verse {
 
-		if(!$DBConfig || !$DBAlias)
-		return (
-			Nether\Database\Verse::FromMetaCreate($Class)
-			->SetPretty(TRUE)
-		);
+		$DBM = new Nether\Database\Manager;
+		$DBC = $DBM->Get($DBAlias);
 
-		$this->PrintLn("Connecting to {$DBAlias}...", '');
-		Nether\Database\ConnectionConfig::LoadFromJSON($DBConfig);
+		$Verse = $DBC->NewClassVerse($Class, Verse::ModeCreate);
+		$Verse->SetPretty(TRUE);
 
-		return (
-			Nether\Database::Get($DBAlias)
-			->NewVerseCreate($Class)
-			->SetPretty(TRUE)
-		);
+		return $Verse;
+	}
+
+	protected function
+	NewVerseDropTable(string $DBAlias, string $Class):
+	Verse {
+
+		$DBM = new Nether\Database\Manager;
+		$DBC = $DBM->Get($DBAlias);
+
+		$Verse = $DBC->NewClassVerse($Class, Verse::ModeDropTable);
+		$Verse->SetPretty(TRUE);
+
+		return $Verse;
 	}
 
 	protected function
@@ -257,7 +204,7 @@ extends Nether\Console\Client {
 		if(!$Force) {
 			$this->PrintLn('');
 			$Confirm = $this->PromptEquals(
-				"Execute on {$Database->GetAlias()}?",
+				"Execute on {$Database->Database}?",
 				'(y/n):',
 				'y'
 			);
@@ -282,8 +229,8 @@ extends Nether\Console\Client {
 
 		$this->PrintLn(sprintf(
 			'> OK (%d %s)',
-			Nether\Database::$QueryCount,
-			(Nether\Database::$QueryCount === 1 ? 'query' : 'queries')
+			$Database->GetQueryCount(),
+			($Database->GetQueryCount() === 1 ? 'query' : 'queries')
 		));
 
 		return TRUE;

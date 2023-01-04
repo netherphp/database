@@ -1002,6 +1002,26 @@ and execute it against the database.
 	////////////////////////////////////////////////////////////////
 
 	static public function
+	FromMeta(string $Class, int $Mode, ?Connection $DB=NULL):
+	?static {
+
+		$Verse = match($Mode) {
+
+			Verse::ModeCreate
+			=> Verse::FromMetaCreate($Class, $DB),
+
+			Verse::ModeDropTable
+			=> Verse::FromMetaDropTable($Class, $DB),
+
+			default
+			=> NULL
+
+		};
+
+		return $Verse;
+	}
+
+	static public function
 	FromMetaSelect(string $ClassName, ?Connection $DB=NULL):
 	static {
 	/*//

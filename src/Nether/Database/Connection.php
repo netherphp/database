@@ -35,8 +35,14 @@ class Connection {
 	protected PDO
 	$Driver;
 
-	protected Verse
+	protected ?Verse
 	$Verse;
+
+	protected int
+	$QueryCount = 0;
+
+	protected float
+	$QueryTime = 0;
 
 	////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////
@@ -148,6 +154,20 @@ class Connection {
 
 	}
 
+	public function
+	GetQueryCount():
+	int {
+
+		return $this->QueryCount;
+	}
+
+	public function
+	GetQueryTime():
+	float {
+
+		return $this->QueryTime;
+	}
+
 	////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////
 
@@ -160,6 +180,15 @@ class Connection {
 	//*/
 
 		$this->Verse = new Verse($this);
+
+		return $this->Verse;
+	}
+
+	public function
+	NewClassVerse(string $Class, int $Mode):
+	?Verse {
+
+		$this->Verse = Verse::FromMeta($Class, $Mode, $this);
 
 		return $this->Verse;
 	}
@@ -214,17 +243,8 @@ class Connection {
 
 		$Result = new Result($this, $Statement, $Dataset);
 
-		//if(Option::Get(static::OptLogQueries))
-		//static::$QueryLog[] = new LogQuery(
-		//	Time: $Result->GetTime(),
-		//	Query: $Result->GetQuery(),
-		//	Input: $Result->GetArgs(),
-		//	Count: $Result->GetCount(),
-		//	Trace: static::GetDebugTrace()
-		//);
-
-		//static::$QueryTime += microtime(TRUE) - $QueryTime;
-		//static::$QueryCount++;
+		$this->QueryCount += 1;
+		$this->QueryTime += microtime(TRUE) - $QueryTime;
 
 		return $Result;
 	}
