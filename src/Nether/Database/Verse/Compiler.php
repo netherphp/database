@@ -53,7 +53,8 @@ provide the base api for the query compiling system.
 			Verse::ModeUpdate    => $this->GenerateUpdateQuery(),
 			Verse::ModeDelete    => $this->GenerateDeleteQuery(),
 			Verse::ModeCreate    => $this->GenerateCreateQuery(),
-			Verse::ModeDropTable => $this->GenerateDropTableQuery()
+			Verse::ModeDropTable => $this->GenerateDropTableQuery(),
+			Verse::ModeSetVar    => $this->GenerateSetVarQuery()
 		};
 
 		////////
@@ -93,6 +94,10 @@ provide the base api for the query compiling system.
 
 	abstract protected function
 	GenerateDropTableQuery():
+	string;
+
+	abstract protected function
+	GenerateSetVarQuery():
 	string;
 
 }

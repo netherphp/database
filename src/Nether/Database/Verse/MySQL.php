@@ -304,6 +304,15 @@ extends Compiler {
 		return $this->QueryString;
 	}
 
+	protected function
+	GenerateSetVarQuery():
+	string {
+
+		$this->QueryString = $this->GetSetString($this->Verse->GetFields());
+
+		return $this->QueryString;
+	}
+
 	////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////
 

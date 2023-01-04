@@ -29,7 +29,8 @@ and execute it against the database.
 	ModeUpdate    = 3,
 	ModeDelete    = 4,
 	ModeCreate    = 5,
-	ModeDropTable = 6;
+	ModeDropTable = 6,
+	ModeSetVar    = 7;
 
 	const
 	SelectNormal    = 0,
@@ -361,6 +362,21 @@ and execute it against the database.
 		$this->ResetQueryProperties();
 
 		$this->Tables = [ $Arg ];
+		return $this;
+	}
+
+	public function
+	VarSet(string|array $Fields, bool $Reset=TRUE):
+	static {
+
+		$this->Mode = static::ModeSetVar;
+
+		if($Reset)
+		$this->ResetQueryProperties();
+
+		if($Fields)
+		$this->Fields($Fields);
+
 		return $this;
 	}
 

@@ -43,6 +43,7 @@ extends Nether\Console\Client {
 		$AutoYes = $this->GetOption('y') ?? FALSE;
 		$AutoDropTable = $this->GetOption('drop') ?? FALSE;
 
+		$DBC = NULL;
 		$SQL = NULL;
 		$PreSQL = NULL;
 		$FKSQL1 = NULL;
@@ -58,10 +59,12 @@ extends Nether\Console\Client {
 		if(!class_exists($Class))
 		$this->Quit(2);
 
-		// generate create table.
+		// generate create table and pull its database connection for
+		// reuse with various options.
 
 		try {
 			$SQL = $this->NewVerseCreate($DBAlias, $Class);
+			$DBC = $SQL->GetDatabase();
 		}
 
 		catch(Throwable $Err) {
@@ -72,41 +75,32 @@ extends Nether\Console\Client {
 		// generate drop table.
 
 		if($AutoDropTable) {
-			$PreSQL = match(TRUE) {
-				$SQL->HasDatabase()
-				=> $this->NewVerseDropTable($DBAlias, $Class),
+			if($DBC) {
+				$PreSQL = $this->NewVerseDropTable($DBAlias, $Class);
+				$FKSQL1 = $this->NewVerseFKCheck($DBAlias, 0);
+				$FKSQL2 = $this->NewVerseFKCheck($DBAlias, 1);
+			}
 
-				default
-				=> Nether\Database\Verse::FromMetaDropTable($Class)
-			};
-
-			$FKSQL1 = 'SET FOREIGN_KEY_CHECKS=0;';
-			$FKSQL2 = 'SET FOREIGN_KEY_CHECKS=1;';
+			else {
+				$PreSQL = Nether\Database\Verse::FromMetaDropTable($Class);
+			}
 		}
-
-		////////
 
 		// show the queries we intend to run.
 
-		$this->PrintVerse([ $PreSQL, $SQL ]);
+		$this->PrintVerse([ $FKSQL1, $PreSQL, $SQL, $FKSQL2 ]);
 
 		// if we have no database however there is nothing to do.
 
-		if(!$SQL->HasDatabase())
+		if(!$DBC)
 		return 0;
 
 		// execute the queries on the current database.
 
-		if($FKSQL1)
-		$SQL->GetDatabase()->Query($FKSQL1);
-
 		$Result = $this->ConfirmAndExecuteVerse(
-			[ $PreSQL, $SQL ],
+			[ $FKSQL1, $PreSQL, $SQL, $FKSQL2 ],
 			$AutoYes
 		);
-
-		if($FKSQL2)
-		$SQL->GetDatabase()->Query($FKSQL2);
 
 		if($Result === FALSE)
 		$this->Quit(3);
@@ -120,6 +114,9 @@ extends Nether\Console\Client {
 	protected function
 	NewVerseCreate(string $DBAlias, string $Class):
 	Verse {
+	/*//
+	@date 2023-01-03
+	//*/
 
 		$DBM = new Nether\Database\Manager;
 		$DBC = $DBM->Get($DBAlias);
@@ -133,6 +130,9 @@ extends Nether\Console\Client {
 	protected function
 	NewVerseDropTable(string $DBAlias, string $Class):
 	Verse {
+	/*//
+	@date 2023-01-03
+	//*/
 
 		$DBM = new Nether\Database\Manager;
 		$DBC = $DBM->Get($DBAlias);
@@ -142,6 +142,26 @@ extends Nether\Console\Client {
 
 		return $Verse;
 	}
+
+	protected function
+	NewVerseFKCheck(string $DBAlias, int $Val):
+	Verse {
+	/*//
+	@date 2023-01-04
+	//*/
+
+		$DBM = new Nether\Database\Manager;
+		$DBC = $DBM->Get($DBAlias);
+
+		$Verse = $DBC->NewVerse();
+		$Verse->SetPretty(TRUE);
+		$Verse->VarSet(['FOREIGN_KEY_CHECKS' => $Val]);
+
+		return $Verse;
+	}
+
+	////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////
 
 	protected function
 	PrintVerse(Verse|array $Queries):
@@ -191,10 +211,11 @@ extends Nether\Console\Client {
 		if(!count($Queries))
 		return FALSE;
 
-		foreach($Queries as $SQL)
-		if($SQL instanceof Verse)
-		if($SQL->HasDatabase())
-		$Database = $SQL->GetDatabase();
+		foreach($Queries as $SQL) {
+			if($SQL instanceof Verse)
+			if($SQL->HasDatabase())
+			$Database = $SQL->GetDatabase();
+		}
 
 		if(!$Database)
 		return FALSE;
@@ -205,8 +226,7 @@ extends Nether\Console\Client {
 			$this->PrintLn('');
 			$Confirm = $this->PromptEquals(
 				"Execute on {$Database->Database}?",
-				'(y/n):',
-				'y'
+				'(y/n):', 'y'
 			);
 		}
 
