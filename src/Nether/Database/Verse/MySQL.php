@@ -208,7 +208,7 @@ extends Compiler {
 	string {
 	/*//
 	@implements Compiler
-	@date	2022-02-17
+	@date 2022-02-17
 	generate an UPDATE style query.
 	//*/
 
@@ -292,7 +292,7 @@ extends Compiler {
 	string {
 	/*//
 	@implements Compiler
-	@date	2022-02-19
+	@date 2022-02-19
 	generate a DROP TABLE style query.
 	//*/
 
@@ -307,8 +307,17 @@ extends Compiler {
 	protected function
 	GenerateSetVarQuery():
 	string {
+	/*//
+	@implements Compiler
+	@date 2023-01-04
+	generate a SET style query that can set global/local variables.
+	//*/
 
-		$this->QueryString = $this->GetSetString($this->Verse->GetFields());
+		// same syntax as an update set noice.
+
+		$this->QueryString = $this->GetSetString(
+			$this->Verse->GetFields()
+		);
 
 		return $this->QueryString;
 	}

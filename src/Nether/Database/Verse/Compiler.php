@@ -54,7 +54,7 @@ provide the base api for the query compiling system.
 			Verse::ModeDelete    => $this->GenerateDeleteQuery(),
 			Verse::ModeCreate    => $this->GenerateCreateQuery(),
 			Verse::ModeDropTable => $this->GenerateDropTableQuery(),
-			Verse::ModeSetVar    => $this->GenerateSetVarQuery()
+			Verse::ModeVarSet    => $this->GenerateSetVarQuery()
 		};
 
 		////////

@@ -30,7 +30,7 @@ and execute it against the database.
 	ModeDelete    = 4,
 	ModeCreate    = 5,
 	ModeDropTable = 6,
-	ModeSetVar    = 7;
+	ModeVarSet    = 7;
 
 	const
 	SelectNormal    = 0,
@@ -368,8 +368,12 @@ and execute it against the database.
 	public function
 	VarSet(string|array $Fields, bool $Reset=TRUE):
 	static {
+	/*//
+	@date 2023-01-04
+	begin a new verse in the style of SET for global and local variables.
+	//*/
 
-		$this->Mode = static::ModeSetVar;
+		$this->Mode = static::ModeVarSet;
 
 		if($Reset)
 		$this->ResetQueryProperties();
