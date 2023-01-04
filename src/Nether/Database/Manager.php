@@ -41,8 +41,10 @@ class Manager {
 
 		if(is_array($Defined)) {
 			foreach($Defined as $Alias => $Item) {
-				if($Item instanceof Connection)
-				static::$CTX->Shove($Alias, $Item);
+				if($Item instanceof Connection) {
+					$Item->Alias = $Alias;;
+					static::$CTX->Shove($Alias, $Item);
+				}
 			}
 		}
 

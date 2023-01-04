@@ -3,13 +3,17 @@
 namespace Nether\Database;
 
 use Nether\Common;
-use Nether\Option;
-use Nether\Database;
 
 use PDO;
 use Stringable;
 
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
 class Connection {
+
+	public ?string
+	$Alias;
 
 	public string
 	$Type;
@@ -54,7 +58,8 @@ class Connection {
 		string $Database,
 		string $Username,
 		string $Password,
-		string $Charset='utf8'
+		string $Charset='utf8',
+		?string $Alias=NULL
 	) {
 
 		$this->Type = $Type;
@@ -63,6 +68,7 @@ class Connection {
 		$this->Username = $Username;
 		$this->Password = $Password;
 		$this->Charset = $Charset;
+		$this->Alias = $Alias;
 
 		return;
 	}

@@ -1,34 +1,35 @@
 <?php
 
+use Nether\Console;
 use Nether\Database;
-use Nether\Database\Verse;
 
 require('vendor/autoload.php');
 
+#[Console\Meta\Value('--db', 'Alias of the DB config to connect and execute this query on.')]
+#[Console\Meta\Toggle('--without-atlantis', 'Do not load Atlantis for configuration.')]
+#[Console\Meta\Error(100, 'No connection for "%s"')]
 class App
-extends Nether\Console\Client {
+extends Console\Client {
 
-	protected function
-	OnReady():
-	void {
+	protected Database\Manager
+	$DBM;
 
-		if(class_exists('Nether\\Atlantis\\Engine'))
-		$Atlantis = new Nether\Atlantis\Engine(getcwd());
+	protected Database\Connection
+	$DBC;
 
-		return;
-	}
+	////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////
 
-	#[Nether\Console\Meta\Command('sql-create')]
-	#[Nether\Console\Meta\Info('Generate the SQL to CREATE this table from the Table Class Annotations. If no database is specified it will only print the SQL to console.')]
-	#[Nether\Console\Meta\Arg('fqcn', 'The full namespace and class path as your application knows the class.')]
-	#[Nether\Console\Meta\Value('--db', 'Alias of the DB config to connect and execute this query on.')]
-	#[Nether\Console\Meta\Toggle('--drop', 'Prepend a DROP TABLE to the query.')]
-	#[Nether\Console\Meta\Toggle('-y', 'Auto confirm prompts.')]
-	#[Nether\Console\Meta\Error(1, 'no class specified')]
-	#[Nether\Console\Meta\Error(2, 'class not found')]
-	#[Nether\Console\Meta\Error(3, 'query failed')]
-	#[Nether\Console\Meta\Error(4, 'database connect failed')]
-	#[Nether\Console\Meta\Error(5, 'execution cancelled')]
+	#[Console\Meta\Command('sql-create')]
+	#[Console\Meta\Info('Generate the SQL to CREATE this table from the Table Class Annotations. If no database is specified it will only print the SQL to console.')]
+	#[Console\Meta\Arg('fqcn', 'The full namespace and class path as your application knows the class.')]
+	#[Console\Meta\Toggle('--drop', 'Prepend a DROP TABLE to the query.')]
+	#[Console\Meta\Toggle('-y', 'Auto confirm prompts.')]
+	#[Console\Meta\Error(1, 'no class specified')]
+	#[Console\Meta\Error(2, 'class not found')]
+	#[Console\Meta\Error(3, 'query failed')]
+	#[Console\Meta\Error(4, 'database connect failed')]
+	#[Console\Meta\Error(5, 'execution cancelled')]
 	public function
 	HandleSqlCreate():
 	int {
@@ -39,11 +40,9 @@ extends Nether\Console\Client {
 	//*/
 
 		$Class = $this->GetInput(1);
-		$DBAlias = $this->GetOption('db') ?? 'Default';
 		$AutoYes = $this->GetOption('y') ?? FALSE;
 		$AutoDropTable = $this->GetOption('drop') ?? FALSE;
 
-		$DBC = NULL;
 		$SQL = NULL;
 		$PreSQL = NULL;
 		$FKSQL1 = NULL;
@@ -63,8 +62,7 @@ extends Nether\Console\Client {
 		// reuse with various options.
 
 		try {
-			$SQL = $this->NewVerseCreate($DBAlias, $Class);
-			$DBC = $SQL->GetDatabase();
+			$SQL = $this->NewVerseCreate($Class);
 		}
 
 		catch(Throwable $Err) {
@@ -75,25 +73,14 @@ extends Nether\Console\Client {
 		// generate drop table.
 
 		if($AutoDropTable) {
-			if($DBC) {
-				$PreSQL = $this->NewVerseDropTable($DBAlias, $Class);
-				$FKSQL1 = $this->NewVerseFKCheck($DBAlias, 0);
-				$FKSQL2 = $this->NewVerseFKCheck($DBAlias, 1);
-			}
-
-			else {
-				$PreSQL = Nether\Database\Verse::FromMetaDropTable($Class);
-			}
+			$PreSQL = $this->NewVerseDropTable($Class);
+			$FKSQL1 = $this->NewVerseFKCheck(0);
+			$FKSQL2 = $this->NewVerseFKCheck(1);
 		}
 
 		// show the queries we intend to run.
 
 		$this->PrintVerse([ $FKSQL1, $PreSQL, $SQL, $FKSQL2 ]);
-
-		// if we have no database however there is nothing to do.
-
-		if(!$DBC)
-		return 0;
 
 		// execute the queries on the current database.
 
@@ -112,48 +99,69 @@ extends Nether\Console\Client {
 	////////////////////////////////////////////////////////////////
 
 	protected function
-	NewVerseCreate(string $DBAlias, string $Class):
-	Verse {
-	/*//
-	@date 2023-01-03
-	//*/
-
-		$DBM = new Nether\Database\Manager;
-		$DBC = $DBM->Get($DBAlias);
-
-		$Verse = $DBC->NewClassVerse($Class, Verse::ModeCreate);
-		$Verse->SetPretty(TRUE);
-
-		return $Verse;
-	}
-
-	protected function
-	NewVerseDropTable(string $DBAlias, string $Class):
-	Verse {
-	/*//
-	@date 2023-01-03
-	//*/
-
-		$DBM = new Nether\Database\Manager;
-		$DBC = $DBM->Get($DBAlias);
-
-		$Verse = $DBC->NewClassVerse($Class, Verse::ModeDropTable);
-		$Verse->SetPretty(TRUE);
-
-		return $Verse;
-	}
-
-	protected function
-	NewVerseFKCheck(string $DBAlias, int $Val):
-	Verse {
+	OnRun():
+	void {
 	/*//
 	@date 2023-01-04
 	//*/
 
-		$DBM = new Nether\Database\Manager;
-		$DBC = $DBM->Get($DBAlias);
+		$DBAlias = $this->GetOption('db') ?? 'Default';
+		$Nolantis = $this->GetOption('without-atlantis') ?? FALSE;
 
-		$Verse = $DBC->NewVerse();
+		////////
+
+		if(!$Nolantis && class_exists('Nether\\Atlantis\\Engine'))
+		new Nether\Atlantis\Engine(getcwd());
+
+		////////
+
+		$this->DBM = new Database\Manager;
+
+		try {
+			$this->DBC = $this->DBM->Get($DBAlias);
+		}
+
+		catch(Throwable $Err) {
+			$this->Quit(100, $DBAlias);
+		}
+
+		return;
+	}
+
+	protected function
+	NewVerseCreate(string $Class):
+	Database\Verse {
+	/*//
+	@date 2023-01-03
+	//*/
+
+		$Verse = $this->DBC->NewClassVerse($Class, Database\Verse::ModeCreate);
+		$Verse->SetPretty(TRUE);
+
+		return $Verse;
+	}
+
+	protected function
+	NewVerseDropTable(string $Class):
+	Database\Verse {
+	/*//
+	@date 2023-01-03
+	//*/
+
+		$Verse = $this->DBC->NewClassVerse($Class, Database\Verse::ModeDropTable);
+		$Verse->SetPretty(TRUE);
+
+		return $Verse;
+	}
+
+	protected function
+	NewVerseFKCheck(int $Val):
+	Database\Verse {
+	/*//
+	@date 2023-01-04
+	//*/
+
+		$Verse = $this->DBC->NewVerse();
 		$Verse->SetPretty(TRUE);
 		$Verse->VarSet(['FOREIGN_KEY_CHECKS' => $Val]);
 
@@ -164,7 +172,7 @@ extends Nether\Console\Client {
 	////////////////////////////////////////////////////////////////
 
 	protected function
-	PrintVerse(Verse|array $Queries):
+	PrintVerse(Database\Verse|array $Queries):
 	void {
 	/*//
 	@date 2022-02-20
@@ -174,7 +182,7 @@ extends Nether\Console\Client {
 
 		////////
 
-		if($Queries instanceof Verse)
+		if($Queries instanceof Database\Verse)
 		$Queries = [ $Queries ];
 
 		////////
@@ -194,7 +202,7 @@ extends Nether\Console\Client {
 	}
 
 	protected function
-	ConfirmAndExecuteVerse(Verse|array $Queries, bool $Force=FALSE):
+	ConfirmAndExecuteVerse(Database\Verse|array $Queries, bool $Force=FALSE):
 	?bool {
 	/*//
 	@date 2022-02-20
@@ -205,14 +213,14 @@ extends Nether\Console\Client {
 
 		////////
 
-		if($Queries instanceof Verse)
+		if($Queries instanceof Database\Verse)
 		$Queries = [ $Queries ];
 
 		if(!count($Queries))
 		return FALSE;
 
 		foreach($Queries as $SQL) {
-			if($SQL instanceof Verse)
+			if($SQL instanceof Database\Verse)
 			if($SQL->HasDatabase())
 			$Database = $SQL->GetDatabase();
 		}
@@ -225,7 +233,7 @@ extends Nether\Console\Client {
 		if(!$Force) {
 			$this->PrintLn('');
 			$Confirm = $this->PromptEquals(
-				"Execute on {$Database->Database}?",
+				"Execute on {$Database->Alias}({$Database->Database})?",
 				'(y/n):', 'y'
 			);
 		}
