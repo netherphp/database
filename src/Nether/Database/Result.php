@@ -14,21 +14,21 @@ query was even a success.
 //*/
 
 	protected
-	$Database = null;
+	$Database = NULL;
 	/*//
 	@type Nether\Database
 	the database connection we are interacting with.
 	//*/
 
 	protected
-	$Statement = null;
+	$Statement = NULL;
 	/*//
 	@type PDOStatement
 	the pdo statement object for this query.
 	//*/
 
 	protected
-	$Args = null;
+	$Args = NULL;
 	/*//
 	@type array
 	the list of arguments to use in the statement.
@@ -48,7 +48,7 @@ query was even a success.
 	////////////////////////////////
 
 	protected
-	$Time = null;
+	$Time = NULL;
 	/*//
 	@type float
 	the time in seconds this query took to execute.
@@ -68,7 +68,7 @@ query was even a success.
 	////////////////////////////////
 
 	public
-	$Error = null;
+	$Error = NULL;
 	/*//
 	@type string
 	@todo make this protected.
@@ -88,7 +88,7 @@ query was even a success.
 	////////////////////////////////
 
 	public
-	$OK = null;
+	$OK = NULL;
 	/*//
 	@type boolean
 	@todo make this protected.
@@ -128,7 +128,7 @@ query was even a success.
 	////////////////////////////////
 
 	public function
-	__construct($Database,$Statement,$Args) {
+	__Construct($Database,$Statement,$Args) {
 	/*//
 	given a database, a statement, and a dateset, wrap a database result set
 	into this little pseudoiterable object.
@@ -140,16 +140,16 @@ query was even a success.
 			$this->Args
 		) = func_get_args();
 
-		$Time = microtime(true);
+		$Time = microtime(TRUE);
 
 		// try to execute the statement.
 		if(!$this->Statement->Execute($this->Args)) {
 			$this->Error = $this->Statement->ErrorInfo()[2];
-			$this->OK = false;
+			$this->OK = FALSE;
 			return;
 		}
 
-		$this->Time = microtime(true) - $Time;
+		$this->Time = microtime(TRUE) - $Time;
 
 		/*
 		print_r([
@@ -159,9 +159,9 @@ query was even a success.
 		]);
 		*/
 
-		$this->OK = true;
+		$this->OK = TRUE;
 		$this->Count = $this->Statement->RowCount();
-		$this->Rows = $this->Count; // deprecated.
+
 		return;
 	}
 
@@ -186,7 +186,7 @@ query was even a success.
 	database for the id it last inserted on this connection.
 	//*/
 
-		return $this->Database->GetDriver()->LastInsertId();
+		return $this->Database->GetInsertID();
 	}
 
 	public function
@@ -221,7 +221,7 @@ query was even a success.
 	//*/
 
 		$List = [];
-		$Row = null;
+		$Row = NULL;
 
 		while($Row = $this->Next($Class))
 		$List[] = $Row;
