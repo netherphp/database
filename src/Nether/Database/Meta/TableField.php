@@ -5,7 +5,7 @@ namespace Nether\Database\Meta;
 use Nether\Database\Meta\Interface\FieldAttribute;
 use Nether\Database\Meta\Interface\FieldDefinition;
 use Nether\Database\Struct\TableClassInfo;
-use Nether\Object\Meta\PropertyOrigin;
+use Nether\Common\Meta\PropertyOrigin;
 
 use Stringable;
 use ReflectionProperty;

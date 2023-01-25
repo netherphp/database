@@ -2,7 +2,7 @@
 
 namespace Nether\Database;
 
-use Nether\Object\Datastore;
+use Nether\Common\Datastore;
 
 class Manager {
 

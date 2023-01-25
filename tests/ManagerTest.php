@@ -6,7 +6,7 @@ use PHPUnit;
 use Nether;
 
 use Throwable;
-use Nether\Object\Datastore;
+use Nether\Common\Datastore;
 
 class ManagerTest
 extends PHPUnit\Framework\TestCase {

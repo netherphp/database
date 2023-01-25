@@ -4,7 +4,7 @@ namespace Nether\Database\Struct;
 use Nether;
 
 class PrototypeFindResult
-extends Nether\Object\Datastore {
+extends Nether\Common\Datastore {
 
 	public int
 	$Total = 0;

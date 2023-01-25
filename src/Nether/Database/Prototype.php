@@ -6,11 +6,11 @@ use Nether;
 use Exception;
 use Nether\Database\Meta\InsertReuseUnique;
 use Nether\Database\Meta\InsertUpdate;
-use Nether\Object\Datastore;
+use Nether\Common\Datastore;
 use Nether\Database\Verse;
 
 class Prototype
-extends Nether\Object\Prototype {
+extends Nether\Common\Prototype {
 
 	static public string
 	$DBA = 'Default';

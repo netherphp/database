@@ -47,7 +47,7 @@ anything can be manually escaped if the coda is building a complex value.
 	can be specified at a later time.
 	//*/
 
-		$Opt = new Nether\Object\Mapped($Opt,[
+		$Opt = new Nether\Common\Mapped($Opt,[
 			'Database' => NULL,
 			'Field'    => NULL,
 			'Value'    => NULL
