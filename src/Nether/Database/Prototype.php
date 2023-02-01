@@ -3,10 +3,11 @@
 namespace Nether\Database;
 use Nether;
 
+use Nether\Common;
+
 use Exception;
 use Nether\Database\Meta\InsertReuseUnique;
 use Nether\Database\Meta\InsertUpdate;
-use Nether\Common\Datastore;
 use Nether\Database\Verse;
 
 class Prototype
@@ -108,6 +109,8 @@ extends Nether\Common\Prototype {
 		$Table = static::GetTableInfo();
 		$DBM = new Manager;
 
+		//Common\Dump::Var($Table->Fields, TRUE);
+
 		if(!array_key_exists($Field, $Table->Fields))
 		throw new Exception("{$Field} not found on {$Table->Name}");
 
@@ -184,7 +187,7 @@ extends Nether\Common\Prototype {
 
 		////////
 
-		if($Input instanceof Datastore)
+		if($Input instanceof Common\Datastore)
 		$Input = $Input->GetData();
 
 		$SQL = (
@@ -210,13 +213,61 @@ extends Nether\Common\Prototype {
 	////////////////////////////////////////////////////////////////
 
 	static public function
+	JoinMainTables(Verse $SQL, string $JAlias, string $JField, string $TPre=''):
+	void {
+
+		$BTable = static::GetTableInfo();
+		$BAlias = $BTable->GetPrefixedAlias($TPre);
+
+		$SQL->Join(sprintf(
+			'%s ON %s=`%s`.`%s`',
+			$BTable->GetAliasedTable($BAlias),
+			$BTable->GetAliasedPK($BAlias),
+			$JAlias,
+			$JField
+		));
+
+		return;
+	}
+
+	static public function
+	JoinMainFields(Verse $SQL, string $TPre=''):
+	void {
+
+		$BTable = static::GetTableInfo();
+		$BAlias = $BTable->GetPrefixedAlias($TPre);
+
+		$SQL->Fields(static::GetTableSelectFields($BAlias));
+
+		return;
+	}
+
+
+	static public function
+	JoinExtendTables(Verse $SQL, string $JAlias='Main', string $TPre=''):
+	void {
+
+		return;
+	}
+
+	static public function
+	JoinExtendFields(Verse $SQL, string $TPre=''):
+	void {
+
+		return;
+	}
+
+	////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////
+
+	static public function
 	Find(array $Input):
 	Struct\PrototypeFindResult {
 
 		$Output = new Struct\PrototypeFindResult;
 		$DBM = new Manager;
 		$Main = static::GetTableInfo();
-		$PKField = $Main->GetPrefixedKey('Main');
+		$PKField = $Main->GetAliasedPK('Main');
 
 		$SQL = NULL;
 		$Result = NULL;
@@ -225,7 +276,7 @@ extends Nether\Common\Prototype {
 
 		////////
 
-		$Opt = new Datastore([
+		$Opt = new Common\Datastore([
 			'Sort'  => NULL,
 			'Limit' => 0,
 			'Page'  => 1,
@@ -251,6 +302,7 @@ extends Nether\Common\Prototype {
 		// additional filters using those options to the query.
 
 		static::FindExtendOptions($Opt);
+		static::FindExtendTables($SQL, $Opt);
 		static::FindExtendFilters($SQL, $Opt);
 
 		// before checking if an extension class wants to add sorting
@@ -315,7 +367,7 @@ extends Nether\Common\Prototype {
 	}
 
 	static protected function
-	FindExtendOptions(Datastore $Input):
+	FindExtendOptions(Common\Datastore $Input):
 	void {
 
 		// $Input->SomeFilterName ??= NULL;
@@ -324,7 +376,17 @@ extends Nether\Common\Prototype {
 	}
 
 	static protected function
-	FindExtendFilters(Verse $SQL, Datastore $Input):
+	FindExtendTables(Verse $SQL, Common\Datastore $Input):
+	void {
+
+		static::JoinExtendTables($SQL);
+		static::JoinExtendFields($SQL);
+
+		return;
+	}
+
+	static protected function
+	FindExtendFilters(Verse $SQL, Common\Datastore $Input):
 	void {
 
 		// if($Input['SomeProperty'] !== NULL)
@@ -334,7 +396,7 @@ extends Nether\Common\Prototype {
 	}
 
 	static protected function
-	FindExtendSorts(Verse $SQL, Datastore $Input):
+	FindExtendSorts(Verse $SQL, Common\Datastore $Input):
 	void {
 
 		// switch($Input['Sort']) {

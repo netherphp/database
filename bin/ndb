@@ -11,6 +11,12 @@ require('vendor/autoload.php');
 class App
 extends Console\Client {
 
+	const
+	AppName    = 'NetherDB',
+	AppDesc    = 'Database Util CLI.',
+	AppVersion = '5.0.0-dev',
+	AppDebug   = TRUE;
+
 	protected Database\Manager
 	$DBM;
 

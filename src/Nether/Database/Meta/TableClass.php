@@ -17,6 +17,9 @@ implements TableDefinition {
 	$Name;
 
 	public ?string
+	$Alias;
+
+	public ?string
 	$Charset;
 
 	public ?string
@@ -31,6 +34,7 @@ implements TableDefinition {
 	public function
 	__Construct(
 		string $Name,
+		?string $Alias=NULL,
 		?string $Engine=NULL,
 		?string $Charset=NULL,
 		?string $Collate=NULL,
@@ -43,6 +47,7 @@ implements TableDefinition {
 		// @todo 2021-08-24 move defaults to config system.
 
 		$this->Name = $Name;
+		$this->Alias = $Alias;
 		$this->Engine = $Engine;
 		$this->Charset = $Charset;
 		$this->Collate = $Collate;
@@ -54,6 +59,9 @@ implements TableDefinition {
 	public function
 	Learn(TableClassInfo $Table):
 	static {
+
+		if($this->Alias === NULL)
+		$this->Alias = strtoupper(substr($this->Name, 0, 2));
 
 		return $this;
 	}

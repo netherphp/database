@@ -13,6 +13,9 @@ class TableClassInfo {
 	$Name;
 
 	public ?string
+	$Alias;
+
+	public ?string
 	$Comment = NULL;
 
 	public array
@@ -49,8 +52,10 @@ class TableClassInfo {
 		foreach($Attribs as $Attrib) {
 			$Inst = $Attrib->NewInstance();
 
-			if($Inst instanceof Meta\TableClass)
-			$this->HandleTableClass($Class, $Inst);
+			if($Inst instanceof Meta\TableClass) {
+				$Inst->Learn($this);
+				$this->HandleTableClass($Class, $Inst);
+			}
 
 			elseif($Inst instanceof Meta\Interface\TableAttribute)
 			$this->HandleTableAttribute($Class, $Inst);
@@ -70,43 +75,66 @@ class TableClassInfo {
 	void {
 
 		$this->Name = $Inst->Name;
+		$this->Alias = $Inst->Alias;
 		$this->Comment = $Inst->Comment;
 
+		$ClassDef = NULL;
+		$FieldSet = [];
 		$Props = $Class->GetProperties();
 		$Prop = NULL;
 		$Attrib = NULL;
 		$Name = NULL;
-		$Inst = NULL;
 
 		foreach($Props as $Prop) {
-			$Attribs = $Prop->GetAttributes();
 			$Name = $Prop->GetName();
 
-			// prime them so they can inspect eachother.
-			foreach($Attribs as $Attrib)
-			$Attrib->Inst = $Attrib->NewInstance();
+			$Attribs = AttributePair::NewArrayFromArray(
+				$Attribs = $Prop->GetAttributes()
+			);
 
-			// find the table fields.
 			foreach($Attribs as $Attrib) {
 				if($Attrib->Inst instanceof Meta\Interface\FieldDefinition) {
-					$this->Fields[$Name] = $Attrib->Inst->Learn($this,$Prop,$Attribs);
+					$ClassDef = $Prop->GetDeclaringClass()->GetName();
 
-					if($this->Fields[$Name]->PrimaryKey) {
-						$this->PrimaryKey = $this->Fields[$Name]->Name;
+					if(!isset($FieldSet[$ClassDef]))
+					$FieldSet[$ClassDef] = [];
+
+					$FieldSet[$ClassDef][$Name] = $Attrib->Inst->Learn(
+						$this,
+						$Prop,
+						$Attribs
+					);
+
+					if($FieldSet[$ClassDef][$Name]->PrimaryKey) {
+						$this->PrimaryKey = $FieldSet[$ClassDef][$Name]->Name;
 						$this->ObjectKey = $Name;
 					}
 				}
 
 				if($Attrib->Inst instanceof Meta\Interface\FieldAttribute) {
-					if(!array_key_exists($Name, $this->Fields))
+					if(!array_key_exists($Name, $FieldSet[$ClassDef]))
 					throw new Exception('must annotate a FieldDefinition prior to a FieldAttribute.');
 
 					if($Attrib->Inst instanceof Meta\Interface\TableIndex)
-					$this->Indexes[$Name] = $this->Fields[$Name];
+					$this->Indexes[$Name] = $FieldSet[$ClassDef][$Name];
 				}
 			}
-
 		}
+
+		// ok so
+		// theoretically
+		// fieldset will have its sets defined in like order of dig.
+		// meaning like the most parent of class will have been the last
+		// in the set, since php reflection seems to dig them up child
+		// class first.
+
+		$FieldSet = array_reverse($FieldSet);
+
+		array_walk(
+			$FieldSet,
+			fn(array $Fields)
+			=> $this->Fields = array_merge($this->Fields, $Fields)
+		);
 
 		return;
 	}
@@ -220,17 +248,55 @@ class TableClassInfo {
 	////////////////////////////////////////////////////////////////
 
 	public function
-	GetAliasedTable(string $Alias):
+	GetPrefixedAlias(?string $TPre):
 	string {
+
+		if($TPre === 'Main')
+		return $TPre;
+
+		if($TPre === NULL)
+		return '';
+
+		$TPre = ltrim("{$TPre}_{$this->Alias}", '_');
+
+		return $TPre;
+	}
+
+	public function
+	GetAliasedTable(?string $Alias=NULL):
+	string {
+
+		$Alias ??= $this->Alias;
 
 		return "`{$this->Name}` `{$Alias}`";
 	}
 
 	public function
+	GetAliasedPK(?string $Alias=NULL):
+	string {
+
+		return $this->GetAliasedField($this->PrimaryKey, $Alias);
+	}
+
+	public function
+	GetAliasedField(string $Field, ?string $Alias=NULL):
+	string {
+
+		$Alias ??= $this->Alias;
+
+		return "`{$Alias}`.`{$Field}`";
+	}
+
+	////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////
+
+	public function
 	GetPrefixedKey(string $Alias):
 	string {
 
-		return "`{$Alias}`.`{$this->PrimaryKey}`";
+		// deprecated
+
+		return $this->GetAliasedPK($Alias);
 	}
 
 	////////////////////////////////////////////////////////////////
@@ -240,7 +306,7 @@ class TableClassInfo {
 	GetPrefixedField(string $Alias, string $Field):
 	string {
 
-		return "{$Alias}.{$Field}";
+		return "`{$Alias}`.`{$Field}`";
 	}
 
 }
