@@ -212,6 +212,45 @@ extends Nether\Common\Prototype {
 	////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////
 
+
+	/*******
+	BlogUser::JoinExtendTables($SQL, NULL);
+
+	BlogUser needs to know about the Blog.
+	^ prepares GetPrefixedAlias(NULL) = ''
+	^ calls Blog::JoinMainTables($SQL, '');
+	^ calls Blog::JoinExtendTables($SQL, '');
+
+		Blog needs Owning User
+		^ prepares GetPrefixedAlias('') = 'BL'
+		^ calls User::JoinMainTables($SQL, 'BL');
+		^ calls User::JoinExtendTables($SQL, 'BL);
+
+			User needs the Uploaded Avatar.
+			^ prepares GetPrefixedAlias('BL') = 'BL_U'
+			^ calls Upload::JoinMainTables($SQL, 'BL_U')
+			^ calls Upload::JoinExtendTables($SQL, 'BL_U');
+
+				Uploaded Avatar needs the owning User.
+				^ prepares GetPrefixedAlias('BL_U') = 'BL_U_UP'
+				^ calls User::JoinMainTables($SQL, 'BL_U_UP')
+				watch out for recursion though. we need to not
+				have something like a user fetch their avatar
+				which fetches its owner which fetches its avatar
+				which fetches its owner which fetches its avatar
+				which fetches its owner which fetches its avatar
+				which fetches its owner...
+
+		Blog needs Uploaded Icon
+		^ calls Upload::JoinMainTables($SQL, 'BL)
+		^ calls Upload::JoinExtendTables($SQL, 'BL)
+
+			Uploaded Icon needs the owning User.
+			^ prepares GetPrefixedAlias('BL') = 'BL_UP'
+			^ calls User::JoinMainTables($SQL, 'BL_UP')
+
+	*******/
+
 	static public function
 	JoinMainTables(Verse $SQL, string $JAlias, string $JField, string $TPre=''):
 	void {

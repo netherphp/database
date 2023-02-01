@@ -248,16 +248,25 @@ class TableClassInfo {
 	////////////////////////////////////////////////////////////////
 
 	public function
-	GetPrefixedAlias(?string $TPre):
+	GetPrefixedAlias(?string $TPre, ?string $Alias=NULL):
 	string {
 
-		if($TPre === 'Main')
-		return $TPre;
+		// provide a way to insert custom aliases so classes can make the
+		// queries more relevant. thinking in the case of the uploads table
+		// a user might want to prefix it to sound like an image for the
+		// avatar lookup.
+
+		$Alias ??= $this->Alias;
+
+		////////
 
 		if($TPre === NULL)
 		return '';
 
-		$TPre = ltrim("{$TPre}_{$this->Alias}", '_');
+		if($TPre === 'Main')
+		return $TPre;
+
+		$TPre = ltrim("{$TPre}_{$Alias}", '_');
 
 		return $TPre;
 	}
