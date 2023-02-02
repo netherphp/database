@@ -225,6 +225,9 @@ class Connection {
 
 		// convert to an object if not an object.
 
+		if($Argv instanceof Common\Datastore)
+		$Argv = $Argv->GetData();
+
 		if(!is_array($Argv))
 		$Argv = (array)$Argv;
 
