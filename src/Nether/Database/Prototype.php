@@ -5,6 +5,7 @@ use Nether;
 
 use Nether\Common;
 
+use ArrayAccess;
 use Exception;
 use Nether\Database\Meta\InsertReuseUnique;
 use Nether\Database\Meta\InsertUpdate;
@@ -91,6 +92,55 @@ extends Nether\Common\Prototype {
 		////////
 
 		return $this;
+	}
+
+	public function
+	Patch(array|ArrayAccess $Input):
+	array {
+	/*//
+	@date 2023-02-02
+	given some input use the defined property filters to patch that dataset
+	up and return it. a property must have both the patchable attribute and
+	at least one filter defined.
+	//*/
+
+		$PropInfos = static::GetPropertiesWithAttribute(
+			Common\Meta\PropertyPatchable::class
+		);
+
+		$Output = [];
+		$Prop = NULL;
+		$Info = NULL;
+
+		foreach($PropInfos as $Prop => $Info) {
+			/** @var Common\Prototype\PropertyInfo $Info */
+
+			$Has = match(TRUE) {
+				$Input instanceof ArrayAccess
+				=> $Input->OffsetExists($Prop),
+
+				default
+				=> array_key_exists($Prop, $Input)
+			};
+
+			if(!$Has)
+			continue;
+
+			$Filters = $Info->GetAttributes(
+				Common\Meta\PropertyFilter::class
+			);
+
+			if(!count($Filters))
+			continue;
+
+			$Output[$Prop] = array_reduce(
+				$Filters,
+				fn(mixed $Data, callable $Func)=> $Func($Data),
+				$Input[$Prop]
+			);
+		}
+
+		return $Output;
 	}
 
 	////////////////////////////////////////////////////////////////
