@@ -159,26 +159,26 @@ extends Nether\Common\Prototype {
 		$Table = static::GetTableInfo();
 		$DBM = new Manager;
 
-		//Common\Dump::Var($Table->Fields, TRUE);
-
 		if(!array_key_exists($Field, $Table->Fields))
 		throw new Exception("{$Field} not found on {$Table->Name}");
 
 		////////
 
+		$Opt = new Common\Datastore([
+			':FieldValue' => $Value
+		]);
+
 		$SQL = (
 			($DBM->NewVerse(static::$DBA))
-			->Select($Table->Name)
-			->Fields('*')
-			->Where("{$Field}=:FieldValue")
+			->Select("{$Table->Name} Main")
+			->Fields('`Main`.*')
+			->Where("`Main`.`{$Field}`=:FieldValue")
 			->Limit(1)
 		);
 
-		//echo $SQL;
+		static::FindExtendTables($SQL, $Opt);
 
-		$Result = $SQL->Query([
-			':FieldValue' => $Value
-		]);
+		$Result = $SQL->Query($Opt->GetData());
 
 		if(!$Result->IsOK())
 		throw new Exception($Result->GetError());
@@ -333,14 +333,14 @@ extends Nether\Common\Prototype {
 
 
 	static public function
-	JoinExtendTables(Verse $SQL, string $JAlias='Main', string $TPre=''):
+	JoinExtendTables(Verse $SQL, string $JAlias='Main', ?string $TPre=NULL):
 	void {
 
 		return;
 	}
 
 	static public function
-	JoinExtendFields(Verse $SQL, string $TPre=''):
+	JoinExtendFields(Verse $SQL, ?string $TPre=NULL):
 	void {
 
 		return;

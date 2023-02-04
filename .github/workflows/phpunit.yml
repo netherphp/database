@@ -12,14 +12,6 @@ jobs:
     steps:
       - name: Checkout Source.
         uses: actions/checkout@v2
-      - name: Setup PHP 8.0
-        if: ${{ matrix.php-versions == '8.0' }}
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ matrix.php-versions }}
-          coverage: none
-          extensions: mbstring, intl
-          tools: phpunit
       - name: Setup PHP 8.1
         if: ${{ matrix.php-versions == '8.1' }}
         uses: shivammathur/setup-php@v2
@@ -27,11 +19,10 @@ jobs:
           php-version: ${{ matrix.php-versions }}
           coverage: xdebug
           extensions: mbstring, intl
-          tools: phpunit
       - name: Run PHPUnit
         run: |
           composer install
-          phpunit tests --bootstrap vendor/autoload.php --coverage-clover ./coverage.xml
+          php vendor/bin/phpunit tests --bootstrap vendor/autoload.php --coverage-clover ./coverage.xml
       - name: Push to Codecov Probably
         if: ${{ matrix.php-versions == '8.1' && matrix.operating-system == 'ubuntu-latest' }}
         uses: codecov/codecov-action@v3
