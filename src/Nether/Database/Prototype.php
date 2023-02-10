@@ -362,14 +362,17 @@ extends Nether\Common\Prototype {
 		$Result = NULL;
 		$Found = NULL;
 		$Row = NULL;
+		$PPCallable = NULL;
 
 		////////
 
 		$Opt = new Common\Datastore([
-			'Sort'  => NULL,
-			'Limit' => 0,
-			'Page'  => 1,
-			'Debug' => FALSE
+			'Sort'      => NULL,
+			'Limit'     => 0,
+			'Page'      => 1,
+			'Debug'     => FALSE,
+			'Filters'   => NULL,
+			'Remappers' => NULL
 		]);
 
 		$Opt->MergeRight($Input);
@@ -419,6 +422,20 @@ extends Nether\Common\Prototype {
 
 		while($Row = $Result->Next())
 		$Output->Push(new static($Row));
+
+		// run the post processing filters.
+
+		if(is_iterable($Opt['Filters']))
+		foreach($Opt['Filters'] as $PPCallable)
+		if(is_callable($PPCallable))
+		$Output->Filter($PPCallable);
+
+		// run post process remapping.
+
+		if(is_iterable($Opt['Remappers']))
+		foreach($Opt['Remappers'] as $PPCallable)
+		if(is_callable($PPCallable))
+		$Output->Remap($PPCallable);
 
 		////////
 
