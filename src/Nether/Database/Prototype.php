@@ -302,31 +302,30 @@ extends Nether\Common\Prototype {
 	*******/
 
 	static public function
-	JoinMainTables(Verse $SQL, string $JAlias, string $JField, string $TPre=''):
+	JoinMainTables(Verse $SQL, string $JAlias, string $JField, string $TPre='', ?string $TAlias=NULL):
 	void {
 
-		$BTable = static::GetTableInfo();
-		$BAlias = $BTable->GetPrefixedAlias($TPre);
+		$Table = static::GetTableInfo();
+		$Prefix = $Table->GetPrefixedAlias($TPre, $TAlias);
 
 		$SQL->Join(sprintf(
-			'%s ON %s=`%s`.`%s`',
-			$BTable->GetAliasedTable($BAlias),
-			$BTable->GetAliasedPK($BAlias),
-			$JAlias,
-			$JField
+			'%s ON %s=%s',
+			$Table->GetAliasedTable($Prefix),
+			$Table->GetAliasedPK($Prefix),
+			$Table::GetPrefixedField($JAlias, $JField)
 		));
 
 		return;
 	}
 
 	static public function
-	JoinMainFields(Verse $SQL, string $TPre=''):
+	JoinMainFields(Verse $SQL, string $TPre='', ?string $TAlias=NULL):
 	void {
 
 		$BTable = static::GetTableInfo();
-		$BAlias = $BTable->GetPrefixedAlias($TPre);
+		$Prefix = $BTable->GetPrefixedAlias($TPre, $TAlias);
 
-		$SQL->Fields(static::GetTableSelectFields($BAlias));
+		$SQL->Fields(static::GetTableSelectFields($Prefix));
 
 		return;
 	}
