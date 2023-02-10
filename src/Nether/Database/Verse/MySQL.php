@@ -108,6 +108,7 @@ extends Compiler {
 		$Ignore = (($Flags & Verse::InsertIgnore) === Verse::InsertIgnore);
 		$Update = (($Flags & Verse::InsertUpdate) === Verse::InsertUpdate);
 		$ReuseUnique = (($Flags & Verse::InsertReuseUnique) === Verse::InsertReuseUnique);
+		$PrimaryKey = $this->Verse->GetPrimaryKey();
 
 		////////
 
@@ -122,12 +123,21 @@ extends Compiler {
 		////////
 
 		if($Update) {
+			$FieldsToUp = $this->Verse->GetFields();
+
+			if($ReuseUnique) {
+				if(!$PrimaryKey)
+				throw new Error\InvalidPrimaryKeyInput;
+
+				$FieldsToUp = array_merge($FieldsToUp, [
+					$this->Verse->GetPrimaryKey()
+					=> "LAST_INSERT_ID(`{$PrimaryKey}`)"
+				]);
+			}
+
 			$this->QueryString .= sprintf(
 				'ON DUPLICATE KEY UPDATE %s ',
-				preg_replace(
-					'/^SET /', '',
-					$this->GetSetString($this->Verse->GetFields())
-				)
+				preg_replace('/^SET /', '', $this->GetSetString($FieldsToUp))
 			);
 		}
 
@@ -136,7 +146,7 @@ extends Compiler {
 			throw new Error\InvalidPrimaryKeyInput;
 
 			$this->QueryString .= sprintf(
-				'ON DUPLICATE KEY UPDATE %1$s=LAST_INSERT_ID(%1$s) ',
+				'ON DUPLICATE KEY UPDATE `%1$s`=LAST_INSERT_ID(`%1$s`) ',
 				$this->Verse->GetPrimaryKey()
 			);
 		}
