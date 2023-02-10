@@ -568,9 +568,16 @@ extends Nether\Common\Prototype {
 		$Val = NULL;
 		$Output = [];
 
-		foreach($Dataset as $Key => $Val)
-		if(array_key_exists($Key, $Info->Fields))
-		$Output[$Key] = ":{$Key}";
+		foreach($Dataset as $Key => $Val) {
+			if(!array_key_exists($Key, $Info->Fields))
+			throw new Exception(sprintf(
+				'%s does not exist in %s field set',
+				$Key,
+				static::class
+			));
+
+			$Output[$Key] = ":{$Key}";
+		}
 
 		return $Output;
 	}
