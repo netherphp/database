@@ -13,7 +13,7 @@ use Stringable;
 class Connection {
 
 	public ?string
-	$Alias;
+	$Name;
 
 	public string
 	$Type;
@@ -59,7 +59,7 @@ class Connection {
 		string $Username,
 		string $Password,
 		string $Charset='utf8',
-		?string $Alias=NULL
+		?string $Name=NULL
 	) {
 
 		$this->Type = $Type;
@@ -68,7 +68,7 @@ class Connection {
 		$this->Username = $Username;
 		$this->Password = $Password;
 		$this->Charset = $Charset;
-		$this->Alias = $Alias;
+		$this->Name = $Name;
 
 		return;
 	}

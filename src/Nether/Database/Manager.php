@@ -37,13 +37,15 @@ class Manager {
 
 		$Defined = $Config[Library::ConfConnections];
 		$Item = NULL;
-		$Alias = NULL;
+		$Name = NULL;
 
 		if(is_array($Defined)) {
-			foreach($Defined as $Alias => $Item) {
+			foreach($Defined as $Name => $Item) {
 				if($Item instanceof Connection) {
-					$Item->Alias = $Alias;;
-					static::$CTX->Shove($Alias, $Item);
+					static::$CTX->Shove(
+						$Item->Name ?? $Name,
+						$Item
+					);
 				}
 			}
 		}
