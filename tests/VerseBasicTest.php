@@ -14,6 +14,43 @@ new Nether\Database\Library;
 
 ////////
 
+#[Nether\Database\Meta\TableClass('TestTable1')]
+#[Nether\Database\Meta\MultiFieldIndex([ 'Field1','Field2' ], TRUE)]
+#[Nether\Database\Meta\InsertReuseUnique]
+class InsertReuseTest1 {
+
+	#[Nether\Database\Meta\TypeIntBig(Unsigned: TRUE, AutoInc: TRUE)]
+	#[Nether\Database\Meta\PrimaryKey]
+	public int $ID;
+
+	#[Nether\Database\Meta\TypeVarChar]
+	public string $Field1;
+
+	#[Nether\Database\Meta\TypeVarChar]
+	public string $Field2;
+
+}
+
+#[Nether\Database\Meta\TableClass('TestTable1')]
+#[Nether\Database\Meta\MultiFieldIndex([ 'Field1','Field2' ], TRUE)]
+#[Nether\Database\Meta\InsertUpdate]
+#[Nether\Database\Meta\InsertReuseUnique]
+class InsertReuseTest2 {
+
+	#[Nether\Database\Meta\TypeIntBig(Unsigned: TRUE, AutoInc: TRUE)]
+	#[Nether\Database\Meta\PrimaryKey]
+	public int $ID;
+
+	#[Nether\Database\Meta\TypeVarChar]
+	public string $Field1;
+
+	#[Nether\Database\Meta\TypeVarChar]
+	public string $Field2;
+
+}
+
+////////
+
 class VerseTest
 extends PHPUnit\Framework\TestCase {
 
@@ -380,6 +417,59 @@ extends PHPUnit\Framework\TestCase {
 
 		$this->AssertEquals(
 			'INSERT INTO TableName (`Field1`,`Field2`) VALUES (:Value1,:Value2)',
+			(string)$Verse
+		);
+
+		return;
+	}
+
+	/** @test */
+	public function
+	TestInsertUpdateQuery():
+	void {
+
+		$Verse = static::NewVerseBasic();
+
+		$Verse
+		->Insert('TableName', $Verse::InsertUpdate)
+		->Values([ 'Field1'=> ':Value1', 'Field2'=> ':Value2' ]);
+
+		$this->AssertEquals(
+			'INSERT INTO TableName (`Field1`,`Field2`) VALUES (:Value1,:Value2) ON DUPLICATE KEY UPDATE `Field1`=:Value1,`Field2`=:Value2',
+			(string)$Verse
+		);
+
+		return;
+	}
+
+	/** @test */
+	public function
+	TestInsertReuseQuery1():
+	void {
+
+		$Verse = static::NewVerseBasic();
+		$Verse = $Verse::FromMetaInsert('Nether\\Database\\InsertReuseTest1', $Verse->GetDatabase());
+		$Verse->Values([ 'Field1'=> ':Value1', 'Field2'=> ':Value2' ]);
+
+		$this->AssertEquals(
+			'INSERT INTO TestTable1 (`Field1`,`Field2`) VALUES (:Value1,:Value2) ON DUPLICATE KEY UPDATE `ID`=LAST_INSERT_ID(`ID`)',
+			(string)$Verse
+		);
+
+		return;
+	}
+
+	/** @test */
+	public function
+	TestInsertReuseQuery2():
+	void {
+
+		$Verse = static::NewVerseBasic();
+		$Verse = $Verse::FromMetaInsert('Nether\\Database\\InsertReuseTest2', $Verse->GetDatabase());
+		$Verse->Values([ 'Field1'=> ':Value1', 'Field2'=> ':Value2' ]);
+
+		$this->AssertEquals(
+			'INSERT INTO TestTable1 (`Field1`,`Field2`) VALUES (:Value1,:Value2) ON DUPLICATE KEY UPDATE `Field1`=:Value1,`Field2`=:Value2,`ID`=LAST_INSERT_ID(`ID`)',
 			(string)$Verse
 		);
 
