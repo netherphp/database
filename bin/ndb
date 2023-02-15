@@ -141,7 +141,7 @@ extends Console\Client {
 	@date 2023-01-03
 	//*/
 
-		$Verse = $this->DBC->NewClassVerse($Class, Database\Verse::ModeCreate);
+		$Verse = Database\Verse::FromMetaCreate($Class, $this->DBC);
 		$Verse->SetPretty(TRUE);
 
 		return $Verse;
@@ -154,7 +154,7 @@ extends Console\Client {
 	@date 2023-01-03
 	//*/
 
-		$Verse = $this->DBC->NewClassVerse($Class, Database\Verse::ModeDropTable);
+		$Verse = Database\Verse::FromMetaDropTable($Class, $this->DBC);
 		$Verse->SetPretty(TRUE);
 
 		return $Verse;
