@@ -46,7 +46,7 @@ class ExampleTable1 {
 		$Query .= "\tINDEX `IdxExampleTable1KeyToIndex` (`KeyToIndex`) USING BTREE,\n";
 		$Query .= "\tUNIQUE `UnqExampleTable1ParentIDChildID` (`ParentID`,`ChildID`),\n";
 		$Query .= "\tINDEX `FnkExampleTable1OtherTableOtherID` (`OtherID`) USING BTREE,\n";
-		$Query .= "\tCONSTRAINT `FnkExampleTable1OtherTableOtherID` FOREIGN KEY(`OtherID`) REFERENCES `OtherTable` (`ID`) ON UPDATE CASCADE ON DELETE CASCADE\n";
+		$Query .= "\tCONSTRAINT `FnkExampleTable1OtherTableOtherID` FOREIGN KEY(`OtherID`) REFERENCES `OtherTable` (`ID`) ON UPDATE CASCADE ON DELETE SET NULL\n";
 		$Query .= ")\n";
 		$Query .= "CHARSET=utf8mb4\n";
 		$Query .= "COLLATE=utf8mb4_general_ci\n";
