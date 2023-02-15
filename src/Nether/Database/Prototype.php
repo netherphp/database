@@ -311,7 +311,10 @@ extends Nether\Common\Prototype {
 		$SQL->Join(sprintf(
 			'%s ON %s=%s',
 			$Table->GetAliasedTable($Prefix),
-			$Table->GetAliasedPK($Prefix),
+			match($JField) {
+				'EntityUUID' => $Table->GetAliasedField('UUID', $Prefix),
+				default      => $Table->GetAliasedPK($Prefix)
+			},
 			$Table::GetPrefixedField($JAlias, $JField)
 		));
 
@@ -329,7 +332,6 @@ extends Nether\Common\Prototype {
 
 		return;
 	}
-
 
 	static public function
 	JoinExtendTables(Verse $SQL, string $JAlias='Main', ?string $TPre=NULL):

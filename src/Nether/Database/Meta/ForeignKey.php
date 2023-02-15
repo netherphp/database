@@ -46,7 +46,7 @@ implements FieldAttribute {
 
 		$this->Name = $Name;
 		$this->Update = $Update ?? 'CASCADE';
-		$this->Delete = $Delete ?? 'CASCADE';
+		$this->Delete = $Delete ?? 'SET NULL';
 
 		return;
 	}

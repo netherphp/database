@@ -239,7 +239,7 @@ extends Console\Client {
 		if(!$Force) {
 			$this->PrintLn('');
 			$Confirm = $this->PromptEquals(
-				"Execute on {$Database->Alias}({$Database->Database})?",
+				"Execute on {$Database->Name}({$Database->Database})?",
 				'(y/n):', 'y'
 			);
 		}
