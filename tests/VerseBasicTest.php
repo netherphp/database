@@ -131,6 +131,32 @@ extends PHPUnit\Framework\TestCase {
 			(string)$Verse
 		);
 
+		////////
+
+		$Verse
+		->Select('TestTable')
+		->Fields('Field0')
+		->Where('Field1=:Value1')
+		->Where('Field2=:Value2', $Verse::WhereOr);
+
+		$this->AssertEquals(
+			'SELECT `Field0` FROM TestTable WHERE (Field1=:Value1) OR (Field2=:Value2)',
+			(string)$Verse
+		);
+
+		////////
+
+		$Verse
+		->Select('TestTable')
+		->Fields('Field0')
+		->Where('Field1=:Value1')
+		->Where('Field2=:Value2', $Verse::WhereAnd|$Verse::WhereNot);
+
+		$this->AssertEquals(
+			'SELECT `Field0` FROM TestTable WHERE (Field1=:Value1) AND NOT (Field2=:Value2)',
+			(string)$Verse
+		);
+
 		return;
 	}
 
@@ -215,11 +241,31 @@ extends PHPUnit\Framework\TestCase {
 
 		////////
 
-		$Verse
-		->Join('AnotherTable A ON T.ID=A.TID');
+		$Verse->Join([ 'JoinTypeTest'=> 'AnotherTable A ON T.ID=A.TID' ]);
 
 		$this->AssertEquals(
 			'SELECT `F1`,`F2` FROM TestTable T LEFT JOIN OtherTable O ON T.ID=O.TID LEFT JOIN AnotherTable A ON T.ID=A.TID WHERE (F1=:V1)',
+			(string)$Verse
+		);
+
+		$Verse->Join([ 'JoinTypeTest'=> 'AnotherTable A ON T.ID=A.TID' ], $Verse::JoinOuter);
+
+		$this->AssertEquals(
+			'SELECT `F1`,`F2` FROM TestTable T LEFT JOIN OtherTable O ON T.ID=O.TID OUTER JOIN AnotherTable A ON T.ID=A.TID WHERE (F1=:V1)',
+			(string)$Verse
+		);
+
+		$Verse->Join([ 'JoinTypeTest'=> 'AnotherTable A ON T.ID=A.TID' ], $Verse::JoinInner);
+
+		$this->AssertEquals(
+			'SELECT `F1`,`F2` FROM TestTable T LEFT JOIN OtherTable O ON T.ID=O.TID INNER JOIN AnotherTable A ON T.ID=A.TID WHERE (F1=:V1)',
+			(string)$Verse
+		);
+
+		$Verse->Join([ 'JoinTypeTest'=> 'AnotherTable A ON T.ID=A.TID' ], $Verse::JoinRight);
+
+		$this->AssertEquals(
+			'SELECT `F1`,`F2` FROM TestTable T LEFT JOIN OtherTable O ON T.ID=O.TID RIGHT JOIN AnotherTable A ON T.ID=A.TID WHERE (F1=:V1)',
 			(string)$Verse
 		);
 
@@ -406,6 +452,25 @@ extends PHPUnit\Framework\TestCase {
 
 	/** @test */
 	public function
+	TestSelectFlags():
+	void {
+
+		$Verse = static::NewVerseBasic();
+
+		$Verse->Select('TestTable1', $Verse::SelectCalcFound);
+		$Verse->Fields('Field1');
+		$Verse->Where('Field1=1');
+
+		$this->AssertEquals(
+			'SELECT SQL_CALC_FOUND_ROWS `Field1` FROM TestTable1 WHERE (Field1=1)',
+			(string)$Verse
+		);
+
+		return;
+	}
+
+	/** @test */
+	public function
 	TestInsertQuery():
 	void {
 
@@ -447,6 +512,10 @@ extends PHPUnit\Framework\TestCase {
 	TestInsertReuseQuery1():
 	void {
 
+		$Exceptional = FALSE;
+
+		////////
+
 		$Verse = static::NewVerseBasic();
 		$Verse = $Verse::FromMetaInsert('Nether\\Database\\InsertReuseTest1', $Verse->GetDatabase());
 		$Verse->Values([ 'Field1'=> ':Value1', 'Field2'=> ':Value2' ]);
@@ -456,6 +525,26 @@ extends PHPUnit\Framework\TestCase {
 			(string)$Verse
 		);
 
+		////////
+
+		$Verse->Insert('TestTable1', $Verse::InsertReuseUnique);
+		$Verse->Values([ 'Field1'=> ':Value1', 'Field2'=> ':Value2' ]);
+
+		try {
+			// not even close to the correct, we are expecting an except
+			$this->AssertEquals('INSERT INTO TestTable1', (string)$Verse);
+		}
+
+		catch(Throwable $Error) {
+			$Exceptional = TRUE;
+			$this->AssertInstanceOf(
+				Error\InvalidPrimaryKeyInput::class,
+				$Error
+			);
+		}
+
+		$this->AssertTrue($Exceptional);
+
 		return;
 	}
 
@@ -463,6 +552,10 @@ extends PHPUnit\Framework\TestCase {
 	public function
 	TestInsertReuseQuery2():
 	void {
+
+		$Exceptional = FALSE;
+
+		////////
 
 		$Verse = static::NewVerseBasic();
 		$Verse = $Verse::FromMetaInsert('Nether\\Database\\InsertReuseTest2', $Verse->GetDatabase());
@@ -472,6 +565,26 @@ extends PHPUnit\Framework\TestCase {
 			'INSERT INTO TestTable1 (`Field1`,`Field2`) VALUES (:Value1,:Value2) ON DUPLICATE KEY UPDATE `Field1`=:Value1,`Field2`=:Value2,`ID`=LAST_INSERT_ID(`ID`)',
 			(string)$Verse
 		);
+
+		////////
+
+		$Verse->Insert('TestTable1', $Verse::InsertReuseUnique);
+		$Verse->Values([ 'Field1'=> ':Value1', 'Field2'=> ':Value2' ]);
+
+		try {
+			// not even close to the correct, we are expecting an except
+			$this->AssertEquals('INSERT INTO TestTable1', (string)$Verse);
+		}
+
+		catch(Throwable $Error) {
+			$Exceptional = TRUE;
+			$this->AssertInstanceOf(
+				Error\InvalidPrimaryKeyInput::class,
+				$Error
+			);
+		}
+
+		$this->AssertTrue($Exceptional);
 
 		return;
 	}
