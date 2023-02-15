@@ -492,6 +492,23 @@ extends PHPUnit\Framework\TestCase {
 
 	/** @test */
 	public function
+	TestVarSet():
+	void {
+
+		$Verse = static::NewVerseBasic();
+		$Verse->VarSet([ 'YEEBUDDY' => 1 ]);
+
+		$SQL = (string)$Verse;
+		$this->AssertEquals(
+			'SET `YEEBUDDY`=1',
+			$SQL
+		);
+
+		return;
+	}
+
+	/** @test */
+	public function
 	TestQuery():
 	void {
 

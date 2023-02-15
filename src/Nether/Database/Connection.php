@@ -197,15 +197,6 @@ class Connection {
 		return $this->Verse;
 	}
 
-	public function
-	NewClassVerse(string $Class, int $Mode):
-	?Verse {
-
-		$this->Verse = Verse::FromMeta($Class, $Mode, $this);
-
-		return $this->Verse;
-	}
-
 	////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////
 

@@ -311,7 +311,7 @@ extends Compiler {
 			$this->Verse->GetTables()[0]
 		);
 
-		return $this->QueryString;
+		return rtrim($this->QueryString);
 	}
 
 	protected function
@@ -329,7 +329,7 @@ extends Compiler {
 			$this->Verse->GetFields()
 		);
 
-		return $this->QueryString;
+		return rtrim($this->QueryString);
 	}
 
 	////////////////////////////////////////////////////////////////
