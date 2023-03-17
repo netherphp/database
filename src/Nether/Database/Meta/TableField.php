@@ -36,6 +36,9 @@ this and supply the needed sugar.
 	public ?PrimaryKey
 	$PrimaryKey = NULL;
 
+	public bool
+	$Nullify = FALSE;
+
 	////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////
 
@@ -94,6 +97,9 @@ this and supply the needed sugar.
 
 			if($Attrib->Inst instanceof PropertyOrigin)
 			$this->Name = $Attrib->Inst->Name;
+
+			if($Attrib->Inst instanceof NullifyEmptyValue)
+			$this->Nullify = TRUE;
 
 			if($Attrib->Inst instanceof Interface\FieldAttribute) {
 				if($Attrib->Inst instanceof FieldIndex)

@@ -66,7 +66,18 @@ extends Nether\Common\Prototype {
 		$Key = NULL;
 		$Val = NULL;
 
+		if($Dataset instanceof Common\Datastore)
+		$Dataset = $Dataset->GetData();
+
 		////////
+
+		foreach($Dataset as $Key => $Val) {
+			if(!isset($Table->Fields[$Key]))
+			continue;
+
+			if($Dataset[$Key] === '' && $Table->Fields[$Key]->Nullify)
+			$Dataset[$Key] = NULL;
+		}
 
 		$SQL = (
 			($DBM->NewVerse(static::$DBA))
@@ -83,6 +94,7 @@ extends Nether\Common\Prototype {
 
 		foreach($Fields as $Key => $Val)
 		$this->{$Key} = $Dataset[$Key];
+
 
 		////////
 
