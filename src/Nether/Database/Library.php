@@ -32,8 +32,10 @@ extends Common\Library {
 
 		$CTX = NULL;
 
-		foreach(Manager::GetConnections() as $CTX)
-		$CTX->Connect();
+		foreach(Manager::GetConnections() as $CTX) {
+			if($CTX->Auto)
+			$CTX->Connect();
+		}
 
 		return;
 	}

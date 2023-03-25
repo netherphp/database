@@ -33,6 +33,9 @@ class Connection {
 	public string
 	$Charset;
 
+	public bool
+	$Auto;
+
 	////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////
 
@@ -59,7 +62,8 @@ class Connection {
 		string $Username,
 		string $Password,
 		string $Charset='utf8',
-		?string $Name=NULL
+		?string $Name=NULL,
+		bool $Auto=FALSE
 	) {
 
 		$this->Type = $Type;
@@ -69,6 +73,7 @@ class Connection {
 		$this->Password = $Password;
 		$this->Charset = $Charset;
 		$this->Name = $Name;
+		$this->Auto = $Auto;
 
 		return;
 	}
@@ -213,6 +218,8 @@ class Connection {
 		$SQL = NULL;
 		$Dataset = [];
 		$QueryTime = 0;
+
+		$this->Connect();
 
 		// convert to an object if not an object.
 
