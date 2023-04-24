@@ -485,6 +485,18 @@ extends Nether\Common\Prototype {
 		return $Output;
 	}
 
+	static public function
+	FindCount(array $Input):
+	int {
+
+		$Input['Page'] = 1;
+		$Input['Limit'] = 0;
+
+		$Result = static::Find($Input);
+
+		return $Result->Total;
+	}
+
 	static protected function
 	FindExtendOptions(Common\Datastore $Input):
 	void {

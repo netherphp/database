@@ -34,8 +34,8 @@ implements FieldAttribute {
 		string $Table,
 		string $Key,
 		?string $Name=NULL,
-		?string $Update=NULL,
-		?string $Delete=NULL
+		string|bool|NULL $Update=NULL,
+		string|bool|NULL $Delete=NULL
 	) {
 	/*//
 	@date 2021-08-20
@@ -43,10 +43,25 @@ implements FieldAttribute {
 
 		$this->Table = $Table;
 		$this->Key = $Key;
-
 		$this->Name = $Name;
-		$this->Update = $Update ?? 'CASCADE';
+
+		////////
+
+		if($Update === TRUE)
+		$this->Update = 'CASCADE';
+
+		else
+		$this->Update = $Update ?: 'SET NULL';
+
+		////////
+
+		if($Delete === TRUE)
+		$this->Delete = 'CASCADE';
+
+		else
 		$this->Delete = $Delete ?? 'SET NULL';
+
+		////////
 
 		return;
 	}

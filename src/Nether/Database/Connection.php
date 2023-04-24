@@ -61,7 +61,7 @@ class Connection {
 		string $Database,
 		string $Username,
 		string $Password,
-		string $Charset='utf8',
+		string $Charset='utf8mb4',
 		?string $Name=NULL,
 		bool $Auto=FALSE
 	) {
@@ -220,6 +220,10 @@ class Connection {
 		$QueryTime = 0;
 
 		$this->Connect();
+
+		//ob_start();
+		//var_dump($this->Driver);
+		//error_log(ob_get_clean());
 
 		// convert to an object if not an object.
 
