@@ -34,7 +34,7 @@ implements FieldAttribute {
 		string $Table,
 		string $Key,
 		?string $Name=NULL,
-		string|bool|NULL $Update=NULL,
+		string|bool|NULL $Update=TRUE,
 		string|bool|NULL $Delete=NULL
 	) {
 	/*//
