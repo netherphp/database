@@ -17,6 +17,18 @@ extends Nether\Common\Prototype {
 	static public string
 	$DBA = 'Default';
 
+	static public function
+	HasDB():
+	bool {
+
+		$DBM = new Manager;
+
+		if(!$DBM->Exists(static::$DBA))
+		return FALSE;
+
+		return TRUE;
+	}
+
 	////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////
 
