@@ -409,7 +409,7 @@ extends Nether\Common\Prototype {
 
 		$SQL = (
 			($DBM->NewVerse(static::$DBA))
-			->Select($Main->GetAliasedTable('Main'))
+			->Select($Main->GetAliasedTable('Main'), Verse::SelectCalcFound)
 			->Fields("Main.*")
 			->Offset(($Opt['Page'] - 1) * $Opt['Limit'])
 			->Limit($Opt['Limit'])
@@ -464,21 +464,17 @@ extends Nether\Common\Prototype {
 
 		////////
 
-		// recompile and re-execute the query in count mode.
-		// people claim this is better than calc found rows.
+		// calc found and fetch count still seems the most consistently
+		// useful method. had some issues where groups would screw this up
+		// doing it a slightly faster way of retargeting the query for a
+		// COUNT() instead.
 
-		$SQL
-		->Fields('COUNT(*) AS Total', TRUE)
-		->Offset(0)
-		->Limit(0);
-
-		$Found = $SQL->Query($Opt->GetData());
-
-		if(!$Found->IsOK())
-		throw new Exception($Found->GetError());
-
-		if($Found->GetCount() !== 0)
-		$Output->Total = $Found->Next()->Total;
+		$Output->Total = (
+			($SQL->GetDatabase())
+			->Query('SELECT FOUND_ROWS() AS Total;')
+			->Next()
+			->Total
+		);
 
 		////////
 
