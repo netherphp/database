@@ -258,6 +258,10 @@ class TableClassInfo {
 
 		$Alias ??= $this->Alias;
 
+		if(str_ends_with($Alias, '_'))
+		return rtrim($Alias, '_');
+
+
 		////////
 
 		if($TPre === NULL)
