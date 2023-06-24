@@ -385,7 +385,6 @@ extends Nether\Common\Prototype {
 
 		$SQL = NULL;
 		$Result = NULL;
-		$Found = NULL;
 		$Row = NULL;
 		$PPCallable = NULL;
 
@@ -409,7 +408,10 @@ extends Nether\Common\Prototype {
 
 		$SQL = (
 			($DBM->NewVerse(static::$DBA))
-			->Select($Main->GetAliasedTable('Main'), Verse::SelectCalcFound)
+			->Select(
+				$Main->GetAliasedTable('Main'),
+				Verse::SelectCalcFound
+			)
 			->Fields("Main.*")
 			->Offset(($Opt['Page'] - 1) * $Opt['Limit'])
 			->Limit($Opt['Limit'])
@@ -450,17 +452,25 @@ extends Nether\Common\Prototype {
 
 		// run the post processing filters.
 
-		if(is_iterable($Opt['Filters']))
-		foreach($Opt['Filters'] as $PPCallable)
-		if(is_callable($PPCallable))
-		$Output->Filter($PPCallable);
+		if(isset($Opt['Filters'])) {
+			if(!is_iterable($Opt['Filters']))
+			$Opt['Filters'] = [ $Opt['Filters'] ];
+
+			foreach($Opt['Filters'] as $PPCallable)
+			if(is_callable($PPCallable))
+			$Output->Filter($PPCallable);
+		}
 
 		// run post process remapping.
 
-		if(is_iterable($Opt['Remappers']))
-		foreach($Opt['Remappers'] as $PPCallable)
-		if(is_callable($PPCallable))
-		$Output->Remap($PPCallable);
+		if(isset($Opt['Remappers'])) {
+			if(!is_iterable($Opt['Remappers']))
+			$Opt['Remappers'] = [ $Opt['Remappers'] ];
+
+			foreach($Opt['Remappers'] as $PPCallable)
+			if(is_callable($PPCallable))
+			$Output->Remap($PPCallable);
+		}
 
 		////////
 
