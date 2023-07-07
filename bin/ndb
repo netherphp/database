@@ -193,7 +193,7 @@ extends Console\Client {
 
 		////////
 
-		$this->PrintLn('-- SQL BEGIN', '');
+		$this->PrintLn('-- SQL BEGIN');
 
 		foreach($Queries as $Query) {
 			if(!$Query)
