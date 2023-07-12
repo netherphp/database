@@ -442,6 +442,8 @@ extends Nether\Common\Prototype {
 
 		// ship the query off and see what we get back.
 
+		//Common\Dump::Var($SQL, TRUE);
+
 		$Result = $SQL->Query($Opt->GetData());
 
 		if(!$Result->IsOK())
@@ -658,9 +660,16 @@ extends Nether\Common\Prototype {
 		$Value = NULL;
 		$Output = [];
 
+		//foreach($Dataset as $Property => $Value)
+		//if(str_starts_with($Property,$Prefix))
+		//$Output[str_replace($Prefix,'',$Property)] = $Value;
+
 		foreach($Dataset as $Property => $Value)
-		if(str_starts_with($Property,$Prefix))
-		$Output[str_replace($Prefix,'',$Property)] = $Value;
+		if(str_starts_with($Property, $Prefix))
+		$Output[ substr($Property, strlen($Prefix)) ] = $Value;
+
+		//error_log(json_encode($Output));
+		//error_log('');
 
 		return $Output;
 	}
