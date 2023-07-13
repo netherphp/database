@@ -392,6 +392,7 @@ extends Nether\Common\Prototype {
 
 		$Opt = new Common\Datastore([
 			'Sort'      => NULL,
+			'Seed'      => NULL,
 			'Limit'     => 0,
 			'Page'      => 1,
 			'Debug'     => FALSE,
@@ -435,6 +436,13 @@ extends Nether\Common\Prototype {
 
 			'pk-za'
 			=> $SQL->Sort($PKField, $SQL::SortDesc),
+
+			'random'
+			=> $SQL->Sort(sprintf('RAND(%s)', (
+				$Opt['Seed'] !== NULL
+				? (int)$Opt['Seed']
+				: ''
+			))),
 
 			default
 			=> static::FindExtendSorts($SQL, $Opt)
