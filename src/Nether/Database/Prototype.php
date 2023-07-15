@@ -362,11 +362,83 @@ extends Nether\Common\Prototype {
 	void {
 
 		return;
+
+		$Table = static::GetTableInfo();
+		$TPre = $Table->GetPrefixedAlias($TPre);
+		$JAlias = $Table->GetPrefixedAlias($JAlias);
+
+		$Props = static::GetPropertiesWithAttribute(Meta\TableJoin::class);
+		$Prop = NULL;
+
+		foreach($Props as $Prop) {
+			/** @var Common\Prototype\PropertyInfo $Prop */
+
+			if(!is_a($Prop->Type, self::class, TRUE))
+			continue;
+
+			$Attr = $Prop->GetAttribute(Meta\TableJoin::class);
+			/** @var Meta\TableJoin $Attr */
+
+			//Common\Dump::Var($Attr, TRUE);
+
+			////////
+
+			($Prop->Type)::JoinMainTables(
+				$SQL,
+				$JAlias,
+				$Attr->Field,
+				$TPre,
+				$Attr->Alias
+			);
+
+			if(!$Attr->Extend)
+			continue;
+
+			($Prop->Type)::JoinExtendTables(
+				$SQL,
+				$TPre,
+				$TPre,
+				$Attr->Alias
+			);
+
+			continue;
+		}
+
+		return;
 	}
 
 	static public function
 	JoinExtendFields(Verse $SQL, ?string $TPre=NULL):
 	void {
+
+		return;
+
+		$Table = static::GetTableInfo();
+		$TPre = $Table->GetPrefixedAlias($TPre);
+
+		$Props = static::GetPropertiesWithAttribute(Meta\TableJoin::class);
+		$Prop = NULL;
+
+		foreach($Props as $Prop) {
+			/** @var Common\Prototype\PropertyInfo $Prop */
+
+			if(!is_a($Prop->Type, self::class, TRUE))
+			continue;
+
+			$Attr = $Prop->GetAttribute(Meta\TableJoin::class);
+			/** @var Meta\TableJoin $Attr */
+
+			////////
+
+			($Prop->Type)::JoinMainFields($SQL, $TPre, $Attr->Alias);
+
+			if(!$Attr->Extend)
+			continue;
+
+			($Prop->Type)::JoinExtendFields($SQL, $TPre);
+
+			continue;
+		}
 
 		return;
 	}
