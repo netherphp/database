@@ -361,43 +361,62 @@ extends Nether\Common\Prototype {
 	JoinExtendTables(Verse $SQL, string $JAlias='Main', ?string $TPre=NULL):
 	void {
 
-		return;
+		// @todo 2023-07-15 replace this with a 4th argument once more code
+		// has been updated because right now its a signature match hell.
+		// we can fake the 4th arg anyway.
+
+		$TAlias = NULL;
+
+		$VarArgBullshit = func_get_args();
+		if(count($VarArgBullshit) >= 4) {
+			$TAlias = func_get_arg(3);
+		}
+
+		////////
 
 		$Table = static::GetTableInfo();
 		$TPre = $Table->GetPrefixedAlias($TPre);
 		$JAlias = $Table->GetPrefixedAlias($JAlias);
 
+		// all properties that have the join attribute. determine if they
+		// are a prototype object with the needed features. if so it will
+		// join the tables that class needs onto this query.
+
 		$Props = static::GetPropertiesWithAttribute(Meta\TableJoin::class);
 		$Prop = NULL;
 
 		foreach($Props as $Prop) {
-			/** @var Common\Prototype\PropertyInfo $Prop */
 
+			/** @var Common\Prototype\PropertyInfo $Prop */
 			if(!is_a($Prop->Type, self::class, TRUE))
 			continue;
 
-			$Attr = $Prop->GetAttribute(Meta\TableJoin::class);
 			/** @var Meta\TableJoin $Attr */
+			$Attr = $Prop->GetAttribute(Meta\TableJoin::class);
 
-			//Common\Dump::Var($Attr, TRUE);
-
-			////////
+			// bring in the main tables, the tables that are required to
+			// make just this row of data read.
 
 			($Prop->Type)::JoinMainTables(
 				$SQL,
-				$JAlias,
+				$TAlias ?? $JAlias,
 				$Attr->Field,
-				$TPre,
+				$TAlias ?? $TPre,
 				$Attr->Alias
 			);
 
 			if(!$Attr->Extend)
 			continue;
 
+			// bring in extension tables. like if a row has an image id
+			// this can allow that to then join on the image table to
+			// have that data ready. fun fact this is now a recursive
+			// call so that will be fun to debug some day.
+
 			($Prop->Type)::JoinExtendTables(
 				$SQL,
-				$TPre,
-				$TPre,
+				$TAlias ?? $TPre,
+				$TAlias ?? $TPre,
 				$Attr->Alias
 			);
 
@@ -411,31 +430,60 @@ extends Nether\Common\Prototype {
 	JoinExtendFields(Verse $SQL, ?string $TPre=NULL):
 	void {
 
-		return;
+		// @todo 2023-07-15 replace this with a 3th argument once more code
+		// has been updated because right now its a signature match hell.
+		// we can fake the 4th arg anyway.
+
+		$TAlias = NULL;
+
+		$VarArgBullshit = func_get_args();
+		if(count($VarArgBullshit) >= 3) {
+			$TAlias = func_get_arg(2);
+		}
+
+		////////
 
 		$Table = static::GetTableInfo();
 		$TPre = $Table->GetPrefixedAlias($TPre);
+
+		// all properties that have the join attribute. determine if they
+		// are a prototype object with the needed features. if so it will
+		// join the fields of the tables that class needs onto this query.
 
 		$Props = static::GetPropertiesWithAttribute(Meta\TableJoin::class);
 		$Prop = NULL;
 
 		foreach($Props as $Prop) {
-			/** @var Common\Prototype\PropertyInfo $Prop */
 
+			/** @var Common\Prototype\PropertyInfo $Prop */
 			if(!is_a($Prop->Type, self::class, TRUE))
 			continue;
 
-			$Attr = $Prop->GetAttribute(Meta\TableJoin::class);
 			/** @var Meta\TableJoin $Attr */
+			$Attr = $Prop->GetAttribute(Meta\TableJoin::class);
 
-			////////
+			// bring in the main tables, the tables that are required to
+			// make just this row of data read.
 
-			($Prop->Type)::JoinMainFields($SQL, $TPre, $Attr->Alias);
+			($Prop->Type)::JoinMainFields(
+				$SQL,
+				$TAlias ?? $TPre,
+				$Attr->Alias
+			);
 
 			if(!$Attr->Extend)
 			continue;
 
-			($Prop->Type)::JoinExtendFields($SQL, $TPre);
+			// bring in extension tables. like if a row has an image id
+			// this can allow that to then join on the image table to
+			// have that data ready. fun fact this is now a recursive
+			// call so that will be fun to debug some day.
+
+			($Prop->Type)::JoinExtendFields(
+				$SQL,
+				$TPre,
+				$TAlias ?? $Attr->Alias
+			);
 
 			continue;
 		}
