@@ -365,12 +365,13 @@ extends Nether\Common\Prototype {
 		// has been updated because right now its a signature match hell.
 		// we can fake the 4th arg anyway.
 
-		$TAlias = NULL;
+		$TAlias = match(TRUE) {
+			(func_num_args() >= 4)
+			=> func_get_arg(3),
 
-		$VarArgBullshit = func_get_args();
-		if(count($VarArgBullshit) >= 4) {
-			$TAlias = func_get_arg(3);
-		}
+			default
+			=> NULL
+		};
 
 		////////
 
@@ -430,16 +431,17 @@ extends Nether\Common\Prototype {
 	JoinExtendFields(Verse $SQL, ?string $TPre=NULL):
 	void {
 
-		// @todo 2023-07-15 replace this with a 3th argument once more code
+		// @todo 2023-07-15 replace this with a 3rd argument once more code
 		// has been updated because right now its a signature match hell.
-		// we can fake the 4th arg anyway.
+		// we can fake the 3rd arg for now.
 
-		$TAlias = NULL;
+		$TAlias = match(TRUE) {
+			(func_num_args() >= 3)
+			=> func_get_arg(2),
 
-		$VarArgBullshit = func_get_args();
-		if(count($VarArgBullshit) >= 3) {
-			$TAlias = func_get_arg(2);
-		}
+			default
+			=> NULL
+		};
 
 		////////
 
