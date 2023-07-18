@@ -4,12 +4,12 @@ namespace Nether\Database\Error;
 
 use Exception;
 
-class InvalidPrimaryKeyInput
+class PrimaryKeyInvalid
 extends Exception {
 
 	public function
 	__Construct() {
-		parent::__construct("no primary key was defined for this query.");
+		parent::__Construct('No PrimaryKey was defined for this Query.');
 		return;
 	}
 

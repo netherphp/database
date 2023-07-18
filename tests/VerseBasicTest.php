@@ -538,7 +538,7 @@ extends PHPUnit\Framework\TestCase {
 		catch(Throwable $Error) {
 			$Exceptional = TRUE;
 			$this->AssertInstanceOf(
-				Error\InvalidPrimaryKeyInput::class,
+				Error\PrimaryKeyInvalid::class,
 				$Error
 			);
 		}
@@ -579,7 +579,7 @@ extends PHPUnit\Framework\TestCase {
 		catch(Throwable $Error) {
 			$Exceptional = TRUE;
 			$this->AssertInstanceOf(
-				Error\InvalidPrimaryKeyInput::class,
+				Error\PrimaryKeyInvalid::class,
 				$Error
 			);
 		}
@@ -828,7 +828,7 @@ extends PHPUnit\Framework\TestCase {
 		}
 
 		catch(Throwable $Err) {
-			$this->AssertInstanceOf(Error\NoConnectionAvailable::class, $Err);
+			$this->AssertInstanceOf(Error\ConnectionUnavailable::class, $Err);
 			$Exceptional = TRUE;
 		}
 
@@ -845,7 +845,7 @@ extends PHPUnit\Framework\TestCase {
 		}
 
 		catch(Throwable $Err) {
-			$this->AssertInstanceOf(Error\InvalidConnection::class, $Err);
+			$this->AssertInstanceOf(Error\ConnectionNotFound::class, $Err);
 			$Exceptional = TRUE;
 		}
 

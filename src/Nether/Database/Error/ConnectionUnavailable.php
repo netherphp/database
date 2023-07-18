@@ -4,14 +4,12 @@ namespace Nether\Database\Error;
 
 use Exception;
 
-class NoConnectionAvailable
+class ConnectionUnavailable
 extends Exception {
 
 	public function
 	__Construct() {
-
-		parent::__Construct("No database connection.");
-
+		parent::__Construct('No database connection.');
 		return;
 	}
 

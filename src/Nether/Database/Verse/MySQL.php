@@ -127,7 +127,7 @@ extends Compiler {
 
 			if($ReuseUnique) {
 				if(!$PrimaryKey)
-				throw new Error\InvalidPrimaryKeyInput;
+				throw new Error\PrimaryKeyInvalid;
 
 				$FieldsToUp = array_merge($FieldsToUp, [
 					$this->Verse->GetPrimaryKey()
@@ -143,7 +143,7 @@ extends Compiler {
 
 		elseif($ReuseUnique) {
 			if(!$this->Verse->GetPrimaryKey())
-			throw new Error\InvalidPrimaryKeyInput;
+			throw new Error\PrimaryKeyInvalid;
 
 			$this->QueryString .= sprintf(
 				'ON DUPLICATE KEY UPDATE `%1$s`=LAST_INSERT_ID(`%1$s`) ',

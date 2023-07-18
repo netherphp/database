@@ -68,7 +68,7 @@ class Manager {
 	?Connection {
 
 		if(!$this->Exists($Alias))
-		throw new Error\InvalidConnection($Alias);
+		throw new Error\ConnectionNotFound($Alias);
 
 		return static::$CTX[$Alias];
 	}
@@ -81,7 +81,7 @@ class Manager {
 	Verse {
 
 		if(!$this->Exists($Alias))
-		throw new Error\InvalidConnection($Alias);
+		throw new Error\ConnectionNotFound($Alias);
 
 		return $this->Get($Alias)->NewVerse();
 	}

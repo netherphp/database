@@ -12,18 +12,23 @@ use ReflectionProperty;
 
 #[Attribute(Attribute::TARGET_PROPERTY)]
 #[Common\Meta\Date('2023-07-14')]
+#[Common\Meta\Info('Allows Prototype based classes to auto-join foreign tables of classes that are also prototype based.')]
 class TableJoin
 implements Common\Prototype\PropertyInfoInterface {
 
+	#[Common\Meta\Date('2023-07-14')]
 	public ?string
 	$Alias;
 
+	#[Common\Meta\Date('2023-07-14')]
 	public ?string
 	$Field;
 
+	#[Common\Meta\Date('2023-07-14')]
 	public bool
 	$Extend;
 
+	#[Common\Meta\Date('2023-07-14')]
 	public function
 	__Construct(?string $JField=NULL, ?string $JAlias=NULL, bool $Extend=FALSE) {
 
@@ -39,17 +44,18 @@ implements Common\Prototype\PropertyInfoInterface {
 		return;
 	}
 
+	#[Common\Meta\Date('2023-07-14')]
 	public function
 	OnPropertyInfo(Common\Prototype\PropertyInfo $Attrib, ReflectionProperty $RefProp, ReflectionAttribute $RefAttrib):
 	void {
 
 		if(!is_a($Attrib->Type, Database\Prototype::class, TRUE))
-		throw new Exception('TableJoin property should extend Database Prototype');
+		throw new Database\Error\TableJoinInvalidTarget($Attrib->Type);
 
-		$Table = ($Attrib->Type)::GetTableInfo();
-
-		if(!$this->Field)
-		$this->Field = $Table->PrimaryKey;
+		if(!$this->Field) {
+			$Table = ($Attrib->Type)::GetTableInfo();
+			$this->Field = $Table->PrimaryKey;
+		}
 
 		return;
 	}

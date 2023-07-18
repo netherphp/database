@@ -846,7 +846,7 @@ and execute it against the database.
 	//*/
 
 		if($this->Database === NULL)
-		throw new Error\NoConnectionAvailable;
+		throw new Error\ConnectionUnavailable;
 
 		$Result = $this->Database->Query($this, $Argv);
 

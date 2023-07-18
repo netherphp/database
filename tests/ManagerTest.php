@@ -87,7 +87,7 @@ extends PHPUnit\Framework\TestCase {
 
 		catch(Throwable $Err) {
 			$this->AssertInstanceOf(
-				Error\InvalidConnection::class,
+				Error\ConnectionNotFound::class,
 				$Err
 			);
 
@@ -107,7 +107,7 @@ extends PHPUnit\Framework\TestCase {
 
 		catch(Throwable $Err) {
 			$this->AssertInstanceOf(
-				Error\InvalidConnection::class,
+				Error\ConnectionNotFound::class,
 				$Err
 			);
 
