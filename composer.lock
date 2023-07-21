@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "c3e8fdd91a0a437fd393838d0a51a543",
+    "content-hash": "82b8b0b7febaee1a5b29d12f0026fe5f",
     "packages": [
         {
             "name": "brick/math",
@@ -171,6 +171,53 @@
                 "source": "https://github.com/netherphp/console/tree/redux"
             },
             "time": "2023-01-25T22:43:13+00:00"
+        },
+        {
+            "name": "phelium/mysql-backup",
+            "version": "1.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/shevabam/mysql-backup.git",
+                "reference": "7453ca9ee1032bc1b4ba99d7295d49be62bbc4cd"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/shevabam/mysql-backup/zipball/7453ca9ee1032bc1b4ba99d7295d49be62bbc4cd",
+                "reference": "7453ca9ee1032bc1b4ba99d7295d49be62bbc4cd",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Phelium\\Component\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "GPL-2.0-only"
+            ],
+            "authors": [
+                {
+                    "name": "ShevAbam",
+                    "email": "me@shevarezo.fr"
+                }
+            ],
+            "description": "Backup easily your MySQL database !",
+            "homepage": "https://github.com/shevabam/mysql-backup",
+            "keywords": [
+                "backup",
+                "database",
+                "dump",
+                "mysql"
+            ],
+            "support": {
+                "issues": "https://github.com/shevabam/mysql-backup/issues",
+                "source": "https://github.com/shevabam/mysql-backup/tree/master"
+            },
+            "time": "2023-02-04T20:46:08+00:00"
         },
         {
             "name": "ramsey/collection",

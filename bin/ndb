@@ -1,5 +1,6 @@
 <?php
 
+use Nether\Common;
 use Nether\Console;
 use Nether\Database;
 
@@ -22,6 +23,93 @@ extends Console\Client {
 
 	protected Database\Connection
 	$DBC;
+
+	////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////
+
+	#[Console\Meta\Command('backup')]
+	#[Console\Meta\Info('Backup the specified database to an SQL file.')]
+	#[Console\Meta\Error(1, 'no database name specified')]
+	#[Console\Meta\Error(2, 'no connection found %s')]
+	#[Console\Meta\Error(3, 'unable to create backup directory (%s)')]
+	public function
+	HandleBackup():
+	int {
+
+		$Now = new Common\Date;
+		$Name = $this->GetInput(1) ?? 'Default';
+		$Conf = NULL;
+		$Outfile = NULL;
+
+		$Dumper = NULL;
+		$Timer = NULL;
+
+		////////
+
+		if(!$Name)
+		$this->Quit(1);
+
+		$Conf = $this->DBM->Get($Name);
+
+		if(!$Conf)
+		$this->Quit(2, $Name);
+
+		$Conf->Name ??= $Name;
+
+		////////
+
+		$Outfile = Common\Filesystem\Util::Pathify(
+			dirname(__FILE__, 5), 'backups', 'db',
+			sprintf(
+				'%s.%s.%s',
+				$Conf->Name,
+				$Now->Get('Ymd'),
+				$Now->Get('His')
+			)
+		);
+
+		Common\Filesystem\Util::MkDir(dirname($Outfile));
+
+		if(!is_dir(dirname($Outfile)))
+		$this->Quit(3);
+
+		////////
+
+		$this
+		->PrintLn(sprintf(
+			'Database: %s (%s)',
+			$Conf->Name, $Conf->Database
+		))
+		->PrintLn(sprintf(
+			'Outfile: %s',
+			$Outfile
+		));
+
+		////////
+
+		$Dumper = new Phelium\Component\MySQLBackup(
+			$Conf->Hostname,
+			$Conf->Username,
+			$Conf->Password,
+			$Conf->Database
+		);
+
+		$Dumper->AddCreateDatabaseIfNotExists(FALSE);
+		$Dumper->SetFilename($Outfile);
+
+		echo 'Working...';
+
+		$Timer = new Common\Timer(fn()=> $Dumper->Dump());
+		$Timer->Run();
+
+		$this->PrintLn(sprintf(
+			'%sDone (%.3f)',
+			chr(13),
+			$Timer->Time
+		));
+
+		return 0;
+	}
 
 	////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////
