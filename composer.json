@@ -18,7 +18,8 @@
 		"php": ">=8.1.0",
 		"netherphp/common": "^5.0.5",
 		"netherphp/console": "dev-redux",
-		"phelium/mysql-backup": "^1.1.0"
+		"phelium/mysql-backup": "^1.1.0",
+		"robmorgan/phinx": "^0.13.4"
 	},
 	"require-dev": {
 		"netherphp/standards": "^0.2.8",

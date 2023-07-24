@@ -166,6 +166,13 @@ class Connection {
 	}
 
 	public function
+	GetDriver():
+	PDO {
+
+		return $this->Driver;
+	}
+
+	public function
 	GetQueryCount():
 	int {
 
