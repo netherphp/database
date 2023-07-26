@@ -519,6 +519,7 @@ extends Nether\Common\Prototype {
 			'Page'      => 1,
 			'Debug'     => FALSE,
 			'Filters'   => NULL,
+			'Resolvers' => NULL,
 			'Remappers' => NULL
 		]);
 
@@ -575,12 +576,24 @@ extends Nether\Common\Prototype {
 		//Common\Dump::Var($SQL, TRUE);
 
 		$Result = $SQL->Query($Opt->GetData());
+		$RowClassName = static::class;
 
 		if(!$Result->IsOK())
 		throw new Exception($Result->GetError());
 
-		while($Row = $Result->Next())
-		$Output->Push(new static($Row));
+		while($Row = $Result->Next()) {
+			if(is_iterable($Opt['Resolvers']))
+			foreach($Opt['Resolvers'] as $PPCallable) {
+				if(is_callable($PPCallable)) {
+					$RowClassName = $PPCallable($Row);
+
+					if(class_exists($RowClassName))
+					break;
+				}
+			}
+
+			$Output->Push(new $RowClassName($Row));
+		}
 
 		// run the post processing filters.
 
