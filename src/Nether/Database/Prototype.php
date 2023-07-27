@@ -497,7 +497,7 @@ extends Nether\Common\Prototype {
 	////////////////////////////////////////////////////////////////
 
 	static public function
-	Find(array $Input):
+	Find(iterable $Input):
 	Struct\PrototypeFindResult {
 
 		$Output = new Struct\PrototypeFindResult;
