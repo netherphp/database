@@ -335,9 +335,12 @@ extends Nether\Common\Prototype {
 		$SQL->Join(sprintf(
 			'%s ON %s=%s',
 			$Table->GetAliasedTable($Prefix),
-			match($JField) {
-				'EntityUUID' => $Table->GetAliasedField('UUID', $Prefix),
-				default      => $Table->GetAliasedPK($Prefix)
+			match(TRUE) {
+				str_ends_with($JField, 'UUID')
+				=> $Table->GetAliasedField('UUID', $Prefix),
+
+				default
+				=> $Table->GetAliasedPK($Prefix)
 			},
 			$Table::GetPrefixedField($JAlias, $JField)
 		));
@@ -746,7 +749,7 @@ extends Nether\Common\Prototype {
 	array {
 	/*//
 	@date 2022-11-08
-	return an array map of vlaid field names and placeholders that can be
+	return an array map of valid field names and placeholders that can be
 	inserted for this type of object for use to passing to the Fields method
 	of the Verse objects.
 	//*/
