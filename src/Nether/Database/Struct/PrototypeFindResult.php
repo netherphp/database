@@ -1,27 +1,12 @@
 <?php
 
 namespace Nether\Database\Struct;
-use Nether;
 
+use Nether\Common;
+use Nether\Database;
+
+#[Common\Meta\Deprecated('2023-08-20', 'Use ResultSet instead.')]
 class PrototypeFindResult
-extends Nether\Common\Datastore {
-
-	public int
-	$Total = 0;
-
-	public int
-	$Limit = 0;
-
-	public int
-	$Page = 1;
-
-	public int
-	$PageCount = 1;
-
-	public ?Nether\Database\Result
-	$Result = NULL;
-
-	protected bool
-	$FullDebug = TRUE;
+extends Database\ResultSet {
 
 }

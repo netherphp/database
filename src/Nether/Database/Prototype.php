@@ -501,9 +501,9 @@ extends Nether\Common\Prototype {
 
 	static public function
 	Find(iterable $Input):
-	Struct\PrototypeFindResult {
+	ResultSet {
 
-		$Output = new Struct\PrototypeFindResult;
+		$Output = new ResultSet;
 		$DBM = new Manager;
 		$Main = static::GetTableInfo();
 		$PKField = $Main->GetAliasedPK('Main');
@@ -639,6 +639,8 @@ extends Nether\Common\Prototype {
 		// finalise the output object with information from the query and
 		// result set for pagination.
 
+		$Output->Filters = $Opt;
+		$Output->Class = $RowClassName;
 		$Output->Page = $Opt['Page'];
 		$Output->Limit = $Opt['Limit'];
 
