@@ -7,7 +7,7 @@ use Nether\Common;
 use Generator;
 
 class ResultSet
-extends Common\Datastore {
+extends Struct\PrototypeFindResult {
 
 	public int
 	$Total = 0;
