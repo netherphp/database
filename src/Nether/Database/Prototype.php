@@ -523,7 +523,8 @@ extends Nether\Common\Prototype {
 			'Debug'     => FALSE,
 			'Filters'   => NULL,
 			'Resolvers' => NULL,
-			'Remappers' => NULL
+			'Remappers' => NULL,
+			'CustomFilterFunc' => NULL
 		]);
 
 		$Opt->MergeRight($Input);
@@ -550,6 +551,9 @@ extends Nether\Common\Prototype {
 		static::FindExtendOptions($Opt);
 		static::FindExtendTables($SQL, $Opt);
 		static::FindExtendFilters($SQL, $Opt);
+
+		if(is_callable($Opt['CustomFilterFunc']))
+		($Opt['CustomFilterFunc'])($SQL, $Opt);
 
 		// before checking if an extension class wants to add sorting
 		// we will supply the default implementations for sorting by this
