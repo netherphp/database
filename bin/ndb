@@ -76,7 +76,7 @@ extends Console\Client {
 		->Push("-u{$DB->Username}")
 		->Push("-p{$DB->Password}")
 		->Push($DB->Database)
-		->Map(fn(string $Arg)=> escapeshellarg($Arg));
+		->Remap(fn(string $Arg)=> escapeshellarg($Arg));
 
 		$Cmd
 		->Push('>')
