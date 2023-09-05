@@ -27,89 +27,121 @@ extends Console\Client {
 	////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////
 
-	#[Console\Meta\Command('backup')]
-	#[Console\Meta\Info('Backup the specified database to an SQL file.')]
+	#[Console\Meta\Command('dump')]
+	#[Console\Meta\Info('Backup the specified database to an SQL file via its dumping utilities (ex: mysqldump).')]
 	#[Console\Meta\Error(1, 'no database name specified')]
 	#[Console\Meta\Error(2, 'no connection found %s')]
 	#[Console\Meta\Error(3, 'unable to create backup directory (%s)')]
 	public function
-	HandleBackup():
+	HandleBackupViaDump():
 	int {
 
-		$Now = new Common\Date;
-		$Name = $this->GetInput(1) ?? 'Default';
-		$Conf = NULL;
-		$Outfile = NULL;
+		$Name = Common\Filters\Text::TrimmedNullable($this->GetOption('db') ?? 'Default');
+		$Commit = Common\Filters\Numbers::BoolType($this->GetOption('commit'));
 
-		$Dumper = NULL;
+		$Now = new Common\Date;
+		$Cmd = new Common\Datastore;
+
+		$DB = NULL;
 		$Timer = NULL;
+		$Outfile = NULL;
+		$Err = NULL;
+		$Result = NULL;
 
 		////////
 
-		if(!$Name)
-		$this->Quit(1);
-
-		$Conf = $this->DBM->Get($Name);
-
-		if(!$Conf)
-		$this->Quit(2, $Name);
-
-		$Conf->Name ??= $Name;
+		try { $DB = $this->FetchDatabaseConnection($Name); }
+		catch(Common\Error\RequiredDataMissing $Err) { $this->Quit(1); }
+		catch(Database\Error\ConnectionNotFound $Err) { $this->Quit(2, $Name); }
 
 		////////
 
 		$Outfile = Common\Filesystem\Util::Pathify(
 			dirname(__FILE__, 5), 'backups', 'db',
 			sprintf(
-				'%s.%s.%s',
-				$Conf->Name,
+				'%s.%s.%s.sql',
+				$DB->Name,
 				$Now->Get('Ymd'),
 				$Now->Get('His')
 			)
 		);
 
-		Common\Filesystem\Util::MkDir(dirname($Outfile));
-
-		if(!is_dir(dirname($Outfile)))
+		if(!Common\Filesystem\Util::MkDir(dirname($Outfile)))
 		$this->Quit(3);
 
 		////////
 
-		$this
-		->PrintLn(sprintf(
-			'Database: %s (%s)',
-			$Conf->Name, $Conf->Database
-		))
-		->PrintLn(sprintf(
-			'Outfile: %s',
+		$Cmd
+		->Push('mysqldump')
+		->Push("-u{$DB->Username}")
+		->Push("-p{$DB->Password}")
+		->Push($DB->Database)
+		->Map(fn(string $Arg)=> escapeshellarg($Arg));
+
+		$Cmd
+		->Push('>')
+		->Push(escapeshellarg($Outfile));
+
+		////////
+
+		$this->PrintLn(sprintf(
+			'%s %s (%s)',
+			$this->Format('Database:', static::FmtPrime),
+			$DB->Name,
+			$DB->Database
+		));
+
+		$this->PrintLn(sprintf(
+			'%s %s',
+			$this->Format('Outfile:', static::FmtPrime),
 			$Outfile
+		));
+
+		$this->PrintLn(sprintf(
+			'%s %s',
+			$this->Format('Command:', static::FmtPrime),
+			$Cmd->Join(' ')
 		));
 
 		////////
 
-		$Dumper = new Phelium\Component\MySQLBackup(
-			$Conf->Hostname,
-			$Conf->Username,
-			$Conf->Password,
-			$Conf->Database
-		);
+		if(!$Commit) {
+			($this)
+			->PrintLn()
+			->FormatLn('Use --commit to serious.', static::FmtAccent)
+			->PrintLn();
 
-		$Dumper->AddCreateDatabaseIfNotExists(FALSE);
-		$Dumper->SetFilename($Outfile);
+			return 0;
+		}
 
-		echo 'Working...';
+		$this->PrintLn();
+		$this->FormatLn('Running...', static::FmtAccent);
+		$this->PrintLn();
 
-		$Timer = new Common\Timer(fn()=> $Dumper->Dump());
+		$Timer = new Common\Timer(function(...$Args) use($Cmd, &$Result) {
+			$Result = $this->ExecuteCommandLine($Cmd->Join(' '), TRUE);
+			return;
+		});
+
 		$Timer->Run();
 
-		$this->PrintLn(sprintf(
-			'%sDone (%.3f)',
-			chr(13),
-			$Timer->Time
-		));
+		/** @var Console\Struct\CommandLineUtil $Result */
+
+		$this->FormatLn(
+			sprintf('Done (%.3f)', $Timer->Get()),
+			($Result->Error !== 0 ? static::FmtError : static::FmtOK)
+		);
+
+		if($Result->Error !== 0) {
+			$this->PrintLn();
+			$Result->Print();
+			$this->PrintLn();
+		}
 
 		return 0;
 	}
+
+
 
 	////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////
@@ -264,6 +296,24 @@ extends Console\Client {
 
 	////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////
+
+	#[Common\Meta\Date('2023-09-04')]
+	protected function
+	FetchDatabaseConnection(?string $Name):
+	Database\Connection {
+
+		// handle if they failed to ask a valid question.
+
+		if(!$Name)
+		throw new Common\Error\RequiredDataMissing('Name', 'string');
+
+		// the manager throws its own exceptions if it needs.
+
+		$CX = $this->DBM->Get($Name);
+		$CX->Name ??= $Name;
+
+		return $CX;
+	}
 
 	protected function
 	PrintVerse(Database\Verse|array $Queries):
