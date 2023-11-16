@@ -1,91 +1,62 @@
 <?php
 
 namespace Nether\Database\Coda;
-use \Nether;
 
-use \Exception;
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+use Nether\Common;
+
+use Stringable;
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 class Equals
-extends Nether\Database\Coda {
-/*//
-probably the most simple operation we can create a coda for. this class
-mearly lets you assign if the value must be equal or not equal to the
-specified field. the thing is, several other codas are going to be extending
-this one.
-//*/
+implements
+	Stringable,
+	Common\Interfaces\ToString {
 
-	protected
-	$Equal = true;
-	/*//
-	defines if this is a positive or negative comparison.
-	//*/
+	use
+	Common\Package\StringableAsToString;
+
+	////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////
+
+	public string
+	$Field;
+
+	public string
+	$Value;
+
+	public bool
+	$Is;
+
+	////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////
 
 	public function
-	GetEqual() {
-	/*//
-	@return bool
-	return if we are currently planning for equality or not.
-	//*/
+	__Construct(string $Field, string $Value, bool $Is) {
 
-		return $this->Equal;
+		$this->Field = $Field;
+		$this->Value = $Value;
+		$this->Is = $Is;
+
+		return;
 	}
 
-	public function
-	SetEqual($State) {
-	/*//
-	@argv bool
-	@return self
-	set if this ia positive or negative comparison.
-	//*/
-
-		$this->Equal = $State;
-		return $this;
-	}
-
-	////////////////////////////////
-	////////////////////////////////
+	////////////////////////////////////////////////////////////////
+	// IMPLEMENTS Common\Interfaces ////////////////////////////////
 
 	public function
-	Is() {
-	/*//
-	@return self
-	force this comparison to be positive.
-	//*/
-
-		return $this->SetEqual(true);
-	}
-
-	public function
-	Not() {
-	/*//
-	force this comparison to be negative.
-	//*/
-
-		return $this->SetEqual(false);
-	}
-
-	////////////////////////////////
-	////////////////////////////////
-
-	public function
-	Render_Generic() {
-	/*//
-	provide the rendering for an equality condition.
-	//*/
-
-		$this->RequireDatabase();
-
-		if(is_object($this->Value) || is_array($this->Value))
-		throw new Exception('value must be a literal value.');
+	ToString():
+	string {
 
 		return sprintf(
 			'%s%s%s',
 			$this->Field,
-			(($this->Equal)?('='):('!=')),
-			((strpos($this->Value,':')===0)?
-				($this->Value):
-				($this->Database->Escape($this->Value))
-			)
+			($this->Is ? '=' : '!='),
+			$this->Value
 		);
 	}
 
