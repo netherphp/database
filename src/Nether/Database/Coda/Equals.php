@@ -36,7 +36,7 @@ implements
 	////////////////////////////////////////////////////////////////
 
 	public function
-	__Construct(string $Field, string $Value, bool $Is) {
+	__Construct(string $Field, string $Value, bool $Is=TRUE) {
 
 		$this->Field = $Field;
 		$this->Value = $Value;
