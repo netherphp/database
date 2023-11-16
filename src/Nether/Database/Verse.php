@@ -2,6 +2,7 @@
 
 namespace Nether\Database;
 
+use Nether\Common;
 use Nether\Database\Result;
 use Nether\Database\Struct\FlaggedQueryValue;
 use Nether\Database\Struct\TableClassInfo;
@@ -1150,6 +1151,25 @@ and execute it against the database.
 		->DropTable($Table->Name);
 
 		return $Verse;
+	}
+
+	////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////
+
+	#[Common\Meta\Date('2023-11-16')]
+	static public function
+	MkQuotedField(string $Alias, string $Field):
+	string {
+
+		return "`{$Alias}`.`{$Field}`";
+	}
+
+	#[Common\Meta\Date('2023-11-16')]
+	static public function
+	MkQuotedTable(string $Alias, string $Table):
+	string {
+
+		return "`{$Table}` `{$Alias}`";
 	}
 
 }

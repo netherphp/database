@@ -2,7 +2,9 @@
 
 namespace Nether\Database\Struct;
 
+use Nether\Common;
 use Nether\Database\Meta;
+use Nether\Database\Verse;
 
 use ReflectionClass;
 use Exception;
@@ -280,7 +282,7 @@ class TableClassInfo {
 
 		$Alias ??= $this->Alias;
 
-		return "`{$this->Name}` `{$Alias}`";
+		return Verse::MkQuotedTable($Alias, $this->Name);
 	}
 
 	public function
@@ -296,29 +298,28 @@ class TableClassInfo {
 
 		$Alias ??= $this->Alias;
 
-		return "`{$Alias}`.`{$Field}`";
+		return Verse::MkQuotedField($Alias, $Field);
 	}
 
 	////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////
 
+	#[Common\Meta\Deprecated('2023-11-16', 'Use Verse::MkQuotedField instead.')]
 	public function
 	GetPrefixedKey(string $Alias):
 	string {
 
-		// deprecated
-
 		return $this->GetAliasedPK($Alias);
 	}
 
-	////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////
-
+	#[Common\Meta\Deprecated('2023-11-16', 'Use Verse::MkQuotedField instead.')]
 	static public function
 	GetPrefixedField(string $Alias, string $Field):
 	string {
 
-		return "`{$Alias}`.`{$Field}`";
+		return Verse::MkQuotedField($Alias, $Field);
 	}
 
 }
