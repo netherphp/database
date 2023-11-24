@@ -40,6 +40,30 @@ extends Struct\PrototypeFindResult {
 	////////////////////////////////////////////////////////////////
 
 	public function
+	SetPageLimit(int $Page, int $Limit):
+	static {
+
+		$this->Page = $Page;
+		$this->Limit = $Limit;
+
+		$this->UpdatePageCount();
+
+		return $this;
+	}
+
+	public function
+	UpdatePageCount():
+	static {
+
+		$this->PageCount = ceil( $this->Count() / $this->Limit );
+
+		return $this;
+	}
+
+	////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////
+
+	public function
 	Absorb(self $Result):
 	static {
 
@@ -131,6 +155,16 @@ extends Struct\PrototypeFindResult {
 		}
 
 		return NULL;
+	}
+
+	static public function
+	FromManualData(iterable $Input, int $Page=1, int $Limit=25):
+	static {
+
+		$Output = new static($Input);
+		$Output->SetPageLimit($Page, $Limit);
+
+		return $Output;
 	}
 
 }
