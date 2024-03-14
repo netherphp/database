@@ -583,6 +583,13 @@ extends Nether\Common\Prototype {
 		//Common\Dump::Var($SQL, TRUE);
 
 		$Result = $SQL->Query($Opt->GetData());
+		$Output->Total = (
+			($SQL->GetDatabase())
+			->Query('SELECT FOUND_ROWS() AS Total;')
+			->Next()
+			->Total
+		);
+
 		$RowClassName = static::class;
 
 		if(!$Result->IsOK())
@@ -602,6 +609,11 @@ extends Nether\Common\Prototype {
 			$Output->Push(new $RowClassName($Row));
 		}
 
+		// calc found and fetch count still seems the most consistently
+		// useful method. had some issues where groups would screw this up
+		// doing it a slightly faster way of retargeting the query for a
+		// COUNT() instead.
+
 		// run the post processing filters.
 
 		if(isset($Opt['Filters'])) {
@@ -613,6 +625,10 @@ extends Nether\Common\Prototype {
 			$Output->Filter($PPCallable);
 		}
 
+		////////
+
+
+
 		// run post process remapping.
 
 		if(isset($Opt['Remappers'])) {
@@ -623,20 +639,6 @@ extends Nether\Common\Prototype {
 			if(is_callable($PPCallable))
 			$Output->Remap($PPCallable);
 		}
-
-		////////
-
-		// calc found and fetch count still seems the most consistently
-		// useful method. had some issues where groups would screw this up
-		// doing it a slightly faster way of retargeting the query for a
-		// COUNT() instead.
-
-		$Output->Total = (
-			($SQL->GetDatabase())
-			->Query('SELECT FOUND_ROWS() AS Total;')
-			->Next()
-			->Total
-		);
 
 		////////
 
