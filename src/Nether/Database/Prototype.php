@@ -664,7 +664,11 @@ extends Nether\Common\Prototype {
 	int {
 
 		$Input['Page'] = 1;
-		$Input['Limit'] = 0;
+		$Input['Limit'] = 1;
+
+		// since we are pulling the total property and that comes from
+		// the follow up found rows query limit to 1 row rather than no
+		// limit.
 
 		$Result = static::Find($Input);
 
