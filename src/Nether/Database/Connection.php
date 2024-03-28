@@ -10,29 +10,39 @@ use Stringable;
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-class Connection {
+class Connection
+extends Common\Prototype
+implements Common\Interfaces\ToArray {
 
+	#[Common\Meta\PropertyListable]
 	public ?string
 	$Name;
 
+	#[Common\Meta\PropertyListable]
 	public string
 	$Type;
 
+	#[Common\Meta\PropertyListable]
 	public string
 	$Hostname;
 
+	#[Common\Meta\PropertyListable]
 	public string
 	$Database;
 
+	#[Common\Meta\PropertyListable]
 	public string
 	$Username;
 
+	#[Common\Meta\PropertyListable]
 	public string
 	$Password;
 
+	#[Common\Meta\PropertyListable]
 	public string
 	$Charset;
 
+	#[Common\Meta\PropertyListable]
 	public bool
 	$Auto;
 
@@ -98,6 +108,18 @@ class Connection {
 			'Charset'     => $this->Charset,
 			'IsConnected' => $this->IsConnected()
 		];
+	}
+
+	public function
+	ToArray():
+	array {
+
+		$Props = array_map(
+			(fn(Common\Prototype\PropertyInfo $P)=> $this->{$P->Name}),
+			static::FetchPropertiesWithAttribute(Common\Meta\PropertyListable::class)
+		);
+
+		return $Props;
 	}
 
 	////////////////////////////////////////////////////////////////
@@ -211,7 +233,6 @@ class Connection {
 
 	////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////
-
 
 	public function
 	Query(string $Format, array|object $Argv=[]):
