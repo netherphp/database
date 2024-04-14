@@ -57,6 +57,15 @@ class Manager {
 	////////////////////////////////////////////////////////////////
 
 	public function
+	Add(Connection $DBC):
+	static {
+
+		static::$CTX->Set($DBC->Name, $DBC);
+
+		return $this;
+	}
+
+	public function
 	Exists(string $Alias):
 	bool {
 
