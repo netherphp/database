@@ -17,6 +17,9 @@ extends Nether\Common\Prototype {
 	static public string
 	$DBA = 'Default';
 
+	static public string
+	$DBF = 'default.db';
+
 	static public function
 	HasDB():
 	bool {
