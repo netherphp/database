@@ -76,6 +76,17 @@ class Manager {
 	Get(string $Alias):
 	?Connection {
 
+		// if the alias is a class name and the class extends the
+		// database prototype then we can determine the db alias from
+		// that.
+
+		if(str_contains($Alias, '\\') && class_exists($Alias)) {
+			if(is_subclass_of($Alias, 'Nether\\Database\\Prototype'))
+			$Alias = $Alias::$DBA;
+		}
+
+		////////
+
 		if(!$this->Exists($Alias))
 		throw new Error\ConnectionNotFound($Alias);
 
