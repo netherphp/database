@@ -39,6 +39,16 @@ extends Struct\PrototypeFindResult {
 	////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////
 
+	#[Common\Meta\Date('2024-06-13')]
+	public function
+	Total():
+	int {
+
+		// because i wanted a companion to Count().
+
+		return $this->Total;
+	}
+
 	public function
 	SetPageLimit(int $Page, int $Limit):
 	static {
