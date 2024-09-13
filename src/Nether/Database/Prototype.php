@@ -759,6 +759,52 @@ extends Nether\Common\Prototype {
 		return Struct\TableClassCache::Set(static::class, $Table);
 	}
 
+	////////////////////////////////
+	////////////////////////////////
+
+	#[Common\Meta\Date('2024-09-13')]
+	static public function
+	GetTableAlias():
+	string {
+
+		$Table = static::GetTableInfo();
+
+		return $Table->Alias;
+	}
+
+	#[Common\Meta\Date('2024-09-13')]
+	static public function
+	GetTableName():
+	string {
+
+		$Table = static::GetTableInfo();
+
+		return $Table->Alias;
+	}
+
+	#[Common\Meta\Date('2024-09-13')]
+	static public function
+	GetTablePKKey():
+	string {
+
+		$Table = static::GetTableInfo();
+
+		return $Table->GetAliasedPKKey();
+	}
+
+	#[Common\Meta\Date('2024-09-13')]
+	static public function
+	GetTableFieldKey(string $Field):
+	string {
+
+		$Table = static::GetTableInfo();
+
+		return $Table->GetAliasedFieldKey($Field);
+	}
+
+	////////////////////////////////
+	////////////////////////////////
+
 	static public function
 	GetTableInsertMapFrom(iterable $Dataset):
 	array {
@@ -835,12 +881,23 @@ extends Nether\Common\Prototype {
 		return $Output;
 	}
 
+	////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////
+
 	static public function
-	FromPrefixedDataset(array $Dataset, string $Prefix):
+	FromPrefixedDataset(array $Dataset, ?string $Prefix=NULL):
 	static {
 	/*//
 	@date 2022-11-08
 	//*/
+
+		// if no prefix was given use the one assigned to the class
+		// via the table info annotation.
+
+		if($Prefix === NULL) {
+			$Table = static::GetTableInfo();
+			$Prefix = "{$Table->Alias}_";
+		}
 
 		return new static(static::GetTableStrippedData(
 			$Dataset,

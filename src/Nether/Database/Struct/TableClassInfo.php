@@ -285,6 +285,7 @@ class TableClassInfo {
 		return Verse::MkQuotedTable($Alias, $this->Name);
 	}
 
+	#[Common\Meta\Info('uses TableClass to generate a `Prefixed`.`PrimaryKey`.')]
 	public function
 	GetAliasedPK(?string $Alias=NULL):
 	string {
@@ -292,6 +293,7 @@ class TableClassInfo {
 		return $this->GetAliasedField($this->PrimaryKey, $Alias);
 	}
 
+	#[Common\Meta\Info('uses TableClass to generate a `Prefixed`.`FieldDef`.')]
 	public function
 	GetAliasedField(string $Field, ?string $Alias=NULL):
 	string {
@@ -299,6 +301,26 @@ class TableClassInfo {
 		$Alias ??= $this->Alias;
 
 		return Verse::MkQuotedField($Alias, $Field);
+	}
+
+	#[Common\Meta\Date('2024-09-13')]
+	#[Common\Meta\Info('uses TableClass to generate a Prefixed_PrimaryKey.')]
+	public function
+	GetAliasedPKKey(?string $Alias=NULL):
+	string {
+
+		return $this->GetAliasedFieldKey($this->PrimaryKey, $Alias);
+	}
+
+	#[Common\Meta\Date('2024-09-13')]
+	#[Common\Meta\Info('uses TableClass to generate a Prefixed_FieldKey.')]
+	public function
+	GetAliasedFieldKey(string $Field, ?string $Alias=NULL):
+	string {
+
+		$Alias ??= $this->Alias;
+
+		return Verse::MkQuotedFieldKey($Alias, $Field);
 	}
 
 	////////////////////////////////////////////////////////////////

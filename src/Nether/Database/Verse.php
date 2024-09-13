@@ -1172,4 +1172,12 @@ and execute it against the database.
 		return "`{$Table}` `{$Alias}`";
 	}
 
+	#[Common\Meta\Date('2024-09-13')]
+	static public function
+	MkQuotedFieldKey(string $Alias, string $Field):
+	string {
+
+		return "{$Alias}_{$Field}";
+	}
+
 }
