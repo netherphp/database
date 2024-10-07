@@ -141,7 +141,19 @@ extends Console\Client {
 		return 0;
 	}
 
+	#[Console\Meta\Command('run')]
+	#[Console\Meta\Arg('db', 'Database Connection Alias')]
+	#[Console\Meta\Arg('file', 'SQL file to run.')]
+	public function
+	HandleRestore():
+	int {
 
+		$Name = Common\Filters\Text::TrimmedNullable($this->GetInput(1));
+		$File = Common\Filters\Text::TrimmedNullable($this->GetInput(2));
+		$Commit = Common\Filters\Numbers::BoolType($this->GetOption('commit'));
+
+		return 0;
+	}
 
 	////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////
