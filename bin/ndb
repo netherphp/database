@@ -142,15 +142,72 @@ extends Console\Client {
 	}
 
 	#[Console\Meta\Command('run')]
-	#[Console\Meta\Arg('db', 'Database Connection Alias')]
 	#[Console\Meta\Arg('file', 'SQL file to run.')]
+	#[Console\Meta\Arg('db', 'Database Connection Alias')]
+	#[Console\Meta\Error(1, 'file not found: %s')]
+	#[Console\Meta\Error(2, 'no connection found %s')]
 	public function
 	HandleRestore():
 	int {
 
-		$Name = Common\Filters\Text::TrimmedNullable($this->GetInput(1));
-		$File = Common\Filters\Text::TrimmedNullable($this->GetInput(2));
+		$File = Common\Filters\Text::TrimmedNullable($this->GetInput(1));
+		$Name = Common\Filters\Text::TrimmedNullable($this->GetInput(2)) ?? 'Default';
 		$Commit = Common\Filters\Numbers::BoolType($this->GetOption('commit'));
+		$DBC = NULL;
+		$Cmd = new Common\Datastore;
+		$Line = NULL;
+
+		$this->PrintAppHeader('Run SQL File');
+
+		////////
+
+		if(!file_exists($File))
+		$this->Quit(1, $File);
+
+		try { $DBC = $this->FetchDatabaseConnection($Name); }
+		catch(Database\Error\ConnectionNotFound $Err) { $this->Quit(3, $Name); }
+
+		// lazy ass way for now
+
+		$Cmd->Push('mysql');
+		$Cmd->Push(escapeshellarg("-h{$DBC->Hostname}"));
+		$Cmd->Push(escapeshellarg("-u{$DBC->Username}"));
+		$Cmd->Push(escapeshellarg("-p{$DBC->Password}"));
+		$Cmd->Push(escapeshellarg($DBC->Database));
+		$Cmd->Push(sprintf('< %s', escapeshellarg($File)));
+
+		$Line = $Cmd->Join(' ');
+
+		$this->PrintBulletList([
+			'Connection' => $DBC->Name,
+			'Database'   => $DBC->Database,
+			'File'       => $File,
+			'Command'    => $Line
+		]);
+
+		if(!$Commit) {
+			$this->PrintLn($this->Format(
+				'Use --commit to serious.',
+				static::FmtAccent
+			));
+			$this->PrintLn();
+
+			return 0;
+		}
+
+		////////
+
+		$Timer = new Common\Timer;
+		$Exec = new Console\Struct\CommandLineUtil($Line);
+
+		$Timer->Start();
+		$Exec->Run();
+		$Timer->Stop();
+
+		$this->PrintStatusMuted(sprintf(
+			'Done (%.2fs)',
+			$Timer->Get()
+		));
 
 		return 0;
 	}
