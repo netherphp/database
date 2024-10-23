@@ -126,9 +126,9 @@ extends Struct\PrototypeFindResult {
 		// me pretending to avoid a memory avalance the deeper you go.
 
 		while($this->Page < $this->PageCount) {
-			$this->Absorb(($this->Class)::Find(
-				$this->Filters->Bump('Page', 1)
-			));
+			$this->Filters->Bump('Page', 1);
+
+			$this->Absorb(($this->Class)::Find($this->Filters));
 
 			yield $this;
 		}
