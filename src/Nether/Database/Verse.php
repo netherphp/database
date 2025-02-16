@@ -1130,6 +1130,7 @@ and execute it against the database.
 		->Comment($Table->Comment)
 		->Fields($Table->GetFieldList())
 		->Index($Table->GetIndexList())
+		->Engine($Table->Engine)
 		->ForeignKey($Table->GetForeignKeyList());
 
 		return $Verse;

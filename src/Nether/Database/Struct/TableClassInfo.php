@@ -32,6 +32,9 @@ class TableClassInfo {
 	public string
 	$PrimaryKey = '';
 
+	public ?string
+	$Engine = NULL;
+
 	public string
 	$ObjectKey;
 
@@ -79,6 +82,7 @@ class TableClassInfo {
 		$this->Name = $Inst->Name;
 		$this->Alias = $Inst->Alias;
 		$this->Comment = $Inst->Comment;
+		$this->Engine = $Inst->Engine;
 
 		$ClassDef = NULL;
 		$FieldSet = [];
