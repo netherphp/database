@@ -779,7 +779,7 @@ and execute it against the database.
 
 	public function
 	GetEngine():
-	string {
+	?string {
 	/*//
 	@date 2022-02-17
 	get the engine for this query.
