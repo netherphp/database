@@ -197,7 +197,7 @@ and execute it against the database.
 	collation to use for this table.
 	//*/
 
-	protected string
+	protected ?string
 	$Engine;
 	/*//
 	@date 2022-02-17
