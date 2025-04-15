@@ -32,6 +32,15 @@ extends Nether\Common\Prototype {
 		return TRUE;
 	}
 
+	static public function
+	SetDefaultDB(string $Alias):
+	void {
+
+		static::$DBA = $Alias;
+
+		return;
+	}
+
 	////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////
 
