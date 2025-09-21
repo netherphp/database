@@ -283,7 +283,7 @@ implements Common\Interfaces\ToArray {
 		$Statement = $this->Driver->Prepare($SQL);
 
 		if(!$Statement)
-		throw new Error\QueryPrepareFailure;
+		throw new Error\QueryPrepareFailure($SQL);
 
 		// execute the query statement.
 
