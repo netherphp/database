@@ -595,12 +595,36 @@ extends Nether\Common\Prototype {
 		//Common\Dump::Var($SQL, TRUE);
 
 		$Result = $SQL->Query($Opt->GetData());
-		$Output->Total = (
-			($SQL->GetDatabase())
-			->Query('SELECT FOUND_ROWS() AS Total;')
-			->Next()
-			->Total
-		);
+
+		////////
+
+		// mysql can find pagination totals with its extra flags and
+		// special query. other databases like sqlite need to do a second
+		// unrestrained query.
+
+		if($DBM->GetDatabaseType(static::$DBA) === 'mysql') {
+			$Output->Total = (
+				($SQL->GetDatabase())
+				->Query('SELECT FOUND_ROWS() AS Total;')
+				->Next()
+				->Total
+			);
+		}
+
+		else {
+			$SQL->Fields('COUNT(*) AS Total', TRUE);
+			$SQL->Limit(0);
+			$SQL->Offset(0);
+
+			$Output->Total = (
+				($SQL)
+				->Query($Opt->GetData())
+				->Next()
+				->Total
+			);
+		}
+
+		////////
 
 		$RowClassName = static::class;
 

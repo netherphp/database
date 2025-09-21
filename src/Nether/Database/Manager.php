@@ -93,6 +93,15 @@ class Manager {
 		return static::$CTX[$Alias];
 	}
 
+	public function
+	GetDatabaseType(string $Alias):
+	string {
+
+		$DB = $this->Get($Alias);
+
+		return $DB->Type;
+	}
+
 	////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////
 

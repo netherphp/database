@@ -894,6 +894,9 @@ and execute it against the database.
 		// todo 2022-12-18
 		// it needs to determine this from the connection type.
 
+		if($this->Database->Type === 'sqlite')
+		return 'Nether\\Database\\Verse\\SQLite';
+
 		return 'Nether\\Database\\Verse\\MySQL';
 	}
 
