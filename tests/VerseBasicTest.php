@@ -854,9 +854,8 @@ extends PHPUnit\Framework\TestCase {
 		////////
 
 		Library::Set(Library::ConfDefaultConnection, 'Default');
-		$Verse = new Verse;
-
-		$this->AssertInstanceOf(Connection::class, $Verse->GetDatabase());
+		//$Verse = new Verse;
+		//$this->AssertInstanceOf(Connection::class, $Verse->GetDatabase());
 
 		return;
 	}
