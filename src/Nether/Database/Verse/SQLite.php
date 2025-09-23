@@ -120,8 +120,17 @@ extends Compiler {
 			$Values
 		);
 
+		if($Update) {
+			$this->QueryString = preg_replace(
+				'/^INSERT /',
+				'INSERT OR REPLACE ',
+				$this->QueryString
+			);
+		}
+
 		////////
 
+		/*
 		if($Update) {
 			$FieldsToUp = $this->Verse->GetFields();
 
@@ -150,6 +159,7 @@ extends Compiler {
 				$this->Verse->GetPrimaryKey()
 			);
 		}
+		*/
 
 		////////
 
@@ -248,11 +258,11 @@ extends Compiler {
 		if($Conds = $this->Verse->GetConditions())
 		$this->QueryString .= $this->GetConditionString($Conds);
 
-		if($Havings = $this->Verse->GetHavings())
-		$this->QueryString .= $this->GetHavingString($Havings);
+		//if($Havings = $this->Verse->GetHavings())
+		//$this->QueryString .= $this->GetHavingString($Havings);
 
-		if(($Limit = $this->Verse->GetLimit()) !== 0)
-		$this->QueryString .= $this->GetLimitString($Limit);
+		//if(($Limit = $this->Verse->GetLimit()) !== 0)
+		//$this->QueryString .= $this->GetLimitString($Limit);
 
 		return trim($this->QueryString);
 	}
