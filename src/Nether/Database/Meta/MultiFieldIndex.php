@@ -28,7 +28,7 @@ implements TableAttribute, TableIndex {
 	public function
 	__Construct(
 		array $Fields,
-		bool $Unique=NULL,
+		?bool $Unique=NULL,
 		?string $Name=NULL,
 		?string $Method=NULL
 	) {
