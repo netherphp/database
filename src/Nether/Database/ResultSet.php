@@ -152,7 +152,7 @@ extends Struct\PrototypeFindResult {
 	}
 
 	public function
-	Walkinator():
+	Walk():
 	?Generator {
 
 		$this->PaginatorReset();
@@ -175,6 +175,19 @@ extends Struct\PrototypeFindResult {
 		$Output->SetPageLimit($Page, $Limit);
 
 		return $Output;
+	}
+
+	////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////
+
+	#[Common\Meta\Deprecated('2025-11-01', 'use Walk()')]
+	public function
+	Walkinator():
+	?Generator {
+
+		return $this->Walk();
 	}
 
 }
